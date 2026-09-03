@@ -1132,7 +1132,9 @@ def align_features_fgw(
     # Save model to disk (if debug_plots_path is provided and m_step_method is 'global')
     if True:
         from model_utils import save_alignment_model
-        model_save_path = os.path.join("../datasets/scGPT_example/", 'alignment_model.pt')
+        dir_path = "../datasets/scGPT_example/"
+        model_save_path = os.path.join(dir_path, 'alignment_model.pt')
+        os.makedirs(dir_path, exist_ok=True)
         save_alignment_model(
             model=model,
             save_path=model_save_path,
