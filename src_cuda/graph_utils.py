@@ -49,9 +49,25 @@ def compute_knn_graph_distance(
     try:
         logging.info("Computing Fast Softmin Landmark Geodesic Approximation...")
         
-        # 2. Random Landmarks Anchoring
+        from sklearn.cluster import KMeans
+        from sklearn.metrics import pairwise_distances_argmin
+
+        # 2. Hybrid Landmarks Anchoring (dựa trên chiến thuật của Specter)
         num_landmarks = min(512, n_samples)
-        landmarks = np.random.choice(n_samples, num_landmarks, replace=False)
+        
+        if n_samples > num_landmarks * 10:
+            num_candidates = num_landmarks * 10
+            candidate_indices = np.random.choice(n_samples, num_candidates, replace=False)
+            candidate_features = features_np[candidate_indices]
+            
+            kmeans = KMeans(n_clusters=num_landmarks, n_init=1, random_state=42)
+            kmeans.fit(candidate_features)
+            
+            closest_in_candidates = pairwise_distances_argmin(kmeans.cluster_centers_, candidate_features)
+            
+            landmarks = candidate_indices[closest_in_candidates]
+        else:
+            landmarks = np.random.choice(n_samples, num_landmarks, replace=False)
 
         # 3. Exact BFS from Landmarks (C-backend)
         landmark_dists = shortest_path(
