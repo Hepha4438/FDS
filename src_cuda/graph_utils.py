@@ -71,7 +71,7 @@ def compute_knn_graph_distance(
         beta = 2.0  
         E = torch.exp(-beta * L_dist)
 
-        top_l = 64
+        top_l = min(128, num_landmarks)  # Keep top 128 landmarks for each sample
         
         if top_l < num_landmarks:
             top_vals, top_indices = torch.topk(E, top_l, dim=1)
