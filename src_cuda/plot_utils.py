@@ -12,6 +12,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import scanpy as sc
+import rapids_singlecell as rsc
 import anndata as ad
 
 
@@ -24,19 +25,6 @@ def plot_dual_umap(
 ) -> None:
     """
     Create dual UMAP plots: one with 'type' coloring and one with cell type coloring.
-
-    Parameters
-    ----------
-    concat_adata : ad.AnnData
-        Concatenated AnnData with UMAP coordinates in .obsm['X_umap']
-    cell_type_col : str
-        Column name in .obs containing cell type annotations
-    title_prefix : str
-        Prefix for plot titles (e.g., 'Iter 5' or 'Final')
-    save_path : str
-        Full path to save the plot
-    type_palette : dict, optional
-        Color palette for 'type' column. If None, uses default colors.
     """
     try:
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
@@ -85,15 +73,6 @@ def plot_weight_heatmap(
 ) -> None:
     """
     Plot transformation weight matrix as heatmap.
-
-    Parameters
-    ----------
-    model : nn.Module
-        Model with .net attribute containing weight matrix
-    title : str
-        Title for the heatmap
-    save_path : str
-        Full path to save the plot
     """
     try:
         import torch.nn as nn
@@ -131,19 +110,6 @@ def plot_convergence(
 ) -> None:
     """
     Plot convergence metrics over E-M iterations.
-
-    Creates two subplots:
-    1. Percentage of mappings that changed per iteration
-    2. Absolute count of mappings that changed per iteration
-
-    Also saves convergence data as CSV for later analysis.
-
-    Parameters
-    ----------
-    convergence_data : list of dict
-        List of convergence metrics with keys: iteration, batch_idx, n_changed, n_total_valid, pct_changed
-    save_dir : str
-        Directory to save the convergence plot and CSV data
     """
     if len(convergence_data) == 0:
         logging.info("No convergence data to plot (only 1 iteration or no mappings changed)")
@@ -222,35 +188,9 @@ def plot_transfer_debug_umap(
 ) -> None:
     """
     Create transfer-based UMAP debug plot.
-
-    This shows what the alignment looks like using just T @ features_b,
-    helping separate "is T good?" from "is W good?".
-
-    Parameters
-    ----------
-    T_full : torch.Tensor
-        Full transport matrix (n_source, n_target)
-    features_b : torch.Tensor
-        Target features
-    adata_a_obs : pd.DataFrame
-        Source observations (after potential sketching)
-    adata_b : ad.AnnData
-        Target AnnData
-    cell_type_col : str
-        Column name for cell type annotations
-    iteration : int
-        Current iteration number
-    save_dir : str
-        Directory to save the plot
-    metric : str
-        Distance metric for UMAP neighbors ('euclidean' or 'cosine')
-    focused_mask_full : torch.Tensor, optional
-        Boolean mask indicating which source cells are used for M-step training
-        (focused = low entropy + high confidence)
     """
     try:
         import torch
-        #import rapids_singlecell as sc
 
         logging.info(f"Creating transfer-based debug plot for iteration {iteration}...")
 
@@ -300,8 +240,6 @@ def plot_transfer_debug_umap(
         adata_b_copy = adata_b.copy()
         adata_b_copy.obs["type"] = "target"
 
-        # IMPORTANT: Add placeholder 'used_for_m_step' column to target cells BEFORE concatenation
-        # This ensures the column exists in concat_adata for all cells
         if focused_mask_full is not None:
             adata_b_copy.obs["used_for_m_step"] = pd.Categorical(
                 ["Target (placeholder)"] * len(adata_b_copy),
@@ -318,10 +256,10 @@ def plot_transfer_debug_umap(
             common_ct_values = pd.concat([adata_a_transfer.obs[cell_type_col], adata_b_copy.obs[cell_type_col]])
             concat_adata.obs[cell_type_col] = common_ct_values.values
 
-        # Compute UMAP
-        sc.tl.pca(concat_adata)
-        sc.pp.neighbors(concat_adata, use_rep='X', metric=metric)
-        sc.tl.umap(concat_adata)
+        # Compute UMAP with RAPIDS
+        rsc.tl.pca(concat_adata)
+        rsc.pp.neighbors(concat_adata, use_rep='X', metric=metric)
+        rsc.tl.umap(concat_adata)
 
         # Create plot with 3 columns if focused_mask provided, otherwise 2
         n_cols = 3 if focused_mask_full is not None else 2
@@ -354,36 +292,27 @@ def plot_transfer_debug_umap(
                     ha='center', va='center', transform=ax2.transAxes)
 
         # Plot 3: M-step training status (if focused_mask provided)
-        # Show only TARGET cells, colored by whether their matched source was used for M-step
         if focused_mask_full is not None and 'used_for_m_step' in concat_adata.obs.columns and use_linear_assignment:
             import torch
 
-            # Compute inverse mapping: target -> source
-            # T_full_valid is binary (0 or 1) after linear assignment
-            # For each target, find which source maps to it (if any)
-            T_full_valid_t = T_full_valid.t()  # Transpose to (n_target, n_source_valid)
-            target_to_source = T_full_valid_t.argmax(dim=1).cpu().numpy()  # (n_target,)
-            target_has_match = (T_full_valid_t.max(dim=1)[0] > 0.5).cpu().numpy()  # Boolean mask
+            T_full_valid_t = T_full_valid.t()  
+            target_to_source = T_full_valid_t.argmax(dim=1).cpu().numpy()  
+            target_has_match = (T_full_valid_t.max(dim=1)[0] > 0.5).cpu().numpy()  
 
-            # Get M-step status for each source cell
             focused_mask_valid = focused_mask_full[valid_source_mask]
             focused_mask_cpu = focused_mask_valid.cpu().numpy()
 
-            # Map target cells to their matched source's M-step status
             target_m_step_status = []
             for t_idx in range(len(target_has_match)):
                 if target_has_match[t_idx]:
-                    # Target has a match, get the matched source's M-step status
                     source_idx = target_to_source[t_idx]
                     if focused_mask_cpu[source_idx]:
                         target_m_step_status.append('Matched to Training Cell')
                     else:
                         target_m_step_status.append('Matched to Excluded Cell')
                 else:
-                    # Target has no match
                     target_m_step_status.append('No Source Match')
 
-            # Filter to only target cells
             target_only = concat_adata[concat_adata.obs['type'] == 'target'].copy()
 
             target_only.obs['m_step_status'] = pd.Categorical(
@@ -399,7 +328,7 @@ def plot_transfer_debug_umap(
             }
 
             sc.pl.umap(
-                target_only,  # Plot only target cells
+                target_only,  
                 color='m_step_status',
                 palette=m_step_palette,
                 ax=ax3,
@@ -407,7 +336,6 @@ def plot_transfer_debug_umap(
                 title=f'Transfer Debug Iter {iteration} - Target M-step Status'
             )
 
-        # Save plot
         os.makedirs(save_dir, exist_ok=True)
         plot_filename = os.path.join(save_dir, f"umap_transfer_iter_{iteration:04d}.png")
         plt.savefig(plot_filename, bbox_inches='tight', dpi=150)
@@ -434,31 +362,6 @@ def plot_spatial_channels(
 ) -> None:
     """
     Create spatial channel plots showing gene expression on spatial coordinates.
-
-    Parameters
-    ----------
-    adata_source : ad.AnnData
-        Source (transformed) dataset with spatial coordinates
-    adata_target : ad.AnnData
-        Target dataset with spatial coordinates
-    spatial_key : str
-        Key in .obsm containing spatial coordinates
-    iteration : int
-        Current iteration number
-    save_path : str
-        Base path to save plots (will create 'channels' subdirectory)
-    channel_idx : int
-        Which channel/gene to plot (default: 0)
-    figsize : tuple
-        Figure size (default: (15, 5))
-    cmap : str
-        Colormap to use (default: 'jet')
-    point_size : float
-        Size of scatter points (default: 1)
-    alpha : float
-        Transparency of points (default: 0.8)
-    dpi : int
-        DPI for saved figure (default: 150)
     """
     try:
         # Check if spatial coordinates are available
@@ -541,36 +444,6 @@ def plot_spatial_mapping(
 ) -> None:
     """
     Visualize spatial alignment by drawing lines from source to mapped target coordinates.
-
-    Parameters
-    ----------
-    coords_source : np.ndarray
-        Source spatial coordinates (n_source, 2)
-    coords_target : np.ndarray
-        Target spatial coordinates (n_target, 2)
-    mapping : np.ndarray
-        Mapping from source to target indices (n_source,)
-        Values of -1 indicate no mapping
-    iteration : int
-        Current iteration number
-    save_path : str
-        Base path to save plots (will create 'mapping' subdirectory)
-    n_samples : int
-        Maximum number of mapped pairs to visualize (default: 5000)
-    figsize : tuple
-        Figure size (default: (10, 10))
-    alpha_lines : float
-        Transparency for mapping lines (default: 0.3)
-    alpha_points : float
-        Transparency for scatter points (default: 0.5)
-    linewidth : float
-        Width of mapping lines (default: 0.5)
-    point_size_source : float
-        Size of source points (default: 2)
-    point_size_target : float
-        Size of target points (default: 2)
-    seed : int
-        Random seed for reproducible sampling (default: 42)
     """
     try:
         np.random.seed(seed)

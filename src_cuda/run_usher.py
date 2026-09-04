@@ -14,21 +14,16 @@ import torch.nn.functional as F
 from tqdm import tqdm
 from torch.optim import Adam
 import scanpy as sc
+import rapids_singlecell as rsc
 import matplotlib.pyplot as plt
 import seaborn as sns
-#import rapids_singlecell as sc
 import pandas as pd
 from scipy.optimize import linear_sum_assignment
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Import from model_utils
-# For saving/loading/applying models, see model_utils.py:
-#   - save_alignment_model()
-#   - load_alignment_model()
-#   - apply_alignment_model()
 from model_utils import FeatureTransform, _to_dense_float32
-
 
 # Import from graph_utils
 from graph_utils import compute_knn_graph_distance, apply_cell_type_constraints
@@ -54,7 +49,6 @@ from plot_utils import (
     plot_spatial_channels,
     plot_spatial_mapping
 )
-
 
 
 def align_features_fgw(
@@ -118,162 +112,6 @@ def align_features_fgw(
     confidence_percentile: float = 10.0,
     verbose: bool = True,
 ) -> Tuple[nn.Module, np.ndarray, ad.AnnData]:
-    """
-    CORRECTED E-M style features-only alignment using geosketch sampling.
-
-    CORRECTED WORKFLOW:
-    1. Sample source (reference) to reduce size using geosketch
-    2. Sample target (query) into batches using geosketch
-    3. E-M iterations (OUTER LOOP): shared model across all batches
-    4. Within each E-M iteration: process all target batches
-    5. No longer use class probabilities
-
-    Parameters
-    ----------
-    adata_a : ad.AnnData
-        Source dataset (reference)
-    adata_b : ad.AnnData
-        Target dataset (query)
-    e_step_method : str
-        Method for E-step transport plan computation:
-        - 'ot': Pure Wasserstein using cell type feature cost M - faster
-        - 'gw': Pure Gromov-Wasserstein using structure (C1, C2) - preserves structure, slower
-        - 'fgw': Fused Gromov-Wasserstein combining features (M) and structure (C1, C2) - balanced approach
-    m_step_method : str
-        Method for M-step optimization:
-        - 'global': Learn a neural network transformation
-        - 'transfer': Direct expression transfer from mapped cells (weighted by transport)
-    sketch_size : int
-        Group/batch size for sampling (default: 1000)
-        - If use_stratified_pairing=True: Size of each paired group (both source and target)
-        - If use_stratified_pairing=False: 
-
-    sketch_obsm_key : str
-        Key in .obsm for pre-computed embeddings to use for geosketch (default: 'X_umap')
-        Commonly used keys: 'X_umap', 'X_pca', 'X_tsne'
-        If key not found in AnnData, will fallback to computing PCA
-    sketch_pca_components : int
-        Number of PCA components to compute if sketch_obsm_key not found in .obsm (default: 50)
-        DEPRECATED: Only used as fallback
-    data_is_pca : bool
-        DEPRECATED: Ignored when using sketch_obsm_key from AnnData
-    use_stratified_pairing : bool
-        Whether to use stratified pairing (default: False)
-        - True: Geosketch both source and target into k groups, process pairs (source[i] ↔ target[i])
-        - False: Use original behavior (sample source once, batch target)
-    stratified_pairing_fix : bool
-        Whether to use fixed groups across iterations (default: True, only relevant if use_stratified_pairing=True)
-        - True: Use same groups across all EM iterations (fix=True in geosketch_stratified_pairing)
-        - False: Resample groups each iteration (fix=False, seed changes each iteration)
-    cell_type_col : str
-        Column name containing cell type information for constraints and visualization
-    epsilon : float
-        Sinkhorn regularization parameter
-    sinkhorn_iters : int
-        Max iterations for Sinkhorn algorithm
-    balanced_ot : bool
-        Whether to use balanced or unbalanced Optimal Transport:
-        - True (balanced): Enforces strict marginal constraints (sum of rows = sum of columns)
-          Best when source and target have similar total mass/importance
-          More stable but may be restrictive for datasets with different sizes
-        - False (unbalanced): Relaxes marginal constraints, allows partial matching
-          Better for datasets with very different sizes or when some cells should remain unmatched
-          More flexible but requires tuning of marginal relaxation parameters
-    sparsify_transport : bool
-        Whether to sparsify transport plan by keeping only top-k entries per row (default: True)
-        Reduces smoothing effect of T @ features_b by making each source map to fewer targets
-        Helps preserve biological signal in transferred expressions
-    transport_top_k : int
-        Number of top entries to keep per row when sparsifying (default: 5)
-        Each source cell will map to at most this many target cells
-        Lower values = less smoothing but may lose alignment quality
-        Higher values = more smoothing but better coverage
-        Ignored if use_linear_assignment=True
-    use_linear_assignment : bool
-        Use Hungarian algorithm (linear sum assignment) for globally optimal 1-1 matching (default: False)
-        When True, finds the best bijective mapping (each source → 1 target, each target ← ≤1 source)
-        Guarantees perfect diversity (no target overuse) but results in hard assignments
-        Overrides transport_top_k if enabled
-        Recommended when T is very flat and diversity is critical
-    knn_k : int
-        Number of nearest neighbors for kNN graph construction
-    metric : str
-        Distance metric for kNN graph, UMAP, and M-step loss ('cosine' or 'euclidean')
-        - 'cosine': Direction-based similarity, better for normalized gene expression (default)
-          Loss: 1 - cosine_similarity, Structure: cosine similarity matrices
-        - 'euclidean': Magnitude-aware distance, preserves absolute expression levels
-          Loss: L2 distance, Structure: Euclidean distance matrices
-        This single parameter ensures consistency across all distance computations
-
-    use_knn_graph : bool
-        Whether to use kNN graph-based shortest path distances instead of direct distances:
-        - True: Compute kNN graph, then shortest path distances (better captures manifold structure)
-        - False: Use direct cosine/Euclidean distances (faster but less accurate for complex manifolds)
-    cell_type_penalty : float
-        Penalty factor for cross-cell-type distances in kNN graph (0=disabled, default=0.5)
-    celltype_probs_layer : str
-        Key in .obsm for cell type probabilities (default: 'X_celltype_probs')
-        Used for FGW and OT methods to compute feature cost matrix M
-        Falls back to one-hot encoding from cell_type_col if not present
-
-    alpha : float
-        Balance between structure (GW) and features (Wasserstein) for FGW method:
-        - 1.0: Pure Gromov-Wasserstein (structure only)
-        - 0.0: Pure Wasserstein (features only)
-        - 0.5 (default): Balanced fusion
-    gamma : float
-        Weight for feature distance in M matrix computation (OT and FGW):
-        M = (1 - gamma) * M_celltype + gamma * M_features
-        - 0.0: Use only cell type distances (default for iteration 0)
-        - 1.0: Use only transformed feature distances
-        - 0.5 (default): Balanced combination
-        Note: Iteration 0 always uses gamma=0 regardless of this setting
-    n_iters : int
-        Number of E-M iterations
-    steps_per_iter : int
-        Number of gradient steps per M-step
-    lr : float
-        Learning rate for optimizer
-    weight_decay : float
-        Weight decay for optimizer
-    lambda_cross : float
-        Weight for cross-domain alignment loss
-    lambda_struct : float
-        Weight for structure preservation loss
-    structure_sample_size : int, optional
-        Sample size for structure preservation loss (for memory efficiency)
-    hidden_dim : int, optional
-        Hidden dimension for MLP (None = linear)
-    dropout : float
-        Dropout rate for MLP
-    init_strategy : str
-        Model weight initialization: 'identity', 'random', or 'auto' (auto-selects based on sampling_strategy)
-    device : str, optional
-        Device to use ('cuda' or 'mps')
-    debug : bool
-        Enable debug logging
-    debug_plots_path : str, optional
-        Path to save debug plots
-    debug_plot_freq : int
-        Frequency of debug plot generation
-    clear_cuda_cache_each_iter : bool
-        Whether to clear CUDA cache after each iteration
-        
-    Returns
-    -------
-    model : FeatureTransform
-        Trained transformation model
-    mapping : np.ndarray
-        Hard assignment from query to template
-    concat_adata : ad.AnnData
-        Concatenated transformed source + target for UMAP
-    T_full : torch.Tensor
-        Full transport matrix (n_source, n_target)
-    feature_mean : torch.Tensor or None
-        Mean per feature column used for standardization (None if m_step_metric='cosine')
-    feature_std : torch.Tensor or None
-        Std per feature column used for standardization (None if m_step_metric='cosine')
-    """
     
     # --- Device & data ---
     if device is None:
@@ -335,8 +173,6 @@ def align_features_fgw(
         raise ValueError(f"e_step_method must be 'ot', 'gw', or 'fgw', got: {e_step_method}")
     if m_step_method not in ['global', 'transfer']:
         raise ValueError(f"m_step_method must be 'global' or 'transfer', got: {m_step_method}")
-
-
 
     # Validate metric
     if metric not in ['cosine', 'euclidean']:
@@ -567,11 +403,7 @@ def align_features_fgw(
                 )
             return b_idx, res
 
-        # =================================================================
-        # VÁ LỖI CRASH KERNEL TRÊN MAC (MPS KHÔNG HỖ TRỢ MULTI-THREADING)
-        # =================================================================
         if device_t.type == 'cuda':
-            # 1. Chạy song song nếu dùng server card NVIDIA
             max_workers = min(len(batches), 16)
             with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                 futures = []
@@ -586,7 +418,6 @@ def align_features_fgw(
                     batch_results[b_idx] = result
                     logging.info(f"  Batch {b_idx+1}/{len(batches)}: Transport computed (CUDA Parallel)")
         else:
-            # 2. Chạy tuần tự an toàn nếu dùng máy Mac (MPS) hoặc CPU
             for batch_idx, (source_batch_indices, target_batch_indices) in enumerate(batches):
                 b_idx, result = process_cluster(batch_idx, source_batch_indices, target_batch_indices)
                 batch_results[b_idx] = result
@@ -730,11 +561,11 @@ def align_features_fgw(
             if cell_type_col in adata_a_transformed.obs.columns and cell_type_col in adata_b_copy.obs.columns:
                 common_ct_values = pd.concat([adata_a_transformed.obs[cell_type_col], adata_b_copy.obs[cell_type_col]])
                 concat_adata_iter.obs[cell_type_col] = common_ct_values.values
-            # Compute UMAP for visualization (using global metric parameter)
+            # Compute UMAP for visualization using rapids-singlecell
             try:
-                sc.tl.pca(concat_adata_iter)
-                sc.pp.neighbors(concat_adata_iter, use_rep='X', metric=metric)
-                sc.tl.umap(concat_adata_iter)
+                rsc.tl.pca(concat_adata_iter)
+                rsc.pp.neighbors(concat_adata_iter, use_rep='X', metric=metric)
+                rsc.tl.umap(concat_adata_iter)
                 logging.info(f"UMAP computation successful for iteration {it+1}")
             except Exception as e:
                 logging.error(f"UMAP computation failed for iteration {it+1}: {e}")
@@ -941,10 +772,6 @@ def align_features_fgw(
     if m_step_method == 'transfer':
         logging.info("Transfer method: Using features from final iteration...")
 
-        # NOTE: features_a_transformed was already computed in the last iteration
-        # (see transfer method section inside iteration loop)
-        # No need to recompute E-step here - eliminates code duplication!
-
         if features_a_transformed is None:
             logging.error("features_a_transformed is None! This should not happen for transfer method.")
             raise RuntimeError("Transfer method failed: features_a_transformed not computed")
@@ -952,8 +779,6 @@ def align_features_fgw(
         logging.info(f"Transfer method: Using transformed features of shape {features_a_transformed.shape}")
         
         # Create transformed source data
-        # For transfer method, use TRANSFERRED features (target expressions transferred to source)
-        # This shows the actual result of the transfer method
         a_hat_cpu = features_a_transformed.detach().cpu().numpy()
         logging.info("Transfer method: Using TRANSFERRED source features for final UMAP (target expressions transferred to source)")
         # Use sketched observations if geosketch was applied
@@ -1000,11 +825,11 @@ def align_features_fgw(
             concat_adata.obs[cell_type_col] = common_ct_values.values
         print(concat_adata.obs.head())
         
-        # Compute UMAP for final visualization (using global metric parameter)
+        # Compute UMAP for final visualization with rapids_singlecell
         try:
-            sc.tl.pca(concat_adata)
-            sc.pp.neighbors(concat_adata, use_rep='X', metric=metric)
-            sc.tl.umap(concat_adata)
+            rsc.tl.pca(concat_adata)
+            rsc.pp.neighbors(concat_adata, use_rep='X', metric=metric)
+            rsc.tl.umap(concat_adata)
             logging.info("Final UMAP computation successful")
         except Exception as e:
             logging.error(f"Final UMAP computation failed: {e}")
@@ -1074,11 +899,11 @@ def align_features_fgw(
             concat_adata.obs[cell_type_col] = common_ct_values.values
         print(concat_adata.obs.head())
         
-        # Compute UMAP for final visualization (using global metric parameter)
+        # Compute UMAP for final visualization with rapids_singlecell
         try:
-            sc.tl.pca(concat_adata)
-            sc.pp.neighbors(concat_adata, use_rep='X', metric=metric)
-            sc.tl.umap(concat_adata)
+            rsc.tl.pca(concat_adata)
+            rsc.pp.neighbors(concat_adata, use_rep='X', metric=metric)
+            rsc.tl.umap(concat_adata)
             logging.info("Final UMAP computation successful")
         except Exception as e:
             logging.error(f"Final UMAP computation failed: {e}")
@@ -1126,8 +951,6 @@ def align_features_fgw(
             target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
             # For non-stratified, source covers all indices
             T_full[:, target_idx_tensor] = T
-
-    #logging.info(f"T_full reconstructed: shape {T_full.shape}, nnz={(T_full > 1e-6).sum().item()}")
 
     # Save model to disk (if debug_plots_path is provided and m_step_method is 'global')
     if True:
