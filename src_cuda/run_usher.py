@@ -843,49 +843,29 @@ def align_features_fgw(
         mapping_final = np.full(n_a, -1, dtype=np.int64)  # Map from source to target
 
         for batch_idx, mapping_batch, target_batch_indices in batch_mappings:
-            logging.info(f"Batch {batch_idx}: mapping_batch.shape={mapping_batch.shape}, target_batch_indices.shape={target_batch_indices.shape}")
-            # mapping_batch maps source indices to target batch indices
             valid_mapping = mapping_batch >= 0
             if valid_mapping.any():
-                # For valid mappings, map to original target indices
-                valid_source_indices = np.where(valid_mapping)[0]  # Get source indices with valid mappings
-                target_batch_indices_for_valid = mapping_batch[valid_mapping]  # Target batch indices for valid mappings
-                mapped_targets = target_batch_indices[target_batch_indices_for_valid]  # Original target indices
+                valid_source_indices = np.where(valid_mapping)[0]
+                target_batch_indices_for_valid = mapping_batch[valid_mapping]
+                mapped_targets = target_batch_indices[target_batch_indices_for_valid]
 
-                # Only update if we don't already have a mapping for this source index
                 mask = mapping_final[valid_source_indices] == -1
                 mapping_final[valid_source_indices[mask]] = mapped_targets[mask]
 
-        # Create final concatenated data for UMAP
-        logging.info("Creating final concatenated data...")
-        with torch.no_grad():
-            model.eval()  # Set to eval mode for final inference
-
-            # Variance diagnostics BEFORE final global transformation
-            source_var_before = features_a.var(dim=0).mean().item()
-            source_std_before = features_a.std(dim=0).mean().item()
-            source_range_before = (features_a.max() - features_a.min()).item()
-            logging.info(f"FINAL VARIANCE CHECK - Source BEFORE global transform: var={source_var_before:.6f}, std={source_std_before:.6f}, range={source_range_before:.6f}")
-
-            a_hat_global = apply_model_with_scaling(features_a)
-
-            # Variance diagnostics AFTER final global transformation
-            trans_var_after = a_hat_global.var(dim=0).mean().item()
-            trans_std_after = a_hat_global.std(dim=0).mean().item()
-            trans_range_after = (a_hat_global.max() - a_hat_global.min()).item()
-            logging.info(f"FINAL VARIANCE CHECK - Source AFTER global transform: var={trans_var_after:.6f}, std={trans_std_after:.6f}, range={trans_range_after:.6f}")
-            logging.info(f"FINAL VARIANCE PRESERVATION RATIO (global): {trans_std_after/source_std_before:.4f}")
-
-            a_hat_cpu = a_hat_global.detach().cpu().numpy()
-        # Use sketched observations if geosketch was applied
-        if sketch_to_original is not None:
-            obs_sketched = adata_a.obs.iloc[sketch_to_original].copy()
-        else:
-            obs_sketched = adata_a.obs.copy()
-        adata_a_transformed = ad.AnnData(X=a_hat_cpu, obs=obs_sketched)
-        adata_a_transformed.obs["type"] = "source_transformed"  # Keep this for global method
+        logging.info("Creating final concatenated data using FULL source dataset...")
         
-        # Create final concatenated data
+        X_a_full = _to_dense_float32(adata_a.X)
+        features_a_full = torch.from_numpy(X_a_full).to(device_t)
+        
+        with torch.no_grad():
+            model.eval()
+
+            a_hat_global_full = apply_model_with_scaling(features_a_full)
+            a_hat_cpu_full = a_hat_global_full.detach().cpu().numpy()
+            
+        adata_a_transformed = ad.AnnData(X=a_hat_cpu_full, obs=adata_a.obs.copy())
+        adata_a_transformed.obs["type"] = "source_transformed"
+        
         adata_b_copy = adata_b.copy()
         adata_b_copy.obs["type"] = "target"
         
@@ -897,9 +877,7 @@ def align_features_fgw(
         if cell_type_col in adata_a_transformed.obs.columns and cell_type_col in adata_b_copy.obs.columns:
             common_ct_values = pd.concat([adata_a_transformed.obs[cell_type_col], adata_b_copy.obs[cell_type_col]])
             concat_adata.obs[cell_type_col] = common_ct_values.values
-        print(concat_adata.obs.head())
         
-        # Compute UMAP for final visualization with rapids_singlecell
         try:
             rsc.tl.pca(concat_adata)
             rsc.pp.neighbors(concat_adata, use_rep='X', metric=metric)
