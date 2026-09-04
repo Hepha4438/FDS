@@ -20,7 +20,7 @@ import seaborn as sns
 import pandas as pd
 from scipy.optimize import linear_sum_assignment
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Import from model_utils
 from model_utils import FeatureTransform, _to_dense_float32
