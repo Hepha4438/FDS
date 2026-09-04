@@ -70,6 +70,14 @@ def compute_knn_graph_distance(
         # 4. MPS Native Softmin Approximation (Min-Plus LogSumExp Trick)
         beta = 2.0  
         E = torch.exp(-beta * L_dist)
+
+        top_l = 15
+        
+        if top_l < num_landmarks:
+            top_vals, top_indices = torch.topk(E, top_l, dim=1)
+            E_sparse = torch.zeros_like(E)
+            E_sparse.scatter_(1, top_indices, top_vals)
+            E = E_sparse
         
         M = torch.mm(E, E.t())
         M = torch.clamp(M, min=1e-30) 
