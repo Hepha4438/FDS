@@ -480,8 +480,9 @@ def train_global_model(
             loss_cross = F.mse_loss(source_transformed, target_features)
         
         # ===== Loss 2: Variance preservation =====
-        loss_var = (source_transformed.std(dim=0) - target_features.std(dim=0)).abs().mean()
-        
+        # loss_var = (source_transformed.std(dim=0) - target_features.std(dim=0)).abs().mean()
+        loss_var = sliced_wasserstein_distance(source_transformed, target_features, n_projections=128)
+
         # ===== Combined loss =====
         loss = lambda_cross * loss_cross + lambda_var * loss_var
 
