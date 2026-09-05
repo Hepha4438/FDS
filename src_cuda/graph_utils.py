@@ -87,13 +87,13 @@ def compute_knn_graph_distance(
         beta = 2.0  
         E = torch.exp(-beta * L_dist)
 
-        top_l = min(32, num_landmarks)  # Keep top 16 landmarks for each sample
+        # top_l = min(32, num_landmarks)  # Keep top 16 landmarks for each sample
         
-        if top_l < num_landmarks:
-            top_vals, top_indices = torch.topk(E, top_l, dim=1)
-            E_sparse = torch.zeros_like(E)
-            E_sparse.scatter_(1, top_indices, top_vals)
-            E = E_sparse
+        # if top_l < num_landmarks:
+        #     top_vals, top_indices = torch.topk(E, top_l, dim=1)
+        #     E_sparse = torch.zeros_like(E)
+        #     E_sparse.scatter_(1, top_indices, top_vals)
+        #     E = E_sparse
         
         M = torch.mm(E, E.t())
         M = torch.clamp(M, min=1e-30) 
