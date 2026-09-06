@@ -204,16 +204,17 @@ def align_features_fgw(
     if e_step_method == 'nfgw':
         # FULL-BATCH MODE FOR NFGW
         logging.info("NFGW selected: Bypassing batching/sketching to run on full dataset.")
-        # Tạo 1 lô duy nhất chứa toàn bộ index của source và target
         batches = [(np.arange(n_a_orig), np.arange(n_b_orig))]
         
-        # Lấy trực tiếp auxiliary features từ dataset gốc
         if sampling_strategy == 'celltype':
-            auxiliary_features_source = adata_a.obsm.get(celltype_probs_layer, None)
-            auxiliary_features_target = adata_b.obsm.get(celltype_probs_layer, None)
+            aux_src = adata_a.obsm.get(celltype_probs_layer, None)
+            aux_tgt = adata_b.obsm.get(celltype_probs_layer, None)
         else:
-            auxiliary_features_source = adata_a.obsm.get(spatial_key, None)
-            auxiliary_features_target = adata_b.obsm.get(spatial_key, None)
+            aux_src = adata_a.obsm.get(spatial_key, None)
+            aux_tgt = adata_b.obsm.get(spatial_key, None)
+
+        auxiliary_features_source = aux_src.to_numpy() if hasattr(aux_src, 'to_numpy') else aux_src
+        auxiliary_features_target = aux_tgt.to_numpy() if hasattr(aux_tgt, 'to_numpy') else aux_tgt
             
         knn_indices_spatial = None
     else:
