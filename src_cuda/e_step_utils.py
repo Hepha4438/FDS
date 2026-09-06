@@ -471,54 +471,47 @@ def compute_transport_nfgw(
     E2 = compute_knn_graph_landmark_factors(features_target, k=knn_k, metric=metric, device=device)
 
     # ===== PART 2: Compute feature cost matrix M =====
-    chunk_size = 5000  # Chia nhỏ để không bao giờ bị tràn VRAM
+    chunk_size = 2000  # Giảm xuống 2000 để cực kỳ an toàn cho VRAM 14GB
+
+    M = torch.zeros((n_source, n_target), device=device, dtype=torch.float32)
     
     if aux_features_source is not None and aux_features_target is not None:
         aux_source_torch = torch.from_numpy(aux_features_source).float().to(device)
         aux_target_torch = torch.from_numpy(aux_features_target).float().to(device)
         
-        # Tính M_aux theo chunk
-        M_aux_list = []
+        M_aux = torch.zeros((n_source, n_target), device=device, dtype=torch.float32)
         for i in range(0, n_source, chunk_size):
-            row_chunks = []
+            i_end = min(i + chunk_size, n_source)
             for j in range(0, n_target, chunk_size):
-                sub_dist = torch.cdist(aux_source_torch[i:i+chunk_size], aux_target_torch[j:j+chunk_size], p=2)
-                row_chunks.append(sub_dist)
-            M_aux_list.append(torch.cat(row_chunks, dim=1))
-        M_aux = torch.cat(M_aux_list, dim=0)
+                j_end = min(j + chunk_size, n_target)
+                M_aux[i:i_end, j:j_end] = torch.cdist(aux_source_torch[i:i_end], aux_target_torch[j:j_end], p=2)
         M_aux = M_aux / (M_aux.max().clamp(min=1e-8))
         
-        # Tính M_features theo chunk tùy theo metric
-        M_feat_list = []
+        M_features = torch.zeros((n_source, n_target), device=device, dtype=torch.float32)
         for i in range(0, n_source, chunk_size):
-            row_chunks = []
+            i_end = min(i + chunk_size, n_source)
             for j in range(0, n_target, chunk_size):
-                s_chunk = features_source[i:i+chunk_size]
-                t_chunk = features_target[j:j+chunk_size]
+                j_end = min(j + chunk_size, n_target)
+                s_chunk = features_source[i:i_end]
+                t_chunk = features_target[j:j_end]
                 if metric == 'cosine':
-                    sub_feat = 1.0 - (s_chunk @ t_chunk.T)
+                    M_features[i:i_end, j:j_end] = 1.0 - (s_chunk @ t_chunk.T)
                 else:
-                    sub_feat = torch.cdist(s_chunk, t_chunk, p=2)
-                row_chunks.append(sub_feat)
-            M_feat_list.append(torch.cat(row_chunks, dim=1))
-        M_features = torch.cat(M_feat_list, dim=0)
+                    M_features[i:i_end, j:j_end] = torch.cdist(s_chunk, t_chunk, p=2)
         M_features = M_features / (M_features.max().clamp(min=1e-8))
 
         M = (gamma_effective) * M_aux + (1 - gamma_effective) * M_features
     else:
-        M_feat_list = []
         for i in range(0, n_source, chunk_size):
-            row_chunks = []
+            i_end = min(i + chunk_size, n_source)
             for j in range(0, n_target, chunk_size):
-                s_chunk = features_source[i:i+chunk_size]
-                t_chunk = features_target[j:j+chunk_size]
+                j_end = min(j + chunk_size, n_target)
+                s_chunk = features_source[i:i_end]
+                t_chunk = features_target[j:j_end]
                 if metric == 'cosine':
-                    sub_feat = 1.0 - (s_chunk @ t_chunk.T)
+                    M[i:i_end, j:j_end] = 1.0 - (s_chunk @ t_chunk.T)
                 else:
-                    sub_feat = torch.cdist(s_chunk, t_chunk, p=2)
-                row_chunks.append(sub_feat)
-            M_feat_list.append(torch.cat(row_chunks, dim=1))
-        M = torch.cat(M_feat_list, dim=0)
+                    M[i:i_end, j:j_end] = torch.cdist(s_chunk, t_chunk, p=2)
         M = M / (M.max().clamp(min=1e-8))
 
     # ===== PART 3: Low-Rank GW Sinkhorn Loop =====
