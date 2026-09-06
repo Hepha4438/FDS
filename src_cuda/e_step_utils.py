@@ -588,6 +588,8 @@ def compute_transport_nfgw(
             u = p / (Ku + 1e-15)
 
         # Tái tạo lại ma trận P mới bằng chunk an toàn
+        del P
+        torch.cuda.empty_cache()
         P_new = torch.zeros((n_source, n_target), device=device, dtype=dtype_mem)
         for st in range(0, n_source, chunk_size_g):
             en = min(st + chunk_size_g, n_source)
@@ -599,7 +601,6 @@ def compute_transport_nfgw(
             P_new[st:en] = P_chunk.to(dtype_mem)
             del G_chunk, C_chunk, K_chunk, P_chunk
         
-        del P
         P = P_new
         del T1, T2, W_right, P_new, u, v
         torch.cuda.empty_cache()
