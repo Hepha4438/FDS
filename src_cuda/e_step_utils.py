@@ -878,9 +878,20 @@ def compute_transport_batch(
     n_source = T.shape[0]
 
     # Compute entropy and confidence for each source cell
-    T_safe = T.clamp(min=1e-10)
-    entropy = -(T * torch.log(T_safe)).sum(dim=1)  # (n_source,) - HIGH entropy = flat/bad
-    max_probs = T.max(dim=1)[0]  # (n_source,) - HIGH confidence = peaked/good
+    entropy = torch.zeros(n_source, device=device, dtype=torch.float32)
+    max_probs = torch.zeros(n_source, device=device, dtype=torch.float32)
+    
+    chunk_size_ent = 5000
+    for st in range(0, n_source, chunk_size_ent):
+        en = min(st + chunk_size_ent, n_source)
+        T_chunk = T[st:en]
+        T_safe_chunk = T_chunk.clamp(min=1e-10)
+        
+        entropy[st:en] = -(T_chunk * torch.log(T_safe_chunk)).sum(dim=1)
+        max_probs[st:en] = T_chunk.max(dim=1)[0]
+        
+    del T_safe_chunk, T_chunk
+    torch.cuda.empty_cache()
 
     # Adaptive thresholds based on percentiles
     entropy_threshold = torch.quantile(entropy, entropy_percentile / 100.0)
