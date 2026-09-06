@@ -701,9 +701,11 @@ def compute_transport_batch(
     aux_features_source = None
     aux_features_target = None
     if auxiliary_features_source is not None:
-        aux_features_source = np.asarray(auxiliary_features_source)[source_indices]
+        src_arr = auxiliary_features_source.values if hasattr(auxiliary_features_source, 'values') else np.array(auxiliary_features_source)
+        aux_features_source = src_arr[source_indices]
     if auxiliary_features_target is not None:
-        aux_features_target = np.asarray(auxiliary_features_target)[target_indices]
+        tgt_arr = auxiliary_features_target.values if hasattr(auxiliary_features_target, 'values') else np.array(auxiliary_features_target)
+        aux_features_target = tgt_arr[target_indices]
 
 
 
