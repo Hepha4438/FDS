@@ -604,14 +604,25 @@ def compute_transport_nfgw(
             break
 
     # Row-normalize P trả về chuẩn float32
-    P = P.float()
-    row_sums = P.sum(dim=1, keepdim=True)
+    row_sums = torch.zeros(n_source, device=device, dtype=torch.float32)
+    for st in range(0, n_source, chunk_size_g):
+        en = min(st + chunk_size_g, n_source)
+        row_sums[st:en] = P[st:en].float().sum(dim=1)
+    
     row_sums[row_sums == 0] = 1.0
-    P = P / row_sums
 
-    logging.info(f"  NFGW: Converged successfully. T stats - min={P.min():.8e}, max={P.max():.8e}")
+    # Chuẩn hóa P trực tiếp theo từng chunk rồi cast về float32 để trả về chuẩn downstream
+    P_final = torch.zeros((n_source, n_target), device=device, dtype=torch.float32)
+    for st in range(0, n_source, chunk_size_g):
+        en = min(st + chunk_size_g, n_source)
+        P_final[st:en] = P[st:en].float() / row_sums[st:en].unsqueeze(1)
 
-    return P
+    del P
+    torch.cuda.empty_cache()
+
+    logging.info(f"  NFGW: Converged successfully. T stats - min={P_final.min():.8e}, max={P_final.max():.8e}")
+
+    return P_final
 
 def apply_linear_assignment(
     T: torch.Tensor,
