@@ -169,7 +169,7 @@ def align_features_fgw(
         raise ValueError(f"sampling_strategy must be 'celltype' or 'spatial', got: {sampling_strategy}")
 
     # Validate parameters
-    if e_step_method not in ['ot', 'gw', 'fgw']:
+    if e_step_method not in ['ot', 'gw', 'fgw', 'nfgw']:
         raise ValueError(f"e_step_method must be 'ot', 'gw', or 'fgw', got: {e_step_method}")
     if m_step_method not in ['global', 'transfer']:
         raise ValueError(f"m_step_method must be 'global' or 'transfer', got: {m_step_method}")
