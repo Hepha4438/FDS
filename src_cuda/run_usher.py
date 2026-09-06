@@ -408,7 +408,11 @@ def align_features_fgw(
             return b_idx, res
 
         if device_t.type == 'cuda':
-            max_workers = min(len(batches), 16)
+            # 1. Chạy song song nếu dùng server card NVIDIA
+            if e_step_method == 'nfgw':
+                max_workers = min(len(batches), 3)
+            else:
+                max_workers = min(len(batches), 16) 
             with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                 futures = []
                 for batch_idx, (source_batch_indices, target_batch_indices) in enumerate(batches):

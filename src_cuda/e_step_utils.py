@@ -459,13 +459,12 @@ def compute_transport_nfgw(
 ) -> torch.Tensor:
     """
     Compute optimal transport plan using Low-Rank Nyström Fused Gromov-Wasserstein 
-    with Zero-Global-Allocation Architecture to completely eliminate OOM errors.
+    fully on GPU with aggressive memory reclamation (Zero CPU transfer).
     """
-    # Cấu hình chống phân mảnh VRAM của PyTorch
     import os
+    import gc
     os.environ['PYTORCH_ALLOC_CONF'] = 'expandable_segments:True'
     
-    import gc
     gc.collect()
     torch.cuda.empty_cache()
 
@@ -475,7 +474,6 @@ def compute_transport_nfgw(
     dtype_mem = torch.float16 if device.type == 'cuda' else torch.float32
 
     # ===== PART 1: Compute Low-Rank Landmark Factors E1, E2 =====
-    logging.info(f"  NFGW: Computing Low-Rank factors for source and target")
     E1 = compute_knn_graph_landmark_factors(features_source, k=knn_k, metric=metric, device=device).to(dtype_mem)
     E2 = compute_knn_graph_landmark_factors(features_target, k=knn_k, metric=metric, device=device).to(dtype_mem)
 
@@ -493,6 +491,7 @@ def compute_transport_nfgw(
             for j in range(0, n_target, chunk_size):
                 j_end = min(j + chunk_size, n_target)
                 M_aux[i:i_end, j:j_end] = torch.cdist(aux_source_torch[i:i_end], aux_target_torch[j:j_end], p=2).to(dtype_mem)
+        
         max_aux = M_aux.max().clamp(min=1e-8)
         M_aux.div_(max_aux)
 
@@ -503,17 +502,13 @@ def compute_transport_nfgw(
                 s_chunk = features_source[i:i_end]
                 t_chunk = features_target[j:j_end]
                 
-                if metric == 'cosine':
-                    sub_feat = 1.0 - (s_chunk @ t_chunk.T)
-                else:
-                    sub_feat = torch.cdist(s_chunk, t_chunk, p=2)
-                
+                sub_feat = 1.0 - (s_chunk @ t_chunk.T) if metric == 'cosine' else torch.cdist(s_chunk, t_chunk, p=2)
                 sub_feat = sub_feat.to(dtype_mem)
                 sub_feat = sub_feat / (sub_feat.max().clamp(min=1e-8))
                 
                 M[i:i_end, j:j_end] = (gamma_effective) * M_aux[i:i_end, j:j_end] + (1.0 - gamma_effective) * sub_feat
                 
-        del M_aux
+        del M_aux, aux_source_torch, aux_target_torch
         torch.cuda.empty_cache()
     else:
         for i in range(0, n_source, chunk_size):
@@ -522,129 +517,99 @@ def compute_transport_nfgw(
                 j_end = min(j + chunk_size, n_target)
                 s_chunk = features_source[i:i_end]
                 t_chunk = features_target[j:j_end]
-                if metric == 'cosine':
-                    sub_feat = 1.0 - (s_chunk @ t_chunk.T)
-                else:
-                    sub_feat = torch.cdist(s_chunk, t_chunk, p=2)
+                sub_feat = 1.0 - (s_chunk @ t_chunk.T) if metric == 'cosine' else torch.cdist(s_chunk, t_chunk, p=2)
                 M[i:i_end, j:j_end] = sub_feat.to(dtype_mem)
         M = M / (M.max().clamp(min=1e-8))
 
     M_min = M.min().item()
 
-    # ===== PART 3: Fully Chunked Sinkhorn Loop (Zero Global G, C_total, K) =====
+    # ===== PART 3: Low-Rank GW Sinkhorn Loop =====
     p = torch.ones(n_source, device=device, dtype=dtype_mem) / n_source
     q = torch.ones(n_target, device=device, dtype=dtype_mem) / n_target
 
-    import gc
-    gc.collect()
-    torch.cuda.empty_cache()
-
-    # Tạo trực tiếp ma trận P ở định dạng float16 (giảm 50% dung lượng ngay từ gốc)
     P = torch.ger(p, q)
 
     max_gw_iter = 15
     max_sinkhorn_iter = 30
     chunk_size_g = 1000
 
-    logging.info(f"  NFGW: Starting Fully Chunked Sinkhorn Loop")
-    
     for i in range(max_gw_iter):
         P_prev = P.clone()
 
-        # Tính toán các thành phần nhân tố gọn nhẹ
         T1 = torch.matmul(E1.t(), P)
         T2 = torch.matmul(T1, E2)
-        W_right = torch.matmul(T2, E2.t())  # (r, M)
+        W_right = torch.matmul(T2, E2.t())
 
         u = torch.ones_like(p)
         v = torch.ones_like(q)
 
-        # Chạy vòng lặp Sinkhorn hoàn toàn bằng chunk
         for _ in range(max_sinkhorn_iter):
-            # 1. Cập nhật v theo chunk
             Ktu = torch.zeros(n_target, device=device, dtype=torch.float32)
             for st in range(0, n_source, chunk_size_g):
                 en = min(st + chunk_size_g, n_source)
                 G_chunk = torch.matmul(E1[st:en], W_right)
-                C_chunk = (1.0 - alpha) * M[st:en] - (alpha * 2.0) * G_chunk
-                C_chunk = C_chunk - M_min
-                
+                C_chunk = ((1.0 - alpha) * M[st:en] - (alpha * 2.0) * G_chunk) - M_min
                 K_chunk = torch.exp(-C_chunk.to(torch.float32) / epsilon)
                 Ktu += torch.matmul(K_chunk.t(), u[st:en].float())
                 del G_chunk, C_chunk, K_chunk
             v = q / (Ktu + 1e-15)
 
-            # 2. Cập nhật u theo chunk
             Ku = torch.zeros(n_source, device=device, dtype=torch.float32)
             for st in range(0, n_source, chunk_size_g):
                 en = min(st + chunk_size_g, n_source)
                 G_chunk = torch.matmul(E1[st:en], W_right)
-                C_chunk = (1.0 - alpha) * M[st:en] - (alpha * 2.0) * G_chunk
-                C_chunk = C_chunk - M_min
-                
+                C_chunk = ((1.0 - alpha) * M[st:en] - (alpha * 2.0) * G_chunk) - M_min
                 K_chunk = torch.exp(-C_chunk.to(torch.float32) / epsilon)
                 Ku[st:en] = torch.matmul(K_chunk, v.float())
                 del G_chunk, C_chunk, K_chunk
             u = p / (Ku + 1e-15)
 
-        # Tái tạo lại ma trận P mới bằng chunk an toàn
-        del P
-        torch.cuda.empty_cache()
         P_new = torch.zeros((n_source, n_target), device=device, dtype=dtype_mem)
         for st in range(0, n_source, chunk_size_g):
             en = min(st + chunk_size_g, n_source)
             G_chunk = torch.matmul(E1[st:en], W_right)
-            C_chunk = (1.0 - alpha) * M[st:en] - (alpha * 2.0) * G_chunk
-            C_chunk = C_chunk - M_min
+            C_chunk = ((1.0 - alpha) * M[st:en] - (alpha * 2.0) * G_chunk) - M_min
             K_chunk = torch.exp(-C_chunk.to(torch.float32) / epsilon)
-            P_chunk = u[st:en].unsqueeze(1) * K_chunk * v.unsqueeze(0)
-            P_new[st:en] = P_chunk.to(dtype_mem)
-            del G_chunk, C_chunk, K_chunk, P_chunk
+            P_new[st:en] = (u[st:en].unsqueeze(1) * K_chunk * v.unsqueeze(0)).to(dtype_mem)
+            del G_chunk, C_chunk, K_chunk
         
-        P = P_new
-        del T1, T2, W_right, P_new, u, v
-        torch.cuda.empty_cache()
-
-        # Tính toán sai số hội tụ theo chunk (không sinh tensor thừa)
         err_sq = 0.0
         for st in range(0, n_source, chunk_size_g):
             en = min(st + chunk_size_g, n_source)
-            diff = P[st:en].float() - P_prev[st:en].float()
+            diff = P_new[st:en].float() - P[st:en].float()
             err_sq += torch.sum(diff ** 2).item()
             del diff
-        err = np.sqrt(err_sq)
-        
-        del P_prev
+            
+        del P, P_prev
+        P = P_new
+        del T1, T2, W_right, u, v
         torch.cuda.empty_cache()
 
-        if err < 1e-5:
+        if np.sqrt(err_sq) < 1e-5:
             break
 
-    # Row-normalize P trả về chuẩn float32 theo chunk
+    # ===== PART 4: GPU-Native Row-Normalization (Fastest) =====
+    # Xóa ngay ma trận chi phí M và các nhân tố Landmark để giải phóng ~2 GiB VRAM ngay lập tức
+    del M, E1, E2
+    torch.cuda.empty_cache()
+
+    # Tính tổng hàng trực tiếp trên GPU theo chunk để chống tràn VRAM
     row_sums = torch.zeros(n_source, device=device, dtype=torch.float32)
     for st in range(0, n_source, chunk_size_g):
         en = min(st + chunk_size_g, n_source)
         row_sums[st:en] = P[st:en].float().sum(dim=1)
-    
     row_sums[row_sums == 0] = 1.0
 
-    # Chuẩn hóa và gom các chunk vào list (mỗi chunk chỉ ~100MB)
-    P_final_chunks = []
+    # Cấp phát ma trận kết quả cuối cùng trên GPU và chuẩn hóa trực tiếp
+    P_final = torch.zeros((n_source, n_target), device=device, dtype=torch.float32)
     for st in range(0, n_source, chunk_size_g):
         en = min(st + chunk_size_g, n_source)
-        chunk_norm = P[st:en].float() / row_sums[st:en].unsqueeze(1)
-        P_final_chunks.append(chunk_norm)
+        P_final[st:en] = P[st:en].float() / row_sums[st:en].unsqueeze(1)
 
-    # XÓA P VÀ ROW_SUMS NGAY LẬP TỨC để giải phóng hoàn toàn không gian VRAM
     del P, row_sums
     torch.cuda.empty_cache()
 
-    # Ghép nối các chunk thành ma trận cuối cùng một cách an toàn
-    P_final = torch.cat(P_final_chunks, dim=0)
-    del P_final_chunks
-    torch.cuda.empty_cache()
-
-    logging.info(f"  NFGW: Converged successfully. T stats - min={P_final.min():.8e}, max={P_final.max():.8e}")
+    logging.info(f"  NFGW: Converged successfully on GPU. T stats - min={P_final.min():.8e}, max={P_final.max():.8e}")
 
     return P_final
 
