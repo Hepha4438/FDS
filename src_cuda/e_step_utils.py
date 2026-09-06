@@ -559,7 +559,7 @@ def compute_transport_nfgw(
         u = torch.ones_like(p)
         v = torch.ones_like(q)
 
-        # Chạy vòng lặp Sinkhorn hoàn toàn bằng chunk (Không tốn VRAM cấp phát ma trận lớn)
+        # Chạy vòng lặp Sinkhorn hoàn toàn bằng chunk
         for _ in range(max_sinkhorn_iter):
             # 1. Cập nhật v theo chunk
             Ktu = torch.zeros(n_target, device=device, dtype=torch.float32)
@@ -569,7 +569,6 @@ def compute_transport_nfgw(
                 C_chunk = (1.0 - alpha) * M[st:en] - (alpha * 2.0) * G_chunk
                 C_chunk = C_chunk - M_min
                 
-                # Tính exp trực tiếp trên float bản địa hoặc ép kiểu nhẹ nhàng tránh sinh bản sao thừa
                 K_chunk = torch.exp(-C_chunk.to(torch.float32) / epsilon)
                 Ktu += torch.matmul(K_chunk.t(), u[st:en].float())
                 del G_chunk, C_chunk, K_chunk
@@ -588,32 +587,39 @@ def compute_transport_nfgw(
                 del G_chunk, C_chunk, K_chunk
             u = p / (Ku + 1e-15)
 
-        # Tái tạo lại ma trận P cuối vòng lặp GW bằng chunk an toàn
+        # Tái tạo lại ma trận P mới bằng chunk an toàn
         P_new = torch.zeros((n_source, n_target), device=device, dtype=dtype_mem)
         for st in range(0, n_source, chunk_size_g):
             en = min(st + chunk_size_g, n_source)
             G_chunk = torch.matmul(E1[st:en], W_right)
             C_chunk = (1.0 - alpha) * M[st:en] - (alpha * 2.0) * G_chunk
             C_chunk = C_chunk - M_min
-            K_chunk = torch.exp(-C_chunk.float() / epsilon)
+            K_chunk = torch.exp(-C_chunk.to(torch.float32) / epsilon)
             P_chunk = u[st:en].unsqueeze(1) * K_chunk * v.unsqueeze(0)
             P_new[st:en] = P_chunk.to(dtype_mem)
+            del G_chunk, C_chunk, K_chunk, P_chunk
         
+        del P
         P = P_new
-        del T1, T2, W_right, P_new
+        del T1, T2, W_right, P_new, u, v
         torch.cuda.empty_cache()
 
+        # Tính toán sai số hội tụ theo chunk (không sinh tensor thừa)
         err_sq = 0.0
         for st in range(0, n_source, chunk_size_g):
             en = min(st + chunk_size_g, n_source)
             diff = P[st:en].float() - P_prev[st:en].float()
             err_sq += torch.sum(diff ** 2).item()
+            del diff
         err = np.sqrt(err_sq)
         
+        del P_prev
+        torch.cuda.empty_cache()
+
         if err < 1e-5:
             break
 
-    # Row-normalize P trả về chuẩn float32
+    # Row-normalize P trả về chuẩn float32 theo chunk
     row_sums = torch.zeros(n_source, device=device, dtype=torch.float32)
     for st in range(0, n_source, chunk_size_g):
         en = min(st + chunk_size_g, n_source)
@@ -621,13 +627,14 @@ def compute_transport_nfgw(
     
     row_sums[row_sums == 0] = 1.0
 
-    # Chuẩn hóa P trực tiếp theo từng chunk rồi cast về float32 để trả về chuẩn downstream
     P_final = torch.zeros((n_source, n_target), device=device, dtype=torch.float32)
     for st in range(0, n_source, chunk_size_g):
         en = min(st + chunk_size_g, n_source)
         P_final[st:en] = P[st:en].float() / row_sums[st:en].unsqueeze(1)
 
-    del P
+    # --- DỌN SẠCH TOÀN BỘ BIẾN NẶNG TRƯỚC KHI RETURN ---
+    del P, M, E1, E2, row_sums
+    gc.collect()
     torch.cuda.empty_cache()
 
     logging.info(f"  NFGW: Converged successfully. T stats - min={P_final.min():.8e}, max={P_final.max():.8e}")
