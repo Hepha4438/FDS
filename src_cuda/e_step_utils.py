@@ -564,25 +564,27 @@ def compute_transport_nfgw(
                 del G_chunk, C_chunk, K_chunk
             u = p / (Ku + 1e-15)
 
-        P_new = torch.zeros((n_source, n_target), device=device, dtype=dtype_mem)
+        del P
+        torch.cuda.empty_cache()
+
+        P = torch.zeros((n_source, n_target), device=device, dtype=dtype_mem)
         for st in range(0, n_source, chunk_size_g):
             en = min(st + chunk_size_g, n_source)
             G_chunk = torch.matmul(E1[st:en], W_right)
             C_chunk = ((1.0 - alpha) * M[st:en] - (alpha * 2.0) * G_chunk) - M_min
             K_chunk = torch.exp(-C_chunk.to(torch.float32) / epsilon)
-            P_new[st:en] = (u[st:en].unsqueeze(1) * K_chunk * v.unsqueeze(0)).to(dtype_mem)
+            P[st:en] = (u[st:en].unsqueeze(1) * K_chunk * v.unsqueeze(0)).to(dtype_mem)
             del G_chunk, C_chunk, K_chunk
         
+        # Kiểm tra hội tụ
         err_sq = 0.0
         for st in range(0, n_source, chunk_size_g):
             en = min(st + chunk_size_g, n_source)
-            diff = P_new[st:en].float() - P[st:en].float()
+            diff = P[st:en].float() - P_prev[st:en].float()
             err_sq += torch.sum(diff ** 2).item()
             del diff
             
-        del P, P_prev
-        P = P_new
-        del T1, T2, W_right, u, v
+        del P_prev, T1, T2, W_right, u, v
         torch.cuda.empty_cache()
 
         if np.sqrt(err_sq) < 1e-5:

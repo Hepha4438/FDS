@@ -410,7 +410,7 @@ def align_features_fgw(
         if device_t.type == 'cuda':
             # 1. Chạy song song nếu dùng server card NVIDIA
             if e_step_method == 'nfgw':
-                max_workers = min(len(batches), 3)
+                max_workers = 1
             else:
                 max_workers = min(len(batches), 16) 
             with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
