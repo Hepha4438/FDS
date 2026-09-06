@@ -544,7 +544,7 @@ def compute_transport_nfgw(
 
     max_gw_iter = 15
     max_sinkhorn_iter = 30
-    chunk_size_g = 2000
+    chunk_size_g = 1000
 
     logging.info(f"  NFGW: Starting Fully Chunked Sinkhorn Loop")
     
@@ -568,8 +568,11 @@ def compute_transport_nfgw(
                 G_chunk = torch.matmul(E1[st:en], W_right)
                 C_chunk = (1.0 - alpha) * M[st:en] - (alpha * 2.0) * G_chunk
                 C_chunk = C_chunk - M_min
-                K_chunk = torch.exp(-C_chunk.float() / epsilon)
+                
+                # Tính exp trực tiếp trên float bản địa hoặc ép kiểu nhẹ nhàng tránh sinh bản sao thừa
+                K_chunk = torch.exp(-C_chunk.to(torch.float32) / epsilon)
                 Ktu += torch.matmul(K_chunk.t(), u[st:en].float())
+                del G_chunk, C_chunk, K_chunk
             v = q / (Ktu + 1e-15)
 
             # 2. Cập nhật u theo chunk
@@ -579,8 +582,10 @@ def compute_transport_nfgw(
                 G_chunk = torch.matmul(E1[st:en], W_right)
                 C_chunk = (1.0 - alpha) * M[st:en] - (alpha * 2.0) * G_chunk
                 C_chunk = C_chunk - M_min
-                K_chunk = torch.exp(-C_chunk.float() / epsilon)
+                
+                K_chunk = torch.exp(-C_chunk.to(torch.float32) / epsilon)
                 Ku[st:en] = torch.matmul(K_chunk, v.float())
+                del G_chunk, C_chunk, K_chunk
             u = p / (Ku + 1e-15)
 
         # Tái tạo lại ma trận P cuối vòng lặp GW bằng chunk an toàn
