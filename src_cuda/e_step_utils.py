@@ -701,10 +701,17 @@ def compute_transport_batch(
     aux_features_source = None
     aux_features_target = None
     if auxiliary_features_source is not None:
-        src_arr = auxiliary_features_source.values if hasattr(auxiliary_features_source, 'values') else np.array(auxiliary_features_source)
+        if isinstance(auxiliary_features_source, pd.DataFrame):
+            src_arr = auxiliary_features_source.to_numpy()
+        else:
+            src_arr = np.array(auxiliary_features_source)
         aux_features_source = src_arr[source_indices]
+        
     if auxiliary_features_target is not None:
-        tgt_arr = auxiliary_features_target.values if hasattr(auxiliary_features_target, 'values') else np.array(auxiliary_features_target)
+        if isinstance(auxiliary_features_target, pd.DataFrame):
+            tgt_arr = auxiliary_features_target.to_numpy()
+        else:
+            tgt_arr = np.array(auxiliary_features_target)
         aux_features_target = tgt_arr[target_indices]
 
 
