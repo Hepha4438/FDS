@@ -471,8 +471,7 @@ def compute_transport_nfgw(
     E2 = compute_knn_graph_landmark_factors(features_target, k=knn_k, metric=metric, device=device)
 
     # ===== PART 2: Compute feature cost matrix M =====
-    chunk_size = 2000  # Giảm xuống 2000 để cực kỳ an toàn cho VRAM 14GB
-
+    chunk_size = 2000
     M = torch.zeros((n_source, n_target), device=device, dtype=torch.float32)
     
     if aux_features_source is not None and aux_features_target is not None:
@@ -485,22 +484,28 @@ def compute_transport_nfgw(
             for j in range(0, n_target, chunk_size):
                 j_end = min(j + chunk_size, n_target)
                 M_aux[i:i_end, j:j_end] = torch.cdist(aux_source_torch[i:i_end], aux_target_torch[j:j_end], p=2)
-        M_aux = M_aux / (M_aux.max().clamp(min=1e-8))
-        
-        M_features = torch.zeros((n_source, n_target), device=device, dtype=torch.float32)
+        max_aux = M_aux.max().clamp(min=1e-8)
+        M_aux.div_(max_aux)
+
         for i in range(0, n_source, chunk_size):
             i_end = min(i + chunk_size, n_source)
             for j in range(0, n_target, chunk_size):
                 j_end = min(j + chunk_size, n_target)
                 s_chunk = features_source[i:i_end]
                 t_chunk = features_target[j:j_end]
+                
                 if metric == 'cosine':
-                    M_features[i:i_end, j:j_end] = 1.0 - (s_chunk @ t_chunk.T)
+                    sub_feat = 1.0 - (s_chunk @ t_chunk.T)
                 else:
-                    M_features[i:i_end, j:j_end] = torch.cdist(s_chunk, t_chunk, p=2)
-        M_features = M_features / (M_features.max().clamp(min=1e-8))
-
-        M = (gamma_effective) * M_aux + (1 - gamma_effective) * M_features
+                    sub_feat = torch.cdist(s_chunk, t_chunk, p=2)
+                
+                # Chuẩn hóa cục bộ chunk của feature hoặc scale tạm thời
+                sub_feat = sub_feat / (sub_feat.max().clamp(min=1e-8))
+                
+                M[i:i_end, j:j_end] = (gamma_effective) * M_aux[i:i_end, j:j_end] + (1.0 - gamma_effective) * sub_feat
+                
+        del M_aux
+        torch.cuda.empty_cache()
     else:
         for i in range(0, n_source, chunk_size):
             i_end = min(i + chunk_size, n_source)
