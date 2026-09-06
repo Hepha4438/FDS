@@ -533,9 +533,9 @@ def compute_transport_nfgw(
 
     max_gw_iter = 20
     max_sinkhorn_iter = 50
-    chunk_size_g = 5000
+    chunk_size_g = 5000  # Cắt nhỏ theo chiều N để tính K an toàn
 
-    logging.info(f"  NFGW: Starting FP16 Low-Rank Sinkhorn Loop")
+    logging.info(f"  NFGW: Starting Chunked FP16-to-FP32 Sinkhorn Loop")
     
     for i in range(max_gw_iter):
         P_prev = P.clone()
@@ -553,15 +553,21 @@ def compute_transport_nfgw(
         C_total = (1 - alpha) * M - (alpha * 2.0) * G
         C_total = C_total - C_total.min()
         
-        # Chuyển sang float32 khi chạy Sinkhorn để đảm bảo độ chính xác số học (Numerical stability)
-        K = torch.exp(-C_total.float() / epsilon)
+        # --- TÍNH K THEO CHUNK ĐỂ KHÔNG BAO GIỜ TRÀN VRAM ---
+        K = torch.zeros((n_source, n_target), device=device, dtype=torch.float32)
+        for st in range(0, n_source, chunk_size_g):
+            en = min(st + chunk_size_g, n_source)
+            # Chỉ convert và tính exp trên từng lát cắt (chunk), tiết kiệm tối đa VRAM
+            K[st:en] = torch.exp(-C_total[st:en].float() / epsilon)
+        # ----------------------------------------------------
+        
         u = torch.ones_like(p)
         
         for _ in range(max_sinkhorn_iter):
             v = q / (torch.matmul(K.t(), u) + 1e-15)
             u = p / (torch.matmul(K, v) + 1e-15)
             
-        P = (u.unsqueeze(1) * K * v.unsqueeze(0)).to(dtype_mem)
+        P = (u.unsqueeze(1) * K.to(dtype_mem) * v.unsqueeze(0)).to(dtype_mem)
 
         del G, C_total, K, u, v, T1, T2, W_right
         torch.cuda.empty_cache()
@@ -570,13 +576,13 @@ def compute_transport_nfgw(
         if err < 1e-5:
             break
 
-    # Row-normalize T (trả về float32 chuẩn cho downstream)
+    # Row-normalize T
     P = P.float()
     row_sums = P.sum(dim=1, keepdim=True)
     row_sums[row_sums == 0] = 1.0
     P = P / row_sums
 
-    logging.info(f"  NFGW: Converged successfully in FP16 mode. T stats - min={P.min():.8e}, max={P.max():.8e}")
+    logging.info(f"  NFGW: Converged successfully. T stats - min={P.min():.8e}, max={P.max():.8e}")
 
     return P
 
