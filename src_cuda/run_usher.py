@@ -192,6 +192,7 @@ def align_features_fgw(
             logging.info("Unbalanced OT: allows partial matching, tau=0.8 for marginal relaxation")
 
     # ===== Prepare batches based on sampling strategy =====
+    # ===== Prepare batches based on sampling strategy =====
     logging.info(f"=== Using {sampling_strategy.upper()} sampling strategy ===")
 
     batches = []
@@ -200,62 +201,64 @@ def align_features_fgw(
     window_info = {}
     n_a = n_a_orig  # Default: use full source dataset
 
-    if sampling_strategy == 'spatial':
-        # SPATIAL WINDOWING approach
-        from spatial_utils import prepare_spatial_batches
-
-        batches, auxiliary_data, window_info = prepare_spatial_batches(
-            adata_a, adata_b,
-            spatial_key=spatial_key,
-            window_height=window_height,
-            window_width=window_width,
-            window_overlap=window_overlap,
-            n_windows_target=n_windows_target,
-            spatial_knn=spatial_knn
-        )
-
-        # No source subsampling for spatial windowing
-        logging.info(f"Spatial windowing: {len(batches)} windows created")
-
-    else:  # sampling_strategy == 'celltype'
-        # CELLTYPE-BASED approach (geosketch)
-        from celltype_utils import prepare_celltype_batches
-
-        batches, auxiliary_data, sketch_to_original = prepare_celltype_batches(
-            adata_a, adata_b,
-            sketch_size=sketch_size,
-            use_stratified_pairing=use_stratified_pairing,
-            stratified_pairing_fix=stratified_pairing_fix,
-            celltype_probs_layer=celltype_probs_layer,
-            cell_type_col=cell_type_col,
-            sketch_obsm_key=sketch_obsm_key,
-            sketch_pca_components=sketch_pca_components,
-            e_step_method=e_step_method,
-            seed=2025
-        )
-
-        # Update n_a if source was subsampled
-        n_a = auxiliary_data['n_source']
-
-        # Subset features if source was subsampled
-        if sketch_to_original is not None:
-            features_a = features_a[sketch_to_original]
-            logging.info(f"Source features subsetted to {features_a.shape}")
-
-    # Extract auxiliary features for transport computation
-    celltype_probs_a = auxiliary_data.get('celltype_probs_a')
-    celltype_probs_b = auxiliary_data.get('celltype_probs_b')
-    coords_a = auxiliary_data.get('coords_a')
-    coords_b = auxiliary_data.get('coords_b')
-    knn_indices_spatial = auxiliary_data.get('knn_indices')  # For spatial windowing
-
-    # Determine which auxiliary features to use based on sampling strategy
-    if sampling_strategy == 'spatial':
-        auxiliary_features_source = coords_a
-        auxiliary_features_target = coords_b
+    if e_step_method == 'nfgw':
+        # FULL-BATCH MODE FOR NFGW
+        logging.info("NFGW selected: Bypassing batching/sketching to run on full dataset.")
+        # Tạo 1 lô duy nhất chứa toàn bộ index của source và target
+        batches = [(np.arange(n_a_orig), np.arange(n_b_orig))]
+        
+        # Lấy trực tiếp auxiliary features từ dataset gốc
+        if sampling_strategy == 'celltype':
+            auxiliary_features_source = adata_a.obsm.get(celltype_probs_layer, None)
+            auxiliary_features_target = adata_b.obsm.get(celltype_probs_layer, None)
+        else:
+            auxiliary_features_source = adata_a.obsm.get(spatial_key, None)
+            auxiliary_features_target = adata_b.obsm.get(spatial_key, None)
+            
+        knn_indices_spatial = None
     else:
-        auxiliary_features_source = celltype_probs_a
-        auxiliary_features_target = celltype_probs_b
+        # ORIGINAL BATCHING LOGIC (cho 'ot', 'gw', 'fgw')
+        if sampling_strategy == 'spatial':
+            from spatial_utils import prepare_spatial_batches
+
+            batches, auxiliary_data, window_info = prepare_spatial_batches(
+                adata_a, adata_b,
+                spatial_key=spatial_key,
+                window_height=window_height,
+                window_width=window_width,
+                window_overlap=window_overlap,
+                n_windows_target=n_windows_target,
+                spatial_knn=spatial_knn
+            )
+            logging.info(f"Spatial windowing: {len(batches)} windows created")
+            auxiliary_features_source = auxiliary_data.get('coords_a')
+            auxiliary_features_target = auxiliary_data.get('coords_b')
+
+        else:  # sampling_strategy == 'celltype'
+            from celltype_utils import prepare_celltype_batches
+
+            batches, auxiliary_data, sketch_to_original = prepare_celltype_batches(
+                adata_a, adata_b,
+                sketch_size=sketch_size,
+                use_stratified_pairing=use_stratified_pairing,
+                stratified_pairing_fix=stratified_pairing_fix,
+                celltype_probs_layer=celltype_probs_layer,
+                cell_type_col=cell_type_col,
+                sketch_obsm_key=sketch_obsm_key,
+                sketch_pca_components=sketch_pca_components,
+                e_step_method=e_step_method,
+                seed=2025
+            )
+
+            n_a = auxiliary_data['n_source']
+            if sketch_to_original is not None:
+                features_a = features_a[sketch_to_original]
+                logging.info(f"Source features subsetted to {features_a.shape}")
+                
+            auxiliary_features_source = auxiliary_data.get('celltype_probs_a')
+            auxiliary_features_target = auxiliary_data.get('celltype_probs_b')
+
+        knn_indices_spatial = auxiliary_data.get('knn_indices')
 
 
     # Initialize shared model and optimizer (across all batches)
@@ -313,7 +316,7 @@ def align_features_fgw(
         logging.info(f"E-M Iteration {it + 1}/{n_iters}")
 
         # Resample groups if using rotating stratified pairing (celltype sampling only)
-        if sampling_strategy == 'celltype' and use_stratified_pairing and not stratified_pairing_fix:
+        if sampling_strategy == 'celltype' and use_stratified_pairing and not stratified_pairing_fix and e_step_method != 'nfgw':
             logging.info(f"Resampling stratified groups for iteration {it + 1} (fix=False)")
             from celltype_utils import prepare_celltype_batches
 

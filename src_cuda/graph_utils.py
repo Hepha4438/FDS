@@ -174,3 +174,68 @@ def apply_cell_type_constraints(
         logging.info(f"Cell type constraints: No matches in transport plan (all values below threshold)")
 
     return T_constrained
+
+def compute_knn_graph_landmark_factors(
+    features: torch.Tensor,
+    k: int = 30,
+    metric: str = 'cosine',
+    device: Optional[str] = None,
+) -> torch.Tensor:
+    """
+    Computes topology-preserving graph distances and returns the low-rank factors E (N x 512) 
+    instead of the full dense N x N matrix.
+    """
+    if device is None:
+        device = features.device
+
+    features_np = features.cpu().numpy()
+    n_samples = features_np.shape[0]
+    k = min(k, n_samples - 1)
+
+    # 1. Vectorized k-NN Graph Construction
+    features_norm = features_np / (np.linalg.norm(features_np, axis=1, keepdims=True) + 1e-8)
+    if metric == 'cosine':
+        from sklearn.neighbors import NearestNeighbors
+        nbrs = NearestNeighbors(n_neighbors=k+1, metric='cosine', algorithm='brute').fit(features_norm)
+        distances, indices = nbrs.kneighbors(features_norm)
+    else:
+        from sklearn.neighbors import NearestNeighbors
+        nbrs = NearestNeighbors(n_neighbors=k+1, metric=metric, algorithm='auto').fit(features_np)
+        distances, indices = nbrs.kneighbors(features_np)
+
+    row_indices = np.repeat(np.arange(n_samples), k)
+    col_indices = indices[:, 1:].flatten()
+    edge_weights = np.ones(len(row_indices), dtype=np.float32)
+    
+    from scipy.sparse import csr_matrix
+    from scipy.sparse.csgraph import shortest_path
+    adjacency_matrix = csr_matrix((edge_weights, (row_indices, col_indices)), shape=(n_samples, n_samples))
+    adjacency_matrix = adjacency_matrix.maximum(adjacency_matrix.T)
+
+    # 2. Hybrid Landmarks Anchoring 
+    num_landmarks = min(512, n_samples)
+    landmarks = np.random.choice(n_samples, num_landmarks, replace=False)
+
+    # 3. Exact BFS from Landmarks
+    landmark_dists = shortest_path(
+        adjacency_matrix,
+        directed=False,
+        indices=landmarks,
+        unweighted=True
+    )
+
+    Max_dist = np.nanmax(landmark_dists[landmark_dists != np.inf])
+    if np.isnan(Max_dist): Max_dist = 1.0
+    landmark_dists[np.isinf(landmark_dists)] = Max_dist
+    
+    L_dist = torch.tensor(landmark_dists.T, dtype=torch.float32, device=device)
+
+    # 4. Return Normalized Factors E
+    beta = 2.0  
+    E = torch.exp(-beta * L_dist)
+    
+    # Chuẩn hóa để L2-norm của các hàng tối đa là 1 (ngăn tràn số khi nhân)
+    row_norms = torch.norm(E, dim=1)
+    E = E / (row_norms.max() + 1e-8)
+    
+    return E
