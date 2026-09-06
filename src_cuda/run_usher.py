@@ -389,14 +389,16 @@ def align_features_fgw(
                 if sampling_strategy == 'spatial' and knn_indices_spatial is not None:
                     knn_constraint = knn_indices_spatial[src_idx]
 
-                # Gọi Batch Solver (sẽ tự động route vào hàm LowRank bên trong)
+                aux_src_np = auxiliary_features_source.to_numpy() if hasattr(auxiliary_features_source, 'to_numpy') else auxiliary_features_source
+                aux_tgt_np = auxiliary_features_target.to_numpy() if hasattr(auxiliary_features_target, 'to_numpy') else auxiliary_features_target
+
                 res = compute_transport_batch(
                     source_indices=src_idx if src_idx is not None else np.arange(n_a),
                     target_indices=tgt_idx,
                     features_source_all=features_s_norm,
                     features_target_all=features_t_norm,
-                    auxiliary_features_source=auxiliary_features_source,
-                    auxiliary_features_target=auxiliary_features_target,
+                    auxiliary_features_source=aux_src_np,  
+                    auxiliary_features_target=aux_tgt_np,  
                     gamma=gamma, epsilon=epsilon, metric=metric,
                     balanced=balanced_ot, use_linear_assignment=use_linear_assignment,
                     device=device_t, iteration=it, e_step_method=e_step_method,
