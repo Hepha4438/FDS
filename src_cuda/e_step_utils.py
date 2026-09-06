@@ -701,9 +701,9 @@ def compute_transport_batch(
     aux_features_source = None
     aux_features_target = None
     if auxiliary_features_source is not None:
-        aux_features_source = auxiliary_features_source[source_indices]
+        aux_features_source = np.asarray(auxiliary_features_source)[source_indices]
     if auxiliary_features_target is not None:
-        aux_features_target = auxiliary_features_target[target_indices]
+        aux_features_target = np.asarray(auxiliary_features_target)[target_indices]
 
 
 
