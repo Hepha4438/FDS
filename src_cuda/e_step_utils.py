@@ -532,10 +532,15 @@ def compute_transport_nfgw(
     M_min = M.min().item()
 
     # ===== PART 3: Fully Chunked Sinkhorn Loop (Zero Global G, C_total, K) =====
-    p = torch.ones(n_source, device=device, dtype=torch.float32) / n_source
-    q = torch.ones(n_target, device=device, dtype=torch.float32) / n_target
+    p = torch.ones(n_source, device=device, dtype=dtype_mem) / n_source
+    q = torch.ones(n_target, device=device, dtype=dtype_mem) / n_target
 
-    P = torch.ger(p, q).to(dtype_mem)
+    import gc
+    gc.collect()
+    torch.cuda.empty_cache()
+
+    # Tạo trực tiếp ma trận P ở định dạng float16 (giảm 50% dung lượng ngay từ gốc)
+    P = torch.ger(p, q)
 
     max_gw_iter = 15
     max_sinkhorn_iter = 30
