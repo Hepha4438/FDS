@@ -628,14 +628,20 @@ def compute_transport_nfgw(
     
     row_sums[row_sums == 0] = 1.0
 
-    P_final = torch.zeros((n_source, n_target), device=device, dtype=torch.float32)
+    # Chuẩn hóa và gom các chunk vào list (mỗi chunk chỉ ~100MB)
+    P_final_chunks = []
     for st in range(0, n_source, chunk_size_g):
         en = min(st + chunk_size_g, n_source)
-        P_final[st:en] = P[st:en].float() / row_sums[st:en].unsqueeze(1)
+        chunk_norm = P[st:en].float() / row_sums[st:en].unsqueeze(1)
+        P_final_chunks.append(chunk_norm)
 
-    # --- DỌN SẠCH TOÀN BỘ BIẾN NẶNG TRƯỚC KHI RETURN ---
-    del P, M, E1, E2, row_sums
-    gc.collect()
+    # XÓA P VÀ ROW_SUMS NGAY LẬP TỨC để giải phóng hoàn toàn không gian VRAM
+    del P, row_sums
+    torch.cuda.empty_cache()
+
+    # Ghép nối các chunk thành ma trận cuối cùng một cách an toàn
+    P_final = torch.cat(P_final_chunks, dim=0)
+    del P_final_chunks
     torch.cuda.empty_cache()
 
     logging.info(f"  NFGW: Converged successfully. T stats - min={P_final.min():.8e}, max={P_final.max():.8e}")
