@@ -593,7 +593,13 @@ def compute_transport_nfgw(
         del T1, T2, W_right, P_new
         torch.cuda.empty_cache()
 
-        err = torch.norm(P.float() - P_prev.float())
+        err_sq = 0.0
+        for st in range(0, n_source, chunk_size_g):
+            en = min(st + chunk_size_g, n_source)
+            diff = P[st:en].float() - P_prev[st:en].float()
+            err_sq += torch.sum(diff ** 2).item()
+        err = np.sqrt(err_sq)
+        
         if err < 1e-5:
             break
 
