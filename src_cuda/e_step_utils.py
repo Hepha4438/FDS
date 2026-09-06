@@ -540,7 +540,7 @@ def compute_transport_nfgw(
     for i in range(max_gw_iter):
         P_prev = P.clone()
 
-        T1 = torch.matmul(E1.t(), P.float()).to(dtype_mem)
+        T1 = torch.matmul(E1.t(), P)
         T2 = torch.matmul(T1, E2)
         
         G = torch.zeros((n_source, n_target), device=device, dtype=dtype_mem)
