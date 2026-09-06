@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import ot
+import pandas as pd
 import ot.backend as otb
 ot.backend._BACKEND_IMPLEMENTATIONS = [
     b for b in ot.backend._BACKEND_IMPLEMENTATIONS 
