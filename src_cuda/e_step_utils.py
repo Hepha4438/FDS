@@ -452,6 +452,7 @@ def compute_transport_nfgw(
     alpha: float,
     metric: str,
     knn_k: int,
+    use_knn_graph: bool,
     device: torch.device,
     iteration: int = 0,
     verbose: bool = False
