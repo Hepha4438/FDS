@@ -458,32 +458,37 @@ def compute_transport_nfgw(
     verbose: bool = False
 ) -> torch.Tensor:
     """
-    Compute optimal transport plan using Low-Rank Nyström Fused Gromov-Wasserstein.
-    Capable of running full 38,000 x 38,000 without Memory Error.
+    Compute optimal transport plan using Low-Rank Nyström Fused Gromov-Wasserstein 
+    optimized with FP16 to fit within tight VRAM constraints.
     """
     n_source = features_source.shape[0]
     n_target = features_target.shape[0]
     gamma_effective = 1.0 if iteration == 0 else gamma
 
+    # Sử dụng float16 để giảm 50% dung lượng VRAM cho các ma trận N x M lớn
+    dtype_mem = torch.float16 if device.type == 'cuda' else torch.float32
+
     # ===== PART 1: Compute Low-Rank Landmark Factors E1, E2 =====
-    logging.info(f"  NFGW: Computing Low-Rank factors (N x 512) for source and target")
+    logging.info(f"  NFGW: Computing Low-Rank factors for source and target (FP16 mode)")
     E1 = compute_knn_graph_landmark_factors(features_source, k=knn_k, metric=metric, device=device)
     E2 = compute_knn_graph_landmark_factors(features_target, k=knn_k, metric=metric, device=device)
+    E1 = E1.to(dtype_mem)
+    E2 = E2.to(dtype_mem)
 
-    # ===== PART 2: Compute feature cost matrix M =====
+    # ===== PART 2: Compute feature cost matrix M in FP16 chunk-by-chunk =====
     chunk_size = 2000
-    M = torch.zeros((n_source, n_target), device=device, dtype=torch.float32)
+    M = torch.zeros((n_source, n_target), device=device, dtype=dtype_mem)
     
     if aux_features_source is not None and aux_features_target is not None:
         aux_source_torch = torch.from_numpy(aux_features_source).float().to(device)
         aux_target_torch = torch.from_numpy(aux_features_target).float().to(device)
         
-        M_aux = torch.zeros((n_source, n_target), device=device, dtype=torch.float32)
+        M_aux = torch.zeros((n_source, n_target), device=device, dtype=dtype_mem)
         for i in range(0, n_source, chunk_size):
             i_end = min(i + chunk_size, n_source)
             for j in range(0, n_target, chunk_size):
                 j_end = min(j + chunk_size, n_target)
-                M_aux[i:i_end, j:j_end] = torch.cdist(aux_source_torch[i:i_end], aux_target_torch[j:j_end], p=2)
+                M_aux[i:i_end, j:j_end] = torch.cdist(aux_source_torch[i:i_end], aux_target_torch[j:j_end], p=2).to(dtype_mem)
         max_aux = M_aux.max().clamp(min=1e-8)
         M_aux.div_(max_aux)
 
@@ -499,7 +504,7 @@ def compute_transport_nfgw(
                 else:
                     sub_feat = torch.cdist(s_chunk, t_chunk, p=2)
                 
-                # Chuẩn hóa cục bộ chunk của feature hoặc scale tạm thời
+                sub_feat = sub_feat.to(dtype_mem)
                 sub_feat = sub_feat / (sub_feat.max().clamp(min=1e-8))
                 
                 M[i:i_end, j:j_end] = (gamma_effective) * M_aux[i:i_end, j:j_end] + (1.0 - gamma_effective) * sub_feat
@@ -514,64 +519,64 @@ def compute_transport_nfgw(
                 s_chunk = features_source[i:i_end]
                 t_chunk = features_target[j:j_end]
                 if metric == 'cosine':
-                    M[i:i_end, j:j_end] = 1.0 - (s_chunk @ t_chunk.T)
+                    sub_feat = 1.0 - (s_chunk @ t_chunk.T)
                 else:
-                    M[i:i_end, j:j_end] = torch.cdist(s_chunk, t_chunk, p=2)
+                    sub_feat = torch.cdist(s_chunk, t_chunk, p=2)
+                M[i:i_end, j:j_end] = sub_feat.to(dtype_mem)
         M = M / (M.max().clamp(min=1e-8))
 
-    # ===== PART 3: Low-Rank GW Sinkhorn Loop =====
+    # ===== PART 3: Low-Rank GW Sinkhorn Loop (FP16 Optimized) =====
     p = torch.ones(n_source, device=device, dtype=torch.float32) / n_source
     q = torch.ones(n_target, device=device, dtype=torch.float32) / n_target
 
-    P = torch.ger(p, q)
+    P = torch.ger(p, q).to(dtype_mem)
 
     max_gw_iter = 20
     max_sinkhorn_iter = 50
-    chunk_size = 5000  # Chia nhỏ thao tác nhân ma trận G theo chiều N
+    chunk_size_g = 5000
 
-    logging.info(f"  NFGW: Starting Memory-Safe Low-Rank Sinkhorn Loop on {n_source}x{n_target} cells")
+    logging.info(f"  NFGW: Starting FP16 Low-Rank Sinkhorn Loop")
     
     for i in range(max_gw_iter):
         P_prev = P.clone()
 
-        T1 = torch.matmul(E1.t(), P)          # (r, M)
-        T2 = torch.matmul(T1, E2)             # (r, r)
+        T1 = torch.matmul(E1.t(), P.float()).to(dtype_mem)
+        T2 = torch.matmul(T1, E2)
         
-        # Tính G theo từng khối (chunk) theo chiều source (N) để tránh cấp phát ma trận N x M lớn
-        G = torch.zeros((n_source, n_target), device=device, dtype=torch.float32)
-
+        G = torch.zeros((n_source, n_target), device=device, dtype=dtype_mem)
         W_right = torch.matmul(T2, E2.t())
         
-        for st in range(0, n_source, chunk_size):
-            en = min(st + chunk_size, n_source)
+        for st in range(0, n_source, chunk_size_g):
+            en = min(st + chunk_size_g, n_source)
             G[st:en] = torch.matmul(E1[st:en], W_right)
 
         C_total = (1 - alpha) * M - (alpha * 2.0) * G
         C_total = C_total - C_total.min()
         
-        # Sinkhorn Inner Loop
-        K = torch.exp(-C_total / epsilon)
+        # Chuyển sang float32 khi chạy Sinkhorn để đảm bảo độ chính xác số học (Numerical stability)
+        K = torch.exp(-C_total.float() / epsilon)
         u = torch.ones_like(p)
         
         for _ in range(max_sinkhorn_iter):
             v = q / (torch.matmul(K.t(), u) + 1e-15)
             u = p / (torch.matmul(K, v) + 1e-15)
             
-        P = u.unsqueeze(1) * K * v.unsqueeze(0)
+        P = (u.unsqueeze(1) * K * v.unsqueeze(0)).to(dtype_mem)
 
-        del G, C_total, K, u, v
+        del G, C_total, K, u, v, T1, T2, W_right
         torch.cuda.empty_cache()
 
-        err = torch.norm(P - P_prev)
+        err = torch.norm(P.float() - P_prev.float())
         if err < 1e-5:
             break
 
-    # Row-normalize T
+    # Row-normalize T (trả về float32 chuẩn cho downstream)
+    P = P.float()
     row_sums = P.sum(dim=1, keepdim=True)
     row_sums[row_sums == 0] = 1.0
     P = P / row_sums
 
-    logging.info(f"  NFGW: Converged successfully. T stats - min={P.min():.8e}, max={P.max():.8e}")
+    logging.info(f"  NFGW: Converged successfully in FP16 mode. T stats - min={P.min():.8e}, max={P.max():.8e}")
 
     return P
 
