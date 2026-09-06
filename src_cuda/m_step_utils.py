@@ -376,13 +376,17 @@ def aggregate_training_data_from_batches(
         focused_global_idx_tensor = torch.from_numpy(focused_global_indices).long().to(device)
         source_features_batch = features_source_all[focused_global_idx_tensor]
 
-        # Get best target matches for focused cells
-        best_targets_local = T[focused_mask].argmax(dim=1)  # Local target indices within batch
-        best_targets_global = target_indices[best_targets_local.cpu().numpy()]  # Global target indices (numpy)
-
-        # Convert to torch tensor for CUDA compatibility
-        best_targets_global_tensor = torch.from_numpy(best_targets_global).long().to(device)
-        target_features_batch = features_target_all[best_targets_global_tensor]
+        # ===== BARYCENTRIC PROJECTION =====
+        T_focused = T[focused_mask]  # Shape: (n_focused, n_target_batch)
+        
+        row_sums = T_focused.sum(dim=1, keepdim=True)
+        T_focused_norm = T_focused / (row_sums + 1e-8)
+        
+        device = features_source_all.device
+        target_idx_tensor = torch.from_numpy(target_indices).long().to(device)
+        target_features_full_batch = features_target_all[target_idx_tensor] # Shape: (n_target_batch, d)
+        
+        target_features_batch = torch.matmul(T_focused_norm, target_features_full_batch)
 
         all_source_features.append(source_features_batch)
         all_target_features.append(target_features_batch)
@@ -480,8 +484,7 @@ def train_global_model(
             loss_cross = F.mse_loss(source_transformed, target_features)
         
         # ===== Loss 2: Variance preservation =====
-        # loss_var = (source_transformed.std(dim=0) - target_features.std(dim=0)).abs().mean()
-        loss_var = sliced_wasserstein_distance(source_transformed, target_features, n_projections=128)
+        loss_var = (source_transformed.std(dim=0) - target_features.std(dim=0)).abs().mean()
 
         # ===== Combined loss =====
         loss = lambda_cross * loss_cross + lambda_var * loss_var
