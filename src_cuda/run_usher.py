@@ -748,7 +748,10 @@ def align_features_fgw(
                 title=f'Transformation Weights Iter {it+1}',
                 save_path=os.path.join(debug_plots_path, 'heatmap', f"W_iter_{it+1:04d}.png")
             )
-
+        import gc
+        gc.collect()
+        torch.cuda.empty_cache()
+        
     # Extract mappings from final batch_results (for final output)
     logging.info("Extracting mappings from final transport plans...")
     batch_mappings = []
