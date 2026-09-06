@@ -523,27 +523,30 @@ def compute_transport_nfgw(
     p = torch.ones(n_source, device=device, dtype=torch.float32) / n_source
     q = torch.ones(n_target, device=device, dtype=torch.float32) / n_target
 
-    # Khởi tạo P độc lập
     P = torch.ger(p, q)
 
     max_gw_iter = 20
     max_sinkhorn_iter = 50
+    chunk_size = 5000  # Chia nhỏ thao tác nhân ma trận G theo chiều N
 
-    logging.info(f"  NFGW: Starting Low-Rank Sinkhorn Loop on {n_source}x{n_target} cells")
+    logging.info(f"  NFGW: Starting Memory-Safe Low-Rank Sinkhorn Loop on {n_source}x{n_target} cells")
     
     for i in range(max_gw_iter):
         P_prev = P.clone()
 
-        # Tính Cost siêu nhanh O(r * N^2) bằng cách nhân ma trận theo thứ tự
-        # struct_cost = -2.0 * E1 @ (E1^T @ P @ E2) @ E2^T
         T1 = torch.matmul(E1.t(), P)          # (r, M)
         T2 = torch.matmul(T1, E2)             # (r, r)
-        G = torch.matmul(torch.matmul(E1, T2), E2.t()) # (N, M)
         
-        # Hàm mục tiêu GW
+        # Tính G theo từng khối (chunk) theo chiều source (N) để tránh cấp phát ma trận N x M lớn
+        G = torch.zeros((n_source, n_target), device=device, dtype=torch.float32)
+
+        W_right = torch.matmul(T2, E2.t())
+        
+        for st in range(0, n_source, chunk_size):
+            en = min(st + chunk_size, n_source)
+            G[st:en] = torch.matmul(E1[st:en], W_right)
+
         C_total = (1 - alpha) * M - (alpha * 2.0) * G
-        
-        # Dịch chuyển ma trận cost để chống tràn số (Numerical Stability)
         C_total = C_total - C_total.min()
         
         # Sinkhorn Inner Loop
@@ -556,17 +559,19 @@ def compute_transport_nfgw(
             
         P = u.unsqueeze(1) * K * v.unsqueeze(0)
 
-        # Điều kiện dừng
+        del G, C_total, K, u, v
+        torch.cuda.empty_cache()
+
         err = torch.norm(P - P_prev)
         if err < 1e-5:
             break
 
-    # Row-normalize T (Đảm bảo mỗi ô source tổng bằng 1)
+    # Row-normalize T
     row_sums = P.sum(dim=1, keepdim=True)
     row_sums[row_sums == 0] = 1.0
     P = P / row_sums
 
-    logging.info(f"  NFGW: Converged. T stats - min={P.min():.8e}, max={P.max():.8e}")
+    logging.info(f"  NFGW: Converged successfully. T stats - min={P.min():.8e}, max={P.max():.8e}")
 
     return P
 
