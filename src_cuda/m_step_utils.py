@@ -471,20 +471,17 @@ def train_global_model(
         # Forward pass
         source_transformed = model(source_features)
         
-        # ===== Loss 1: Cross-domain alignment (InfoNCE / Contrastive Learning) =====
-        temperature = 0.1 
-        
-        source_norm = F.normalize(source_transformed, p=2, dim=1)
-        target_norm = F.normalize(target_features, p=2, dim=1)
-        
-        logits = torch.matmul(source_norm, target_norm.T) / temperature
-        
-        labels = torch.arange(source_transformed.shape[0], device=source_transformed.device)
-        
-        loss_cross = F.cross_entropy(logits, labels)
+        # ===== Loss 1: Cross-domain alignment =====
+        if metric == 'cosine':
+            source_norm = F.normalize(source_transformed, p=2, dim=1)
+            target_norm = F.normalize(target_features, p=2, dim=1)
+            loss_cross = (1.0 - (source_norm * target_norm).sum(dim=1)).mean()
+        else:  
+            loss_cross = F.mse_loss(source_transformed, target_features)
         
         # ===== Loss 2: Variance preservation =====
-        loss_var = (source_transformed.std(dim=0) - target_features.std(dim=0)).abs().mean()
+        # loss_var = (source_transformed.std(dim=0) - target_features.std(dim=0)).abs().mean()
+        loss_var = sliced_wasserstein_distance(source_transformed, target_features, n_projections=128)
 
         # ===== Combined loss =====
         loss = lambda_cross * loss_cross + lambda_var * loss_var
@@ -503,7 +500,7 @@ def train_global_model(
         # Log progress
         if (step + 1) % 10 == 0 or step == 0:
             logging.info(f"  Step {step+1}/{steps_per_iter}: loss={loss.item():.6f} (cross={loss_cross.item():.4f}, var={loss_var.item():.4f})")
-    
+
     # ===== DIAGNOSTIC: Feature magnitudes AFTER training =====
     with torch.no_grad():
         source_transformed_final = model(source_features)
