@@ -18,22 +18,22 @@ logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s -
 from model_utils import _to_dense_float32
 from graph_utils import compute_knn_graph_distance, apply_cell_type_constraints
 from e_step_utils import compute_transport_batch
-from m_step_utils import apply_transfer_method, unstandardize_features
+from m_step_utils import train_global_model, apply_transfer_method, unstandardize_features, standardize_features
 from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, plot_transfer_debug_umap, plot_spatial_channels, plot_spatial_mapping
 
 # =====================================================================
-# 🌟 KIẾN TRÚC MỚI: CONDITIONAL FLOW MATCHING (CFM) VECTOR FIELD
+# 🌟 KIẾN TRÚC TỐI THƯỢNG: RESIDUAL FEATURE TRANSFORM
 # =====================================================================
-class FlowMatchingVectorField(nn.Module):
+class ResidualFeatureTransform(nn.Module):
     """
-    Mạng MLP học trường vận tốc v_theta(x_t, t) để dẫn dắt tế bào 
-    từ không gian Xenium (t=0) sang scRNA-seq (t=1) theo quỹ đạo mượt mà.
+    Kiến trúc ResNet f(x) = x + MLP(x).
+    Giữ lại nguyên bản cấu trúc sinh học (nhờ x) và dùng MLP để học vector 
+    phi tuyến tính dịch chuyển tế bào (Macro & Micro mixing).
     """
-    def __init__(self, dim: int, hidden_dim: int = 512, dropout: float = 0.0):
+    def __init__(self, dim: int, hidden_dim: int = 512, dropout: float = 0.1):
         super().__init__()
-        # Nhập vào đặc trưng x_t (dim) và thời gian t (1 chiều) -> Tổng dim + 1
-        self.net = nn.Sequential(
-            nn.Linear(dim + 1, hidden_dim),
+        self.mlp = nn.Sequential(
+            nn.Linear(dim, hidden_dim),
             nn.LayerNorm(hidden_dim),
             nn.SiLU(),
             nn.Dropout(dropout),
@@ -43,87 +43,12 @@ class FlowMatchingVectorField(nn.Module):
             nn.Dropout(dropout),
             nn.Linear(hidden_dim, dim)
         )
-        # Khởi tạo trọng số tiến sát 0 để ở bước đầu tiên mô hình đóng vai trò như Identity mapping (giữ nguyên không gian)
-        for m in self.modules():
-            if isinstance(m, nn.Linear):
-                nn.init.normal_(m.weight, mean=0.0, std=0.01)
-                nn.init.zeros_(m.bias)
+        # Khởi tạo lớp cuối cùng bằng 0 để ở vòng lặp đầu, f(x) = x hoàn hảo
+        nn.init.zeros_(self.mlp[-1].weight)
+        nn.init.zeros_(self.mlp[-1].bias)
 
-    def forward(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
-        # t có shape (batch_size, 1), nối trực tiếp vào biểu diễn x
-        if t.ndim == 1:
-            t = t.unsqueeze(1)
-        xt = torch.cat([x, t], dim=1)
-        return self.net(xt)
-
-
-def train_flow_matching_model(
-    model: nn.Module,
-    optimizer: torch.optim.Optimizer,
-    source_features: torch.Tensor,
-    target_features: torch.Tensor,
-    steps_per_iter: int,
-    device: torch.device,
-) -> List[float]:
-    """
-    Huấn luyện trường vận tốc bằng hàm mất mát Conditional Flow Matching (CFM).
-    """
-    model.train()
-    step_losses = []
-    batch_size_cfm = min(2048, source_features.shape[0])
-
-    for step in range(steps_per_iter):
-        optimizer.zero_grad()
-
-        # Lấy ngẫu nhiên một batch các cặp giả lập từ E-step (x0: source, x1: target)
-        indices = torch.randint(0, source_features.shape[0], (batch_size_cfm,), device=device)
-        x0 = source_features[indices]
-        x1 = target_features[indices]
-
-        # Lấy mẫu thời gian ngẫu nhiên t từ phân phối đều U[0, 1]
-        t = torch.rand(batch_size_cfm, 1, device=device)
-
-        # Tạo điểm trên đường thẳng nối (Interpolation path)
-        xt = (1.0 - t) * x0 + t * x1
-
-        # Vận tốc mục tiêu chuẩn xác (Target velocity) của đường thẳng nối
-        v_target = x1 - x0
-
-        # Dự đoán vận tốc từ mô hình mạng MLP
-        v_pred = model(xt, t)
-
-        # Hàm mất mát Conditional Flow Matching (MSE giữa vận tốc dự đoán và thực tế)
-        loss = F.mse_loss(v_pred, v_target)
-
-        if not torch.isfinite(loss):
-            break
-
-        loss.backward()
-        optimizer.step()
-        step_losses.append(loss.item())
-
-    return step_losses
-
-
-def apply_flow_ode_solver(
-    model: nn.Module,
-    features: torch.Tensor,
-    n_steps: int = 10
-) -> torch.Tensor:
-    """
-    Giải phương trình vi phân thường (Euler ODE Solver) từ t = 0 đến t = 1 
-    để dịch chuyển toàn bộ tế bào Xenium sang không gian scRNA-seq một cách mượt mà.
-    """
-    model.eval()
-    with torch.no_grad():
-        x = features.clone()
-        dt = 1.0 / n_steps
-        for step in range(n_steps):
-            t_val = step * dt
-            t_tensor = torch.full((x.shape[0], 1), t_val, device=features.device)
-            v = model(x, t_tensor)
-            x = x + v * dt
-    return x
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return x + self.mlp(x)
 
 
 def align_features_fgw(
@@ -149,7 +74,7 @@ def align_features_fgw(
     epsilon: float = 0.1,
     sinkhorn_iters: int = 1000,
     balanced_ot: bool = True,  
-    use_linear_assignment: bool = True,  # Mặc định bật Hungarian cho CFM
+    use_linear_assignment: bool = True,  # Bắt buộc dùng Hungarian của USHER
 
     knn_k: int = 30,  
     metric: str = 'cosine',  
@@ -229,8 +154,8 @@ def align_features_fgw(
         if sketch_to_original is not None:
             features_a = features_a[sketch_to_original]
 
-    # Khởi tạo mô hình Flow Matching Vector Field thay thế FeatureTransform cũ
-    model = FlowMatchingVectorField(dim=d_a, hidden_dim=hidden_dim, dropout=dropout).to(device_t)
+    # Khởi tạo mô hình Residual ResNet
+    model = ResidualFeatureTransform(dim=d_a, hidden_dim=hidden_dim, dropout=dropout).to(device_t)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     features_a_transformed = None
@@ -239,12 +164,19 @@ def align_features_fgw(
     convergence_data = [] 
     prev_iter_mappings = {} 
 
+    def apply_model_with_scaling(features_in: torch.Tensor) -> torch.Tensor:
+        if global_feature_mean is not None and global_feature_std is not None:
+            features_std = standardize_features(features_in, global_feature_mean, global_feature_std)
+            output_std = model(features_std)
+            return unstandardize_features(output_std, global_feature_mean, global_feature_std)
+        return model(features_in)
+
     # =====================================================================
     # E-M ITERATIONS
     # =====================================================================
-    for it in tqdm(range(n_iters), desc="E-M Alignment (Flow Matching)"):
+    for it in tqdm(range(n_iters), desc="E-M Alignment (Residual Net)"):
         
-        # Resample for micro-mixing
+        # Resample liên tục để tạo Stochastic Hungarian
         if sampling_strategy == 'celltype' and use_stratified_pairing and not stratified_pairing_fix:
             from celltype_utils import prepare_celltype_batches
             batches, auxiliary_data, _ = prepare_celltype_batches(
@@ -271,14 +203,18 @@ def align_features_fgw(
                         features_source_base = features_a_transformed
                     else:  
                         with torch.no_grad():
-                            features_source_base = apply_flow_ode_solver(model, features_a, n_steps=5)
+                            features_source_base = apply_model_with_scaling(features_a)
 
                 if metric == 'cosine':
                     features_s_norm = F.normalize(features_source_base, p=2, dim=1)
                     features_t_norm = F.normalize(features_b, p=2, dim=1)
                 else:  
-                    features_s_norm = features_source_base
-                    features_t_norm = features_b
+                    if global_feature_mean is not None and global_feature_std is not None:
+                        features_s_norm = standardize_features(features_source_base, global_feature_mean, global_feature_std)
+                        features_t_norm = standardize_features(features_b, global_feature_mean, global_feature_std)
+                    else:
+                        features_s_norm = features_source_base
+                        features_t_norm = features_b
 
                 knn_constraint = knn_indices_spatial[src_idx] if sampling_strategy == 'spatial' and knn_indices_spatial is not None else None
 
@@ -324,7 +260,7 @@ def align_features_fgw(
             prev_iter_mappings[batch_idx] = mapping_curr
 
         # =====================================================================
-        # 🌟 M-STEP: HUẤN LUYỆN TRƯỜNG VẬN TỐC CONDITIONAL FLOW MATCHING (CFM)
+        # 🌟 M-STEP: CHUẨN USHER NHƯNG ÁP DỤNG MÔ HÌNH RESIDUAL 🌟
         # =====================================================================
         if m_step_method == 'global':
             from m_step_utils import aggregate_training_data_from_batches
@@ -334,12 +270,17 @@ def align_features_fgw(
                 confidence_percentile=confidence_percentile
             )
             
-            # Huấn luyện mô hình Flow Matching Vector Field
-            step_losses = train_flow_matching_model(
-                model=model, optimizer=optimizer,
-                source_features=source_agg, target_features=target_agg,
-                steps_per_iter=steps_per_iter, device=device_t
+            step_losses, feature_mean, feature_std = train_global_model(
+                model=model, optimizer=optimizer, source_features=source_agg,
+                target_features=target_agg, steps_per_iter=steps_per_iter,
+                lambda_cross=lambda_cross, lambda_struct=lambda_struct,
+                lambda_var=lambda_var, metric=m_step_metric,
+                structure_sample_size=structure_sample_size, device=device_t,
+                features_target_all=features_b  
             )
+            if it == 0 or feature_mean is not None:
+                global_feature_mean = feature_mean
+                global_feature_std = feature_std
 
         elif m_step_method == 'transfer':
             features_a_transformed = apply_transfer_method(
@@ -353,7 +294,8 @@ def align_features_fgw(
                 a_hat_cpu = features_a_transformed.detach().cpu().numpy()
             else:
                 with torch.no_grad():
-                    a_hat_cpu = apply_flow_ode_solver(model, features_a, n_steps=10).detach().cpu().numpy()
+                    model.eval()  
+                    a_hat_cpu = apply_model_with_scaling(features_a).detach().cpu().numpy()
 
             obs_sketched = adata_a.obs.iloc[sketch_to_original].copy() if sketch_to_original is not None else adata_a.obs.copy()
             obsm_dict = {spatial_key: adata_a.obsm[spatial_key][sketch_to_original]} if spatial_key and spatial_key in adata_a.obsm and sketch_to_original is not None else {}
@@ -388,9 +330,10 @@ def align_features_fgw(
     if debug_plots_path:
         plot_convergence(convergence_data=convergence_data, save_dir=os.path.join(debug_plots_path, 'convergence'))
 
-    # Final transformation using ODE solver
+    # Final transformation
     with torch.no_grad():
-        a_hat_cpu = apply_flow_ode_solver(model, features_a, n_steps=20).detach().cpu().numpy()
+        model.eval()
+        a_hat_cpu = apply_model_with_scaling(features_a).detach().cpu().numpy()
 
     obs_sketched = adata_a.obs.iloc[sketch_to_original].copy() if sketch_to_original is not None else adata_a.obs.copy()
     adata_a_transformed = ad.AnnData(X=a_hat_cpu, obs=obs_sketched)
@@ -413,4 +356,4 @@ def align_features_fgw(
         else:
             T_full[:, torch.from_numpy(result['target_indices']).long().to(device_t)] = result['T']
 
-    return model, np.full(n_a, -1, dtype=np.int64), concat_adata, T_full, None, None
+    return model, np.full(n_a, -1, dtype=np.int64), concat_adata, T_full, global_feature_mean, global_feature_std
