@@ -242,50 +242,47 @@ def align_features_fgw(
         # =====================================================================
         if m_step_method == 'global':
             source_list = []
-            target_vest_list = []
+            target_list = []
             
             for result in batch_results:
-                T_matrix = result['T']  
+                T_matrix = result['T']  # (N_source, N_target)
                 src_idx = result['source_indices']
                 tgt_idx = result['target_indices']
                 mask = result['focused_mask']
-                feat_t = features_b[tgt_idx]
                 
-                # 1. Giữ nguyên Soft-Target chuẩn mực để BẢO TỒN SINH HỌC (NMI ~0.64)
-                T_safe = T_matrix / (T_matrix.sum(dim=1, keepdim=True) + 1e-12)
-                y_soft = torch.matmul(T_safe, feat_t)
+                best_t_for_s = T_matrix.argmax(dim=1)  # (N_source,)
+                best_s_for_t = T_matrix.argmax(dim=0)  # (N_target,)
                 
-                # 2. VEST: SỬA LỖI CO RÚT BARYCENTER ĐỂ TRỘN LÔ (Tăng KBET/iLISI)
-                # Tính phương sai và giá trị trung bình của tập Target chuẩn
-                mu_t = feat_t.mean(dim=0, keepdim=True)
-                std_t = feat_t.std(dim=0, keepdim=True)
+                valid_source_indices = torch.arange(len(src_idx), device=device_t)
+                is_mutual = best_s_for_t[best_t_for_s] == valid_source_indices
                 
-                # Tính phương sai và giá trị trung bình của Soft Target (đang bị co rút thành "Sao biển")
-                mu_soft = y_soft.mean(dim=0, keepdim=True)
-                std_soft = y_soft.std(dim=0, keepdim=True)
+                final_mask = is_mutual & mask
                 
-                # Ép giãn nở các trục của Soft Target bằng đúng không gian Target gốc
-                # Phép toán Z-score scaling này bảo toàn hoàn toàn cấu trúc topology!
-                y_vest = (y_soft - mu_soft) * (std_t / (std_soft + 1e-8)) + mu_t
-                
-                source_list.append(features_a[src_idx][mask])
-                target_vest_list.append(y_vest[mask])
-                
-            source_agg = torch.cat(source_list, dim=0)
-            target_agg = torch.cat(target_vest_list, dim=0)
+                # 4. Trích xuất các cặp 1-1 hoàn hảo
+                if final_mask.any():
+                    matched_sources = features_a[src_idx[final_mask]]
+                    matched_targets = features_b[tgt_idx[best_t_for_s[final_mask]]]
+                    
+                    source_list.append(matched_sources)
+                    target_list.append(matched_targets)
+            
+            if len(source_list) > 0:
+                source_agg = torch.cat(source_list, dim=0)
+                target_agg = torch.cat(target_list, dim=0)
 
-            # --- GỌI HÀM HUẤN LUYỆN DÙNG MỤC TIÊU VEST ---
-            step_losses, feature_mean, feature_std = train_global_model(
-                model=model, optimizer=optimizer, source_features=source_agg,
-                target_features=target_agg, steps_per_iter=steps_per_iter,
-                lambda_cross=lambda_cross, lambda_struct=lambda_struct,
-                lambda_var=lambda_var, metric=m_step_metric,
-                structure_sample_size=structure_sample_size, device=device_t,
-                features_target_all=features_b  
-            )
-            if it == 0 or feature_mean is not None:
-                global_feature_mean = feature_mean
-                global_feature_std = feature_std
+                step_losses, feature_mean, feature_std = train_global_model(
+                    model=model, optimizer=optimizer, source_features=source_agg,
+                    target_features=target_agg, steps_per_iter=steps_per_iter,
+                    lambda_cross=lambda_cross, lambda_struct=lambda_struct,
+                    lambda_var=lambda_var, metric=m_step_metric,
+                    structure_sample_size=structure_sample_size, device=device_t,
+                    features_target_all=features_b  
+                )
+                if it == 0 or feature_mean is not None:
+                    global_feature_mean = feature_mean
+                    global_feature_std = feature_std
+            else:
+                logging.warning(f"Iteration {it}: Không tìm thấy cặp Mutual Match nào. Bỏ qua huấn luyện vòng này.")
                 
         elif m_step_method == 'transfer':
             features_a_transformed = apply_transfer_method(
