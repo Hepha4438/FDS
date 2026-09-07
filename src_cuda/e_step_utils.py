@@ -1,5 +1,5 @@
 """
-E-step utilities for optimal transport computation.
+E-step utilities for optimal transport computation (USHER Original Standard).
 """
 
 import logging

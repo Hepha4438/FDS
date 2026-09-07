@@ -15,11 +15,116 @@ import scanpy as sc
 
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
 
-from model_utils import FeatureTransform, _to_dense_float32
+from model_utils import _to_dense_float32
 from graph_utils import compute_knn_graph_distance, apply_cell_type_constraints
 from e_step_utils import compute_transport_batch
-from m_step_utils import train_global_model, apply_transfer_method, unstandardize_features
+from m_step_utils import apply_transfer_method, unstandardize_features
 from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, plot_transfer_debug_umap, plot_spatial_channels, plot_spatial_mapping
+
+# =====================================================================
+# 🌟 KIẾN TRÚC MỚI: CONDITIONAL FLOW MATCHING (CFM) VECTOR FIELD
+# =====================================================================
+class FlowMatchingVectorField(nn.Module):
+    """
+    Mạng MLP học trường vận tốc v_theta(x_t, t) để dẫn dắt tế bào 
+    từ không gian Xenium (t=0) sang scRNA-seq (t=1) theo quỹ đạo mượt mà.
+    """
+    def __init__(self, dim: int, hidden_dim: int = 512, dropout: float = 0.0):
+        super().__init__()
+        # Nhập vào đặc trưng x_t (dim) và thời gian t (1 chiều) -> Tổng dim + 1
+        self.net = nn.Sequential(
+            nn.Linear(dim + 1, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.SiLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.SiLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, dim)
+        )
+        # Khởi tạo trọng số tiến sát 0 để ở bước đầu tiên mô hình đóng vai trò như Identity mapping (giữ nguyên không gian)
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, mean=0.0, std=0.01)
+                nn.init.zeros_(m.bias)
+
+    def forward(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
+        # t có shape (batch_size, 1), nối trực tiếp vào biểu diễn x
+        if t.ndim == 1:
+            t = t.unsqueeze(1)
+        xt = torch.cat([x, t], dim=1)
+        return self.net(xt)
+
+
+def train_flow_matching_model(
+    model: nn.Module,
+    optimizer: torch.optim.Optimizer,
+    source_features: torch.Tensor,
+    target_features: torch.Tensor,
+    steps_per_iter: int,
+    device: torch.device,
+) -> List[float]:
+    """
+    Huấn luyện trường vận tốc bằng hàm mất mát Conditional Flow Matching (CFM).
+    """
+    model.train()
+    step_losses = []
+    batch_size_cfm = min(2048, source_features.shape[0])
+
+    for step in range(steps_per_iter):
+        optimizer.zero_grad()
+
+        # Lấy ngẫu nhiên một batch các cặp giả lập từ E-step (x0: source, x1: target)
+        indices = torch.randint(0, source_features.shape[0], (batch_size_cfm,), device=device)
+        x0 = source_features[indices]
+        x1 = target_features[indices]
+
+        # Lấy mẫu thời gian ngẫu nhiên t từ phân phối đều U[0, 1]
+        t = torch.rand(batch_size_cfm, 1, device=device)
+
+        # Tạo điểm trên đường thẳng nối (Interpolation path)
+        xt = (1.0 - t) * x0 + t * x1
+
+        # Vận tốc mục tiêu chuẩn xác (Target velocity) của đường thẳng nối
+        v_target = x1 - x0
+
+        # Dự đoán vận tốc từ mô hình mạng MLP
+        v_pred = model(xt, t)
+
+        # Hàm mất mát Conditional Flow Matching (MSE giữa vận tốc dự đoán và thực tế)
+        loss = F.mse_loss(v_pred, v_target)
+
+        if not torch.isfinite(loss):
+            break
+
+        loss.backward()
+        optimizer.step()
+        step_losses.append(loss.item())
+
+    return step_losses
+
+
+def apply_flow_ode_solver(
+    model: nn.Module,
+    features: torch.Tensor,
+    n_steps: int = 10
+) -> torch.Tensor:
+    """
+    Giải phương trình vi phân thường (Euler ODE Solver) từ t = 0 đến t = 1 
+    để dịch chuyển toàn bộ tế bào Xenium sang không gian scRNA-seq một cách mượt mà.
+    """
+    model.eval()
+    with torch.no_grad():
+        x = features.clone()
+        dt = 1.0 / n_steps
+        for step in range(n_steps):
+            t_val = step * dt
+            t_tensor = torch.full((x.shape[0], 1), t_val, device=features.device)
+            v = model(x, t_tensor)
+            x = x + v * dt
+    return x
+
 
 def align_features_fgw(
     adata_a: ad.AnnData,
@@ -44,7 +149,7 @@ def align_features_fgw(
     epsilon: float = 0.1,
     sinkhorn_iters: int = 1000,
     balanced_ot: bool = True,  
-    use_linear_assignment: bool = False,  
+    use_linear_assignment: bool = True,  # Mặc định bật Hungarian cho CFM
 
     knn_k: int = 30,  
     metric: str = 'cosine',  
@@ -57,15 +162,15 @@ def align_features_fgw(
     sketch_pca_components: int = 50,
     
     n_iters: int = 30,
-    steps_per_iter: int = 50,  
+    steps_per_iter: int = 100,  
     lr: float = 1e-3,
-    weight_decay: float = 0,
+    weight_decay: float = 1e-5,
     lambda_cross: float = 0.9,  
     lambda_struct: float = 0.0,  
     lambda_var: float = 0.1,  
     structure_sample_size: Optional[int] = 2048,  
-    hidden_dim: Optional[int] = None,  
-    dropout: float = 0.0,  
+    hidden_dim: Optional[int] = 512,  
+    dropout: float = 0.1,  
     init_strategy: str = 'auto',  
     device: Optional[str] = None,
     debug_plots_path: Optional[str] = None,
@@ -75,7 +180,7 @@ def align_features_fgw(
 ) -> Tuple[nn.Module, np.ndarray, ad.AnnData]:
     
     if device is None:
-        device = "cuda" if torch.cuda.is_available() else "mps"
+        device = "cuda" if torch.cuda.is_available() else "cpu"
     device_t = torch.device(device)
     logging.info(f"Using device: {device}")
 
@@ -124,15 +229,8 @@ def align_features_fgw(
         if sketch_to_original is not None:
             features_a = features_a[sketch_to_original]
 
-    model = FeatureTransform(input_dim=d_a, output_dim=d_b, hidden_dim=hidden_dim, dropout=dropout).to(device_t)
-
-    if init_strategy == 'auto':
-        model.init_identity() if sampling_strategy == 'celltype' else model.init_random()
-    elif init_strategy == 'identity':
-        model.init_identity()
-    elif init_strategy == 'random':
-        model.init_random()
-
+    # Khởi tạo mô hình Flow Matching Vector Field thay thế FeatureTransform cũ
+    model = FlowMatchingVectorField(dim=d_a, hidden_dim=hidden_dim, dropout=dropout).to(device_t)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     features_a_transformed = None
@@ -141,17 +239,10 @@ def align_features_fgw(
     convergence_data = [] 
     prev_iter_mappings = {} 
 
-    def apply_model_with_scaling(features_in: torch.Tensor) -> torch.Tensor:
-        if global_feature_mean is not None and global_feature_std is not None:
-            from m_step_utils import standardize_features
-            features_std = standardize_features(features_in, global_feature_mean, global_feature_std)
-            return unstandardize_features(model(features_std), global_feature_mean, global_feature_std)
-        return model(features_in)
-
     # =====================================================================
     # E-M ITERATIONS
     # =====================================================================
-    for it in tqdm(range(n_iters), desc="E-M Alignment"):
+    for it in tqdm(range(n_iters), desc="E-M Alignment (Flow Matching)"):
         
         # Resample for micro-mixing
         if sampling_strategy == 'celltype' and use_stratified_pairing and not stratified_pairing_fix:
@@ -168,7 +259,7 @@ def align_features_fgw(
         if m_step_method == 'transfer' and it == 0:
             features_a_transformed = features_a.clone()
 
-        # ===== E-STEP =====
+        # ===== E-STEP (Chuẩn USHER gốc) =====
         batch_results = [None] * len(batches)
         def process_cluster(b_idx, src_idx, tgt_idx):
             ctx = torch.cuda.stream(torch.cuda.Stream(device=device_t)) if device_t.type == 'cuda' else contextlib.nullcontext()
@@ -180,19 +271,14 @@ def align_features_fgw(
                         features_source_base = features_a_transformed
                     else:  
                         with torch.no_grad():
-                            features_source_base = apply_model_with_scaling(features_a)
+                            features_source_base = apply_flow_ode_solver(model, features_a, n_steps=5)
 
                 if metric == 'cosine':
                     features_s_norm = F.normalize(features_source_base, p=2, dim=1)
                     features_t_norm = F.normalize(features_b, p=2, dim=1)
                 else:  
-                    if global_feature_mean is not None and global_feature_std is not None:
-                        from m_step_utils import standardize_features
-                        features_s_norm = standardize_features(features_source_base, global_feature_mean, global_feature_std)
-                        features_t_norm = standardize_features(features_b, global_feature_mean, global_feature_std)
-                    else:
-                        features_s_norm = features_source_base
-                        features_t_norm = features_b
+                    features_s_norm = features_source_base
+                    features_t_norm = features_b
 
                 knn_constraint = knn_indices_spatial[src_idx] if sampling_strategy == 'spatial' and knn_indices_spatial is not None else None
 
@@ -238,55 +324,23 @@ def align_features_fgw(
             prev_iter_mappings[batch_idx] = mapping_curr
 
         # =====================================================================
-        # 🌟 M-STEP VỚI SOFT-TARGET MSE LOSS 🌟
+        # 🌟 M-STEP: HUẤN LUYỆN TRƯỜNG VẬN TỐC CONDITIONAL FLOW MATCHING (CFM)
         # =====================================================================
         if m_step_method == 'global':
-            source_list = []
-            target_list = []
+            from m_step_utils import aggregate_training_data_from_batches
+            source_agg, target_agg, agg_stats = aggregate_training_data_from_batches(
+                batch_results=batch_results, features_source_all=features_a,
+                features_target_all=features_b, entropy_percentile=entropy_percentile,
+                confidence_percentile=confidence_percentile
+            )
             
-            for result in batch_results:
-                T_matrix = result['T']  # (N_source, N_target)
-                src_idx = result['source_indices']
-                tgt_idx = result['target_indices']
-                mask = result['focused_mask']
+            # Huấn luyện mô hình Flow Matching Vector Field
+            step_losses = train_flow_matching_model(
+                model=model, optimizer=optimizer,
+                source_features=source_agg, target_features=target_agg,
+                steps_per_iter=steps_per_iter, device=device_t
+            )
 
-                src_idx_tensor = torch.from_numpy(src_idx).long().to(device_t)
-                tgt_idx_tensor = torch.from_numpy(tgt_idx).long().to(device_t)
-
-                best_t_for_s = T_matrix.argmax(dim=1)  # (N_source,)
-                best_s_for_t = T_matrix.argmax(dim=0)  # (N_target,)
-
-                valid_source_indices = torch.arange(len(src_idx), device=device_t)
-                is_mutual = best_s_for_t[best_t_for_s] == valid_source_indices
-
-                final_mask = is_mutual & mask
-
-                if final_mask.any():
-                    # Sử dụng src_idx_tensor và tgt_idx_tensor đã ở trên GPU
-                    matched_sources = features_a[src_idx_tensor[final_mask]]
-                    matched_targets = features_b[tgt_idx_tensor[best_t_for_s[final_mask]]]
-                    
-                    source_list.append(matched_sources)
-                    target_list.append(matched_targets)
-            
-            if len(source_list) > 0:
-                source_agg = torch.cat(source_list, dim=0)
-                target_agg = torch.cat(target_list, dim=0)
-
-                step_losses, feature_mean, feature_std = train_global_model(
-                    model=model, optimizer=optimizer, source_features=source_agg,
-                    target_features=target_agg, steps_per_iter=steps_per_iter,
-                    lambda_cross=lambda_cross, lambda_struct=lambda_struct,
-                    lambda_var=lambda_var, metric=m_step_metric,
-                    structure_sample_size=structure_sample_size, device=device_t,
-                    features_target_all=features_b  
-                )
-                if it == 0 or feature_mean is not None:
-                    global_feature_mean = feature_mean
-                    global_feature_std = feature_std
-            else:
-                logging.warning(f"Iteration {it}: Không tìm thấy cặp Mutual Match nào. Bỏ qua huấn luyện vòng này.")
-                
         elif m_step_method == 'transfer':
             features_a_transformed = apply_transfer_method(
                 batch_results=batch_results, features_target_all=features_b,
@@ -299,8 +353,7 @@ def align_features_fgw(
                 a_hat_cpu = features_a_transformed.detach().cpu().numpy()
             else:
                 with torch.no_grad():
-                    model.eval()  
-                    a_hat_cpu = apply_model_with_scaling(features_a).detach().cpu().numpy()
+                    a_hat_cpu = apply_flow_ode_solver(model, features_a, n_steps=10).detach().cpu().numpy()
 
             obs_sketched = adata_a.obs.iloc[sketch_to_original].copy() if sketch_to_original is not None else adata_a.obs.copy()
             obsm_dict = {spatial_key: adata_a.obsm[spatial_key][sketch_to_original]} if spatial_key and spatial_key in adata_a.obsm and sketch_to_original is not None else {}
@@ -327,31 +380,7 @@ def align_features_fgw(
                 save_path=os.path.join(debug_plots_path, 'umap', f"umap_iter_{it+1:04d}.png"),
                 type_palette={'source_transformed': '#1f77b4', 'target': '#ff7f0e'}
             )
-            
-            T_full_all_debug = torch.zeros(n_a, n_b_orig, device=device_t, dtype=torch.float32)
-            for result in batch_results:
-                T, src_idx, tgt_idx = result['T'], result['source_indices'], result['target_indices']
-                if use_stratified_pairing:
-                    T_full_all_debug[torch.from_numpy(src_idx).long().to(device_t)[:, None], torch.from_numpy(tgt_idx).long().to(device_t)] = T
-                else:
-                    T_full_all_debug[:, torch.from_numpy(tgt_idx).long().to(device_t)] = T
 
-            focused_mask_full = torch.zeros(n_a, device=device_t, dtype=torch.bool)
-            for result in batch_results:
-                if result.get('focused_mask', None) is not None:
-                    src_idx = result['source_indices']
-                    if use_stratified_pairing:
-                        focused_mask_full[torch.from_numpy(src_idx).long().to(device_t)] = result['focused_mask']
-                    else:
-                        focused_mask_full[:] = result['focused_mask']
-
-            plot_transfer_debug_umap(
-                T_full=T_full_all_debug, features_b=features_b, adata_a_obs=obs_sketched, adata_b=adata_b,
-                cell_type_col=cell_type_col, iteration=it+1, save_dir=os.path.join(debug_plots_path, 'umap_transfer'),
-                metric='euclidean', focused_mask_full=focused_mask_full, use_linear_assignment=use_linear_assignment  
-            )
-
-        if 'T_full_all_debug' in locals(): del T_full_all_debug
         import gc; gc.collect(); torch.cuda.empty_cache()
         
     batch_mappings = [(i, r['T'].argmax(dim=1).cpu().numpy(), r['target_indices']) for i, r in enumerate(batch_results)]
@@ -359,60 +388,23 @@ def align_features_fgw(
     if debug_plots_path:
         plot_convergence(convergence_data=convergence_data, save_dir=os.path.join(debug_plots_path, 'convergence'))
 
-    if m_step_method == 'transfer':
-        a_hat_cpu = features_a_transformed.detach().cpu().numpy()
-        obs_sketched = adata_a.obs.iloc[sketch_to_original].copy() if sketch_to_original is not None else adata_a.obs.copy()
-        adata_a_transformed = ad.AnnData(X=a_hat_cpu, obs=obs_sketched)
-        adata_a_transformed.obs["type"] = "source_transformed"  
-        model = FeatureTransform(input_dim=d_a, output_dim=d_b, hidden_dim=hidden_dim, dropout=dropout).to(device_t)
-        
-        mapping_final = np.full(n_a, -1, dtype=np.int64)  
-        for batch_idx, mapping_batch, target_batch_indices in batch_mappings:
-            valid_mapping = mapping_batch >= 0
-            if valid_mapping.any():
-                valid_source_indices = np.where(valid_mapping)[0]  
-                mask = mapping_final[valid_source_indices] == -1
-                mapping_final[valid_source_indices[mask]] = target_batch_indices[mapping_batch[valid_mapping]][mask]
-        
-        adata_b_copy = adata_b.copy()
-        adata_b_copy.obs["type"] = "target"
-        concat_adata = ad.concat([adata_a_transformed, adata_b_copy], axis=0, label="batch", keys=["source", "target"], index_unique="_")
-        if cell_type_col in adata_a_transformed.obs.columns and cell_type_col in adata_b_copy.obs.columns:
-            concat_adata.obs[cell_type_col] = pd.concat([adata_a_transformed.obs[cell_type_col], adata_b_copy.obs[cell_type_col]]).values
-        
-        try:
-            rsc.tl.pca(concat_adata); rsc.pp.neighbors(concat_adata, use_rep='X', metric=metric); rsc.tl.umap(concat_adata)
-        except Exception: pass
+    # Final transformation using ODE solver
+    with torch.no_grad():
+        a_hat_cpu = apply_flow_ode_solver(model, features_a, n_steps=20).detach().cpu().numpy()
 
-    else:
-        mapping_final = np.full(n_a, -1, dtype=np.int64)  
-        for batch_idx, mapping_batch, target_batch_indices in batch_mappings:
-            valid_mapping = mapping_batch >= 0
-            if valid_mapping.any():
-                valid_source_indices = np.where(valid_mapping)[0]  
-                mask = mapping_final[valid_source_indices] == -1
-                mapping_final[valid_source_indices[mask]] = target_batch_indices[mapping_batch[valid_mapping]][mask]
-
-        with torch.no_grad():
-            model.eval()  
-            a_hat_cpu = apply_model_with_scaling(features_a).detach().cpu().numpy()
-
-        obs_sketched = adata_a.obs.iloc[sketch_to_original].copy() if sketch_to_original is not None else adata_a.obs.copy()
-        adata_a_transformed = ad.AnnData(X=a_hat_cpu, obs=obs_sketched)
-        adata_a_transformed.obs["type"] = "source_transformed"  
-        
-        adata_b_copy = adata_b.copy()
-        adata_b_copy.obs["type"] = "target"
-        concat_adata = ad.concat([adata_a_transformed, adata_b_copy], axis=0, label="batch", keys=["source", "target"], index_unique="_")
-        if cell_type_col in adata_a_transformed.obs.columns and cell_type_col in adata_b_copy.obs.columns:
-            concat_adata.obs[cell_type_col] = pd.concat([adata_a_transformed.obs[cell_type_col], adata_b_copy.obs[cell_type_col]]).values
-        
-        try:
-            rsc.tl.pca(concat_adata); rsc.pp.neighbors(concat_adata, use_rep='X', metric=metric); rsc.tl.umap(concat_adata)
-        except Exception: pass
+    obs_sketched = adata_a.obs.iloc[sketch_to_original].copy() if sketch_to_original is not None else adata_a.obs.copy()
+    adata_a_transformed = ad.AnnData(X=a_hat_cpu, obs=obs_sketched)
+    adata_a_transformed.obs["type"] = "source_transformed"  
     
-    if debug_plots_path:
-        plot_dual_umap(concat_adata, cell_type_col=cell_type_col, title_prefix='Final UMAP', save_path=os.path.join(debug_plots_path, 'umap', 'umap_final.png'), type_palette={'source_transformed': '#1f77b4', 'target': '#ff7f0e'})
+    adata_b_copy = adata_b.copy()
+    adata_b_copy.obs["type"] = "target"
+    concat_adata = ad.concat([adata_a_transformed, adata_b_copy], axis=0, label="batch", keys=["source", "target"], index_unique="_")
+    if cell_type_col in adata_a_transformed.obs.columns and cell_type_col in adata_b_copy.obs.columns:
+        concat_adata.obs[cell_type_col] = pd.concat([adata_a_transformed.obs[cell_type_col], adata_b_copy.obs[cell_type_col]]).values
+    
+    try:
+        rsc.tl.pca(concat_adata); rsc.pp.neighbors(concat_adata, use_rep='X', metric=metric); rsc.tl.umap(concat_adata)
+    except Exception: pass
 
     T_full = torch.zeros(n_a, n_b_orig, device=device_t, dtype=torch.float32)
     for result in batch_results:
@@ -421,10 +413,4 @@ def align_features_fgw(
         else:
             T_full[:, torch.from_numpy(result['target_indices']).long().to(device_t)] = result['T']
 
-    if True:
-        from model_utils import save_alignment_model
-        dir_path = "../datasets/scGPT_example/"
-        os.makedirs(dir_path, exist_ok=True)
-        save_alignment_model(model=model, save_path=os.path.join(dir_path, 'alignment_model.pt'), feature_mean=global_feature_mean, feature_std=global_feature_std, gene_names=adata_a.var_names.tolist())
-
-    return model, mapping_final, concat_adata, T_full, global_feature_mean, global_feature_std
+    return model, np.full(n_a, -1, dtype=np.int64), concat_adata, T_full, None, None
