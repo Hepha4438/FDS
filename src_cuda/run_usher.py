@@ -242,7 +242,7 @@ def align_features_fgw(
         # =====================================================================
         if m_step_method == 'global':
             source_list = []
-            target_hybrid_list = []
+            target_vest_list = []
             
             for result in batch_results:
                 T_matrix = result['T']  
@@ -251,34 +251,42 @@ def align_features_fgw(
                 mask = result['focused_mask']
                 feat_t = features_b[tgt_idx]
                 
-                # 1. Trích xuất Pseudo Hard-target và Độ tự tin (Confidence)
-                best_match_probs, best_match_indices = T_matrix.max(dim=1)
-                y_hard = feat_t[best_match_indices]
-                
-                # 2. Temperature Sharpening cho Soft-target
-                # Giảm tau (< 1.0) giúp làm giảm hiệu ứng "co rút Barycenter" 
-                # bằng cách phạt nặng các xác suất đuôi dài, ép T tập trung vào nhóm lân cận.
-                tau = 0.5 
-                T_sharp = torch.pow(T_matrix.clamp(min=1e-12), 1.0 / tau)
-                T_safe = T_sharp / T_sharp.sum(dim=1, keepdim=True)
+                # 1. Giữ nguyên Soft-Target chuẩn mực để BẢO TỒN SINH HỌC (NMI ~0.64)
+                T_safe = T_matrix / (T_matrix.sum(dim=1, keepdim=True) + 1e-12)
                 y_soft = torch.matmul(T_safe, feat_t)
                 
-                # 3. Dynamic Beta (Lai nhận thức độ tự tin)
-                # Tế bào có độ tự tin cao -> beta cao -> bám vào y_hard để bung rộng không gian (Tăng KBET).
-                # Tế bào có độ tự tin thấp -> beta thấp -> bám vào y_soft để giữ mượt cấu trúc (Giữ NMI cao).
-                beta = best_match_probs.unsqueeze(1)  # Đưa về shape (N, 1) để nhân ma trận
+                # 2. VEST: SỬA LỖI CO RÚT BARYCENTER ĐỂ TRỘN LÔ (Tăng KBET/iLISI)
+                # Tính phương sai và giá trị trung bình của tập Target chuẩn
+                mu_t = feat_t.mean(dim=0, keepdim=True)
+                std_t = feat_t.std(dim=0, keepdim=True)
                 
-                # (Tùy chọn) Có thể nhân hệ số để khuếch đại lực trộn lô nếu KBET vẫn thấp
-                beta = torch.clamp(beta * 1.5, max=1.0) 
+                # Tính phương sai và giá trị trung bình của Soft Target (đang bị co rút thành "Sao biển")
+                mu_soft = y_soft.mean(dim=0, keepdim=True)
+                std_soft = y_soft.std(dim=0, keepdim=True)
                 
-                y_hybrid = beta * y_hard + (1.0 - beta) * y_soft
+                # Ép giãn nở các trục của Soft Target bằng đúng không gian Target gốc
+                # Phép toán Z-score scaling này bảo toàn hoàn toàn cấu trúc topology!
+                y_vest = (y_soft - mu_soft) * (std_t / (std_soft + 1e-8)) + mu_t
                 
                 source_list.append(features_a[src_idx][mask])
-                target_hybrid_list.append(y_hybrid[mask])
+                target_vest_list.append(y_vest[mask])
                 
             source_agg = torch.cat(source_list, dim=0)
-            target_agg = torch.cat(target_hybrid_list, dim=0)
-            
+            target_agg = torch.cat(target_vest_list, dim=0)
+
+            # --- GỌI HÀM HUẤN LUYỆN DÙNG MỤC TIÊU VEST ---
+            step_losses, feature_mean, feature_std = train_global_model(
+                model=model, optimizer=optimizer, source_features=source_agg,
+                target_features=target_agg, steps_per_iter=steps_per_iter,
+                lambda_cross=lambda_cross, lambda_struct=lambda_struct,
+                lambda_var=lambda_var, metric=m_step_metric,
+                structure_sample_size=structure_sample_size, device=device_t,
+                features_target_all=features_b  
+            )
+            if it == 0 or feature_mean is not None:
+                global_feature_mean = feature_mean
+                global_feature_std = feature_std
+                
         elif m_step_method == 'transfer':
             features_a_transformed = apply_transfer_method(
                 batch_results=batch_results, features_target_all=features_b,
