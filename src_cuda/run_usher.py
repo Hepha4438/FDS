@@ -1,46 +1,25 @@
 import concurrent.futures
-import threading
+import contextlib
 import logging
 import os
-from typing import Optional, Tuple, Dict, List
-import contextlib
+from typing import Optional, Tuple, Dict
 import anndata as ad
 import numpy as np
-import ot
-import ot.backend as otb
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm
-from torch.optim import Adam
-import scanpy as sc
-import rapids_singlecell as rsc
-import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
-from scipy.optimize import linear_sum_assignment
+import rapids_singlecell as rsc
+import scanpy as sc
 
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
 
 from model_utils import FeatureTransform, _to_dense_float32
-from graph_utils import compute_knn_graph_distance, apply_cell_type_constraints, extract_topological_signatures
-from gs_utils import geosketch_subsample, geosketch_target_batches, geosketch_stratified_pairing
+from graph_utils import compute_knn_graph_distance, apply_cell_type_constraints
 from e_step_utils import compute_transport_batch
-from m_step_utils import (
-    aggregate_training_data_from_batches,
-    train_global_model,
-    apply_transfer_method,
-    unstandardize_features
-)
-from plot_utils import (
-    plot_dual_umap,
-    plot_weight_heatmap,
-    plot_convergence,
-    plot_transfer_debug_umap,
-    plot_spatial_channels,
-    plot_spatial_mapping
-)
-
+from m_step_utils import train_global_model, apply_transfer_method, unstandardize_features
+from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, plot_transfer_debug_umap, plot_spatial_channels, plot_spatial_mapping
 
 def align_features_fgw(
     adata_a: ad.AnnData,
@@ -48,7 +27,6 @@ def align_features_fgw(
     e_step_method: str = 'fgw',  
     m_step_method: str = 'global',  
     sampling_strategy: str = 'celltype',  
-    unsupervised_warmstart: bool = True,  # Bật cơ chế khởi tạo bằng tín hiệu hình học
 
     sketch_size: int = 1000,  
     sketch_obsm_key: str = 'X_umap',
@@ -103,18 +81,8 @@ def align_features_fgw(
 
     if debug_plots_path:
         os.makedirs(debug_plots_path, exist_ok=True)
-        subdirs = ["umap", "heatmap", "umap_transfer", "convergence"]
-        if sampling_strategy == 'spatial':
-            subdirs.append("channels")
-        for subdir in subdirs:
+        for subdir in ["umap", "heatmap", "umap_transfer", "convergence"] + (["channels"] if sampling_strategy == 'spatial' else []):
             os.makedirs(os.path.join(debug_plots_path, subdir), exist_ok=True)
-        log_file = os.path.join(debug_plots_path, 'alignment.log')
-        file_handler = logging.FileHandler(log_file, mode='w')
-        file_handler.setLevel(logging.INFO)
-        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        file_handler.setFormatter(formatter)
-        logger = logging.getLogger()
-        logger.addHandler(file_handler)
 
     X_a = _to_dense_float32(adata_a.X)
     X_b = _to_dense_float32(adata_b.X)
@@ -124,21 +92,6 @@ def align_features_fgw(
 
     n_a_orig, d_a = features_a.shape
     n_b_orig, d_b = features_b.shape
-
-    # =====================================================================
-    # UNSUPERVISED WARM-START INJECTION
-    # =====================================================================
-    if unsupervised_warmstart:
-        logging.info("Executing Unsupervised Warm-start: Extracting topological signatures...")
-        with torch.no_grad():
-            topo_sig_a = extract_topological_signatures(features_a, k=knn_k, metric=metric, device=device_t)
-            topo_sig_b = extract_topological_signatures(features_b, k=knn_k, metric=metric, device=device_t)
-        
-        # Tiêm thẳng signature vào bộ nhớ Anndata để module Chia lô (batches) tự động sử dụng
-        adata_a.obsm['X_topo'] = topo_sig_a.cpu().numpy()
-        adata_b.obsm['X_topo'] = topo_sig_b.cpu().numpy()
-        celltype_probs_layer = 'X_topo'
-        logging.info("Topological signatures successfully injected as auxiliary target.")
 
     # =====================================================================
     # DATA BATCHING
@@ -174,10 +127,7 @@ def align_features_fgw(
     model = FeatureTransform(input_dim=d_a, output_dim=d_b, hidden_dim=hidden_dim, dropout=dropout).to(device_t)
 
     if init_strategy == 'auto':
-        if sampling_strategy == 'celltype':
-            model.init_identity()
-        else:
-            model.init_random()
+        model.init_identity() if sampling_strategy == 'celltype' else model.init_random()
     elif init_strategy == 'identity':
         model.init_identity()
     elif init_strategy == 'random':
@@ -195,19 +145,15 @@ def align_features_fgw(
         if global_feature_mean is not None and global_feature_std is not None:
             from m_step_utils import standardize_features
             features_std = standardize_features(features_in, global_feature_mean, global_feature_std)
-            output_std = model(features_std)
-            output = unstandardize_features(output_std, global_feature_mean, global_feature_std)
-            return output
-        else:
-            return model(features_in)
+            return unstandardize_features(model(features_std), global_feature_mean, global_feature_std)
+        return model(features_in)
 
     # =====================================================================
     # E-M ITERATIONS
     # =====================================================================
     for it in tqdm(range(n_iters), desc="E-M Alignment"):
-        logging.info(f"E-M Iteration {it + 1}/{n_iters}")
-
-        # Liên tục Resample (Xáo trộn) nếu fix=False cho Giai đoạn FGW
+        
+        # Resample for micro-mixing
         if sampling_strategy == 'celltype' and use_stratified_pairing and not stratified_pairing_fix:
             from celltype_utils import prepare_celltype_batches
             batches, auxiliary_data, _ = prepare_celltype_batches(
@@ -291,13 +237,33 @@ def align_features_fgw(
                     })
             prev_iter_mappings[batch_idx] = mapping_curr
 
-        # ===== M-STEP =====
+        # =====================================================================
+        # 🌟 M-STEP VỚI SOFT-TARGET MSE LOSS 🌟
+        # =====================================================================
         if m_step_method == 'global':
-            source_agg, target_agg, agg_stats = aggregate_training_data_from_batches(
-                batch_results=batch_results, features_source_all=features_a,
-                features_target_all=features_b, entropy_percentile=entropy_percentile,
-                confidence_percentile=confidence_percentile
-            )
+            source_list = []
+            target_soft_list = []
+            
+            for result in batch_results:
+                T_matrix = result['T']  # Ma trận xác suất mềm
+                src_idx = result['source_indices']
+                tgt_idx = result['target_indices']
+                mask = result['focused_mask']
+                
+                # 1. Chuẩn hóa lại hàng cho an toàn tuyệt đối
+                T_safe = T_matrix / (T_matrix.sum(dim=1, keepdim=True) + 1e-12)
+                
+                # 2. Tạo Soft-Target (Barycenter) bằng phép nhân ma trận (T @ Target_Features)
+                feat_t = features_b[tgt_idx]
+                y_soft = torch.matmul(T_safe, feat_t)
+                
+                # 3. Lọc lấy những tế bào có độ tự tin cao (Entropy thấp)
+                source_list.append(features_a[src_idx][mask])
+                target_soft_list.append(y_soft[mask])
+                
+            source_agg = torch.cat(source_list, dim=0)
+            target_agg = torch.cat(target_soft_list, dim=0)
+
             step_losses, feature_mean, feature_std = train_global_model(
                 model=model, optimizer=optimizer, source_features=source_agg,
                 target_features=target_agg, steps_per_iter=steps_per_iter,
