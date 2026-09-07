@@ -952,24 +952,24 @@ def align_features_fgw(
 
     # Reconstruct full transport matrix for output
     logging.info("Reconstructing full transport matrix for output...")
-    T_full = torch.zeros(n_a, n_b_orig, device=device_t, dtype=torch.float32)
+    
+    if e_step_method == 'nfgw' or len(batch_results) == 1:
+        T_full = batch_results[0]['T']
+    else:
+        # Giữ lại logic cũ cho các phương pháp chia lô (batches) nhỏ
+        T_full = torch.zeros(n_a, n_b_orig, device=device_t, dtype=torch.float32)
+        for result in batch_results:
+            T = result['T']
+            source_indices = result['source_indices']
+            target_indices = result['target_indices']
 
-    for result in batch_results:
-        T = result['T']
-        source_indices = result['source_indices']
-        target_indices = result['target_indices']
-
-        if use_stratified_pairing:
-            # Convert numpy indices to torch tensors for CUDA compatibility
-            source_idx_tensor = torch.from_numpy(source_indices).long().to(device_t)
-            target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
-            # For stratified pairing, place batch transport in full matrix
-            T_full[source_idx_tensor[:, None], target_idx_tensor] = T
-        else:
-            # Convert numpy indices to torch tensors for CUDA compatibility
-            target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
-            # For non-stratified, source covers all indices
-            T_full[:, target_idx_tensor] = T
+            if use_stratified_pairing:
+                source_idx_tensor = torch.from_numpy(source_indices).long().to(device_t)
+                target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
+                T_full[source_idx_tensor[:, None], target_idx_tensor] = T
+            else:
+                target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
+                T_full[:, target_idx_tensor] = T
 
     # Save model to disk (if debug_plots_path is provided and m_step_method is 'global')
     if True:
