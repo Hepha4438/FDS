@@ -249,19 +249,22 @@ def align_features_fgw(
                 src_idx = result['source_indices']
                 tgt_idx = result['target_indices']
                 mask = result['focused_mask']
-                
+
+                src_idx_tensor = torch.from_numpy(src_idx).long().to(device_t)
+                tgt_idx_tensor = torch.from_numpy(tgt_idx).long().to(device_t)
+
                 best_t_for_s = T_matrix.argmax(dim=1)  # (N_source,)
                 best_s_for_t = T_matrix.argmax(dim=0)  # (N_target,)
-                
+
                 valid_source_indices = torch.arange(len(src_idx), device=device_t)
                 is_mutual = best_s_for_t[best_t_for_s] == valid_source_indices
-                
+
                 final_mask = is_mutual & mask
-                
-                # 4. Trích xuất các cặp 1-1 hoàn hảo
+
                 if final_mask.any():
-                    matched_sources = features_a[src_idx[final_mask]]
-                    matched_targets = features_b[tgt_idx[best_t_for_s[final_mask]]]
+                    # Sử dụng src_idx_tensor và tgt_idx_tensor đã ở trên GPU
+                    matched_sources = features_a[src_idx_tensor[final_mask]]
+                    matched_targets = features_b[tgt_idx_tensor[best_t_for_s[final_mask]]]
                     
                     source_list.append(matched_sources)
                     target_list.append(matched_targets)
