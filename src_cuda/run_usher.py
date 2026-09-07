@@ -663,7 +663,7 @@ def align_features_fgw(
             # Helps separate "is T good?" from "is W good?"
 
             # Reconstruct full transport matrix from batch_results
-            T_full_all_debug = torch.zeros(n_a, n_b_orig, device=device_t, dtype=torch.float32)
+            T_full_all_debug = batch_results[0]['T']
             for result in batch_results:
                 T = result['T']
                 source_indices = result['source_indices']

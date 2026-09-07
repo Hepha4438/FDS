@@ -378,7 +378,7 @@ def aggregate_training_data_from_batches(
 
         # ===== BARYCENTRIC PROJECTION =====
         # Get best target matches for focused cells
-        best_targets_local = T[focused_mask].argmax(dim=1)  # Local target indices within batch
+        best_targets_local = T.argmax(dim=1)[focused_mask]  # Local target indices within batch
         best_targets_global = target_indices[best_targets_local.cpu().numpy()]  # Global target indices (numpy)
 
         # Convert to torch tensor for CUDA compatibility
