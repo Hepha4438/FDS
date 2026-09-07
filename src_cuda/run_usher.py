@@ -752,6 +752,14 @@ def align_features_fgw(
                 title=f'Transformation Weights Iter {it+1}',
                 save_path=os.path.join(debug_plots_path, 'heatmap', f"W_iter_{it+1:04d}.png")
             )
+        if 'T_full_all_debug' in locals():
+            del T_full_all_debug
+        if 'T_full_for_mapping' in locals():
+            del T_full_for_mapping
+        if 'a_hat_global' in locals():
+            del a_hat_global
+        if 'T_transpose' in locals():
+            del T_transpose
         import gc
         gc.collect()
         torch.cuda.empty_cache()
