@@ -242,39 +242,29 @@ def align_features_fgw(
         # =====================================================================
         if m_step_method == 'global':
             source_list = []
-            target_soft_list = []
+            target_hybrid_list = []  # Đổi tên list
             
             for result in batch_results:
                 T_matrix = result['T']  
                 src_idx = result['source_indices']
                 tgt_idx = result['target_indices']
                 mask = result['focused_mask']
-                
-                tau = 0.08  
-                T_sharp = T_matrix ** (1.0 / tau)
-                
-                T_safe = T_sharp / (T_sharp.sum(dim=1, keepdim=True) + 1e-12)
-                
                 feat_t = features_b[tgt_idx]
-                y_firm = torch.matmul(T_safe, feat_t)
+                
+                T_safe = T_matrix / (T_matrix.sum(dim=1, keepdim=True) + 1e-12)
+                y_soft = torch.matmul(T_safe, feat_t)
+                
+                best_match_indices = T_matrix.argmax(dim=1)
+                y_hard = feat_t[best_match_indices]
+                
+                beta = 0.5
+                y_hybrid = beta * y_hard + (1.0 - beta) * y_soft
                 
                 source_list.append(features_a[src_idx][mask])
-                target_soft_list.append(y_firm[mask])
+                target_hybrid_list.append(y_hybrid[mask])
                 
             source_agg = torch.cat(source_list, dim=0)
-            target_agg = torch.cat(target_soft_list, dim=0)
-
-            step_losses, feature_mean, feature_std = train_global_model(
-                model=model, optimizer=optimizer, source_features=source_agg,
-                target_features=target_agg, steps_per_iter=steps_per_iter,
-                lambda_cross=lambda_cross, lambda_struct=lambda_struct,
-                lambda_var=lambda_var, metric=m_step_metric,
-                structure_sample_size=structure_sample_size, device=device_t,
-                features_target_all=features_b  
-            )
-            if it == 0 or feature_mean is not None:
-                global_feature_mean = feature_mean
-                global_feature_std = feature_std
+            target_agg = torch.cat(target_hybrid_list, dim=0)
 
         elif m_step_method == 'transfer':
             features_a_transformed = apply_transfer_method(
