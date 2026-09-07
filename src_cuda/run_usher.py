@@ -55,57 +55,58 @@ def align_features_fgw(
     adata_a: ad.AnnData, #Source dataset
     adata_b: ad.AnnData, #Target dataset
     # Core parameters
-    e_step_method: str = 'fgw',  # 'ot', 'gw', or 'fgw'
-    m_step_method: str = 'global',  # 'global' or 'transfer'
+    e_step_method: str = 'fgw',  
+    m_step_method: str = 'global',  
 
     # Sampling strategy selection
-    sampling_strategy: str = 'celltype',  # 'celltype' or 'spatial'
+    sampling_strategy: str = 'celltype',  
 
     # Celltype sampling parameters (used when sampling_strategy='celltype')
-    sketch_size: int = 1000,  # Group size for stratified pairing (if use_stratified_pairing=True) or target batch size (if False)
+    sketch_size: int = 1000,  
     sketch_obsm_key: str = 'X_umap',
-    use_stratified_pairing: bool = True,  # Use stratified pairing (geosketch both source and target into k groups)
-    stratified_pairing_fix: bool = True,  # If True, use fixed groups across iterations; if False, resample each iteration
-    cell_type_col: str = 'annotation_level_0',  # Column containing cell type info
+    use_stratified_pairing: bool = True,  
+    stratified_pairing_fix: bool = True,  
+    cell_type_col: str = 'annotation_level_0',  
 
     # Spatial sampling parameters (used when sampling_strategy='spatial')
-    spatial_key: str = 'X_spatial',  # Key in .obsm for spatial coordinates
-    window_height: Optional[float] = None,  # Height of spatial windows (auto-computed if None)
-    window_width: Optional[float] = None,  # Width of spatial windows (auto-computed if None)
-    window_overlap: float = 0.1,  # Overlap between spatial windows
-    spatial_knn: int = 50,  # Number of feature k-NN for spatial constraints
-    n_windows_target: int = 20,  # Target number of windows if auto-computing dimensions
+    spatial_key: str = 'X_spatial',  
+    window_height: Optional[float] = None,  
+    window_width: Optional[float] = None,  
+    window_overlap: float = 0.1,  
+    spatial_knn: int = 50,  
+    n_windows_target: int = 20,  
 
     # OT/GW parameters
     epsilon: float = 0.1,
     sinkhorn_iters: int = 1000,
-    balanced_ot: bool = True,  # Whether to use balanced or unbalanced OT
+    balanced_ot: bool = True,  
 
-    use_linear_assignment: bool = False,  # Use Hungarian algorithm for globally optimal 1-1 matching (overrides top-k)
+    use_linear_assignment: bool = False,  
 
     # kNN graph parameters
-    knn_k: int = 30,  # Number of nearest neighbors for kNN graph
-    metric: str = 'cosine',  # Distance metric for kNN, UMAP ('cosine' or 'euclidean')
-    m_step_metric: str = 'euclidean',  # Distance metric for M-step loss ('cosine' or 'euclidean')
-    use_knn_graph: bool = True,  # Whether to use kNN graph distances instead of direct distances
+    knn_k: int = 30,  
+    metric: str = 'cosine',  
+    m_step_metric: str = 'euclidean',  
+    use_knn_graph: bool = True,  
 
     # Fused GW parameters (for 'fgw' e_step_method)
-    celltype_probs_layer: str = 'X_celltype_probs',  # Key in .obsm for cell type probabilities
-    alpha: float = 0.3,  # Balance between structure (GW) and features (Wasserstein): 1.0=pure GW, 0.0=pure Wasserstein
-    gamma: float = 0.4,  # Weight for feature distance in M matrix: M = (1-gamma)*M_celltype + gamma*M_features (0=celltype only, 1=features only, iter 0 uses gamma=0)
+    celltype_probs_layer: str = 'X_celltype_probs',  
+    alpha: float = 0.3,  
+    gamma: float = 0.4,  
     sketch_pca_components: int = 50,
+    
     # Training parameters
     n_iters: int = 30,
-    steps_per_iter: int = 50,  # Number of gradient steps per M-step (only for MLP)
+    steps_per_iter: int = 50,  
     lr: float = 1e-3,
     weight_decay: float = 0,
-    lambda_cross: float =0.9,  # Weight for cross-domain alignment loss (only for MLP)
-    lambda_struct: float = 0.0,  # Weight for structure preservation loss (only for MLP)
-    lambda_var: float = 0.1,  # Weight for variance preservation loss (only for MLP)
-    structure_sample_size: Optional[int] = 2048,  # Sample size for structure loss (only for MLP)
-    hidden_dim: Optional[int] = None,  # Hidden dimension for MLP (None = linear, only for MLP)
-    dropout: float = 0.0,  # Dropout rate for MLP (only for MLP)
-    init_strategy: str = 'auto',  # Model initialization: 'identity', 'random', or 'auto' (auto-select based on sampling strategy)
+    lambda_cross: float = 0.9,  
+    lambda_struct: float = 0.0,  
+    lambda_var: float = 0.1,  
+    structure_sample_size: Optional[int] = 2048,  
+    hidden_dim: Optional[int] = None,  
+    dropout: float = 0.0,  
+    init_strategy: str = 'auto',  
     device: Optional[str] = None,
     debug_plots_path: Optional[str] = None,
     entropy_percentile: float = 90.0,
@@ -122,28 +123,19 @@ def align_features_fgw(
     if debug_plots_path:
         os.makedirs(debug_plots_path, exist_ok=True)
         subdirs = ["umap", "heatmap", "umap_transfer", "convergence"]
-        # Add channels directory for spatial sampling
         if sampling_strategy == 'spatial':
             subdirs.append("channels")
         for subdir in subdirs:
             os.makedirs(os.path.join(debug_plots_path, subdir), exist_ok=True)
 
-        # Set up file logging to debug_plots_path
         log_file = os.path.join(debug_plots_path, 'alignment.log')
-
-        # Create a file handler
         file_handler = logging.FileHandler(log_file, mode='w')
         file_handler.setLevel(logging.INFO)
-
-        # Create a formatter
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)
-
-        # Add handler to root logger
         logger = logging.getLogger()
         logger.addHandler(file_handler)
 
-        # Also keep console output
         if not any(isinstance(h, logging.StreamHandler) for h in logger.handlers):
             console_handler = logging.StreamHandler()
             console_handler.setLevel(logging.INFO)
@@ -164,111 +156,67 @@ def align_features_fgw(
     n_b_orig, d_b = features_b.shape
     logging.info(f"Source (A): {n_a_orig} spots, {d_a} features. Target (B): {n_b_orig} spots, {d_b} features.")
 
-    # Validate sampling strategy
     if sampling_strategy not in ['celltype', 'spatial']:
         raise ValueError(f"sampling_strategy must be 'celltype' or 'spatial', got: {sampling_strategy}")
 
-    # Validate parameters
-    if e_step_method not in ['ot', 'gw', 'fgw', 'nfgw']:
-        raise ValueError(f"e_step_method must be 'ot', 'gw', or 'fgw', got: {e_step_method}")
-    if m_step_method not in ['global', 'transfer']:
-        raise ValueError(f"m_step_method must be 'global' or 'transfer', got: {m_step_method}")
-
-    # Validate metric
-    if metric not in ['cosine', 'euclidean']:
-        raise ValueError(f"metric must be 'cosine' or 'euclidean', got: {metric}")
-
-    logging.info(f"E-step method: {e_step_method}")
-    logging.info(f"M-step method: {m_step_method}")
-    if m_step_method == 'global':
-        logging.info(f"M-step method: {m_step_method}" + ( f" (lr={lr}, steps_per_iter={steps_per_iter})"))
-    logging.info(f"Distance metric (kNN/UMAP/M-step loss): {metric}")
-    logging.info(f"kNN graph: {'enabled' if use_knn_graph else 'disabled'} (k={knn_k})")
-    if e_step_method in ['ot', 'fgw']:
-        logging.info(f"Gamma (feature weight in M): {gamma} (iter 0 uses gamma=0)")
-    if e_step_method == 'ot':
-        logging.info(f"OT type: {'balanced' if balanced_ot else 'unbalanced'}")
-        if not balanced_ot:
-            logging.info("Unbalanced OT: allows partial matching, tau=0.8 for marginal relaxation")
-
-    # ===== Prepare batches based on sampling strategy =====
-    # ===== Prepare batches based on sampling strategy =====
     logging.info(f"=== Using {sampling_strategy.upper()} sampling strategy ===")
 
-    batches = []
-    auxiliary_data = {}
-    sketch_to_original = None
-    window_info = {}
-    n_a = n_a_orig  # Default: use full source dataset
-
-    if e_step_method == 'nfgw':
-        # FULL-BATCH MODE FOR NFGW
-        logging.info("NFGW selected: Bypassing batching/sketching to run on full dataset.")
-        batches = [(np.arange(n_a_orig), np.arange(n_b_orig))]
-        
-        if sampling_strategy == 'celltype':
-            aux_src = adata_a.obsm.get(celltype_probs_layer, None)
-            aux_tgt = adata_b.obsm.get(celltype_probs_layer, None)
-        else:
-            aux_src = adata_a.obsm.get(spatial_key, None)
-            aux_tgt = adata_b.obsm.get(spatial_key, None)
-
-        import pandas as pd
-        auxiliary_features_source = aux_src.values if isinstance(aux_src, pd.DataFrame) else (np.array(aux_src) if aux_src is not None else None)
-        auxiliary_features_target = aux_tgt.values if isinstance(aux_tgt, pd.DataFrame) else (np.array(aux_tgt) if aux_tgt is not None else None)
-            
-        knn_indices_spatial = None
-    else:
-        # ORIGINAL BATCHING LOGIC (cho 'ot', 'gw', 'fgw')
-        if sampling_strategy == 'spatial':
-            from spatial_utils import prepare_spatial_batches
-
-            batches, auxiliary_data, window_info = prepare_spatial_batches(
-                adata_a, adata_b,
-                spatial_key=spatial_key,
-                window_height=window_height,
-                window_width=window_width,
-                window_overlap=window_overlap,
-                n_windows_target=n_windows_target,
-                spatial_knn=spatial_knn
-            )
-            logging.info(f"Spatial windowing: {len(batches)} windows created")
-            auxiliary_features_source = auxiliary_data.get('coords_a')
-            auxiliary_features_target = auxiliary_data.get('coords_b')
-
-        else:  # sampling_strategy == 'celltype'
-            from celltype_utils import prepare_celltype_batches
-
-            batches, auxiliary_data, sketch_to_original = prepare_celltype_batches(
-                adata_a, adata_b,
-                sketch_size=sketch_size,
-                use_stratified_pairing=use_stratified_pairing,
-                stratified_pairing_fix=stratified_pairing_fix,
-                celltype_probs_layer=celltype_probs_layer,
-                cell_type_col=cell_type_col,
-                sketch_obsm_key=sketch_obsm_key,
-                sketch_pca_components=sketch_pca_components,
-                e_step_method=e_step_method,
-                seed=2025
-            )
-
-            n_a = auxiliary_data['n_source']
-            if sketch_to_original is not None:
-                features_a = features_a[sketch_to_original]
-                logging.info(f"Source features subsetted to {features_a.shape}")
-                
-            auxiliary_features_source = auxiliary_data.get('celltype_probs_a')
-            auxiliary_features_target = auxiliary_data.get('celltype_probs_b')
-
+    # =====================================================================
+    # 1. ALWAYS PREPARE STRATIFIED BATCHES FIRST 
+    # (To accurately extract the 'sketch_to_original' subset for all modes)
+    # =====================================================================
+    if sampling_strategy == 'spatial':
+        from spatial_utils import prepare_spatial_batches
+        batches_strat, auxiliary_data, window_info = prepare_spatial_batches(
+            adata_a, adata_b,
+            spatial_key=spatial_key,
+            window_height=window_height,
+            window_width=window_width,
+            window_overlap=window_overlap,
+            n_windows_target=n_windows_target,
+            spatial_knn=spatial_knn
+        )
+        logging.info(f"Spatial windowing: {len(batches_strat)} windows created")
+        aux_features_source_strat = auxiliary_data.get('coords_a')
+        aux_features_target_strat = auxiliary_data.get('coords_b')
         knn_indices_spatial = auxiliary_data.get('knn_indices')
+        n_a = n_a_orig
+        sketch_to_original = None
+    else:  # sampling_strategy == 'celltype'
+        from celltype_utils import prepare_celltype_batches
+        batches_strat, auxiliary_data, sketch_to_original = prepare_celltype_batches(
+            adata_a, adata_b,
+            sketch_size=sketch_size,
+            use_stratified_pairing=use_stratified_pairing,
+            stratified_pairing_fix=stratified_pairing_fix,
+            celltype_probs_layer=celltype_probs_layer,
+            cell_type_col=cell_type_col,
+            sketch_obsm_key=sketch_obsm_key,
+            sketch_pca_components=sketch_pca_components,
+            e_step_method='fgw', 
+            seed=2025
+        )
+        n_a = auxiliary_data['n_source']
+        aux_features_source_strat = auxiliary_data.get('celltype_probs_a')
+        aux_features_target_strat = auxiliary_data.get('celltype_probs_b')
+        knn_indices_spatial = None
+        
+        # Subset features_a consistently for BOTH phases if sketching is applied
+        if sketch_to_original is not None:
+            features_a = features_a[sketch_to_original]
+            logging.info(f"Source features subsetted to {features_a.shape} for ALL phases.")
 
+    # =====================================================================
+    # 2. PREPARE FULL BATCH FOR NFGW PHASE
+    # =====================================================================
+    batches_full = [(np.arange(n_a), np.arange(n_b_orig))]
+    aux_features_source_full = aux_features_source_strat
+    aux_features_target_full = aux_features_target_strat
 
-    # Initialize shared model and optimizer (across all batches)
+    # Initialize shared model and optimizer
     model = FeatureTransform(input_dim=d_a, output_dim=d_b, hidden_dim=hidden_dim, dropout=dropout).to(device_t)
 
-    # Initialize model weights based on init_strategy parameter
     if init_strategy == 'auto':
-        # Auto-select based on sampling strategy
         if sampling_strategy == 'celltype':
             model.init_identity()
             logging.info("Auto-selected identity initialization for celltype sampling")
@@ -277,102 +225,105 @@ def align_features_fgw(
             logging.info("Auto-selected random initialization for spatial sampling")
     elif init_strategy == 'identity':
         model.init_identity()
-        logging.info("User-selected identity initialization for spatial sampling")
     elif init_strategy == 'random':
         model.init_random()
-        logging.info("User-selected random initialization for spatial sampling")
     else:
-        raise ValueError(f"Unknown init_strategy: {init_strategy}. Choose 'identity', 'random', or 'auto'")
+        raise ValueError(f"Unknown init_strategy: {init_strategy}")
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
-    # Initialize features_a_transformed for transfer method
     features_a_transformed = None
-
-    # Storage for feature standardization (euclidean M-step only)
     global_feature_mean = None
     global_feature_std = None
+    convergence_data = [] 
+    prev_iter_mappings = {} 
 
-    # Storage for convergence metrics (for plotting)
-    convergence_data = []  # List of dicts: [{iter, batch_idx, n_changed, n_total_valid, pct_changed}, ...]
-    prev_iter_mappings = {}  # Dict: batch_idx -> mapping_batch (np.ndarray) for convergence tracking
-
-    # Helper function to apply model with standardization (for euclidean metric only)
     def apply_model_with_scaling(features_in: torch.Tensor) -> torch.Tensor:
-        """Apply model with standardization/unstandardization if using euclidean metric."""
         if global_feature_mean is not None and global_feature_std is not None:
-            # Standardize input
             from m_step_utils import standardize_features
             features_std = standardize_features(features_in, global_feature_mean, global_feature_std)
-            # Apply model
             output_std = model(features_std)
-            # Unstandardize output
             output = unstandardize_features(output_std, global_feature_mean, global_feature_std)
             return output
         else:
-            # No standardization (cosine metric or first iteration)
             return model(features_in)
 
-    # E-M iterations (outer loop) - shared across all batches
+    # =====================================================================
+    # 🌟 E-M ITERATIONS (OUTER LOOP) 🌟
+    # =====================================================================
     for it in tqdm(range(n_iters), desc="E-M Alignment"):
         logging.info(f"E-M Iteration {it + 1}/{n_iters}")
 
-        # Resample groups if using rotating stratified pairing (celltype sampling only)
-        if sampling_strategy == 'celltype' and use_stratified_pairing and not stratified_pairing_fix and e_step_method != 'nfgw':
-            logging.info(f"Resampling stratified groups for iteration {it + 1} (fix=False)")
-            from celltype_utils import prepare_celltype_batches
+        # --- CURRICULUM LEARNING: PHASE SWITCH ---
+        switch_iter = 5  # Cố định 5 vòng đầu tiên chạy NFGW
+        
+        if it < switch_iter:
+            active_e_step = "nfgw"
+            active_stratified = False
+            active_gamma = 0.3
+            current_batches = batches_full
+            current_aux_src = aux_features_source_full
+            current_aux_tgt = aux_features_target_full
+            logging.info(f"\n--- VÒNG {it+1}: GIAI ĐOẠN 1 - MACRO NFGW (gamma={active_gamma}) ---")
+        else:
+            active_e_step = "fgw"
+            active_stratified = True if sampling_strategy == 'celltype' and use_stratified_pairing else False
+            active_gamma = 0.0
+            current_batches = batches_strat
+            current_aux_src = aux_features_source_strat
+            current_aux_tgt = aux_features_target_strat
+            logging.info(f"\n--- VÒNG {it+1}: GIAI ĐOẠN 2 - MICRO BATCHING FGW (gamma={active_gamma}) ---")
 
-            batches, auxiliary_data, _ = prepare_celltype_batches(
-                adata_a, adata_b,
-                sketch_size=sketch_size,
-                use_stratified_pairing=True,
-                stratified_pairing_fix=False,
-                celltype_probs_layer=celltype_probs_layer,
-                cell_type_col=cell_type_col,
-                sketch_obsm_key=sketch_obsm_key,
-                sketch_pca_components=sketch_pca_components,
-                e_step_method=e_step_method,
-                seed=2025 + it  # Different seed each iteration
-            )
+            # Resample groups logic for FGW phase
+            if active_stratified and not stratified_pairing_fix:
+                logging.info(f"Resampling stratified groups for iteration {it + 1} (fix=False)")
+                from celltype_utils import prepare_celltype_batches
+                current_batches, aux_data_new, _ = prepare_celltype_batches(
+                    adata_a, adata_b,
+                    sketch_size=sketch_size,
+                    use_stratified_pairing=True,
+                    stratified_pairing_fix=False,
+                    celltype_probs_layer=celltype_probs_layer,
+                    cell_type_col=cell_type_col,
+                    sketch_obsm_key=sketch_obsm_key,
+                    sketch_pca_components=sketch_pca_components,
+                    e_step_method=active_e_step,
+                    seed=2025 + it 
+                )
+                current_aux_src = aux_data_new.get('celltype_probs_a')
+                current_aux_tgt = aux_data_new.get('celltype_probs_b')
+                
+                # Cập nhật cache
+                batches_strat = current_batches
+                aux_features_source_strat = current_aux_src
+                aux_features_target_strat = current_aux_tgt
+                logging.info(f"Resampled {len(current_batches)} paired groups for iteration {it + 1}")
 
-            # Update auxiliary features
-            celltype_probs_a = auxiliary_data.get('celltype_probs_a')
-            celltype_probs_b = auxiliary_data.get('celltype_probs_b')
-            auxiliary_features_source = celltype_probs_a
-            auxiliary_features_target = celltype_probs_b
-
-            logging.info(f"Resampled {len(batches)} paired groups for iteration {it + 1}")
-
-        # Initialize features_a_transformed for transfer method (only once)
         if m_step_method == 'transfer' and it == 0:
             features_a_transformed = features_a.clone()
             logging.info(f"Transfer method: Initialized features_a_transformed with source features (shape: {features_a.shape})")
 
-        # ===== PHASE 1: E-STEP FOR ALL BATCHES =====
-        logging.info(f"=== E-STEP: Computing transport for all {len(batches)} batches ===")
-        batch_results = [None] * len(batches)
+        # ===== PHASE 1: E-STEP =====
+        logging.info(f"=== E-STEP: Computing transport for all {len(current_batches)} batches ===")
+        batch_results = [None] * len(current_batches)
 
         def process_cluster(b_idx, src_idx, tgt_idx):
-            # Tự động chọn stream context tùy theo loại chip
             if device_t.type == 'cuda':
                 stream = torch.cuda.Stream(device=device_t)
                 ctx = torch.cuda.stream(stream)
             else:
-                # Trên Mac (mps) hoặc CPU, bỏ qua CUDA stream và chạy mặc định
                 ctx = contextlib.nullcontext()
                 
             with ctx:
-                # Cấu hình đặc trưng như bản gốc
                 if it == 0:
                     features_source_base = features_a
                 else:
                     if m_step_method == 'transfer':
                         features_source_base = features_a_transformed
-                    else:  # global
+                    else:  
                         with torch.no_grad():
                             features_source_base = apply_model_with_scaling(features_a)
 
-                # Chuẩn hóa
                 if metric == 'cosine':
                     features_s_norm = F.normalize(features_source_base, p=2, dim=1)
                     features_t_norm = F.normalize(features_b, p=2, dim=1)
@@ -385,7 +336,6 @@ def align_features_fgw(
                         features_s_norm = features_source_base
                         features_t_norm = features_b
 
-                # Quản lý k-NN mask
                 knn_constraint = None
                 if sampling_strategy == 'spatial' and knn_indices_spatial is not None:
                     knn_constraint = knn_indices_spatial[src_idx]
@@ -395,11 +345,11 @@ def align_features_fgw(
                     target_indices=tgt_idx,
                     features_source_all=features_s_norm,
                     features_target_all=features_t_norm,
-                    auxiliary_features_source=auxiliary_features_source,
-                    auxiliary_features_target=auxiliary_features_target,  
-                    gamma=gamma, epsilon=epsilon, metric=metric,
+                    auxiliary_features_source=current_aux_src,
+                    auxiliary_features_target=current_aux_tgt,  
+                    gamma=active_gamma, epsilon=epsilon, metric=metric,
                     balanced=balanced_ot, use_linear_assignment=use_linear_assignment,
-                    device=device_t, iteration=it, e_step_method=e_step_method,
+                    device=device_t, iteration=it, e_step_method=active_e_step,
                     entropy_percentile=entropy_percentile, confidence_percentile=confidence_percentile,
                     knn_k=knn_k, use_knn_graph=use_knn_graph, alpha=alpha, verbose=verbose,
                     knn_constraint_indices=knn_constraint, knn_penalty_weight=5.0,
@@ -408,58 +358,50 @@ def align_features_fgw(
             return b_idx, res
 
         if device_t.type == 'cuda':
-            # 1. Chạy song song nếu dùng server card NVIDIA
-            if e_step_method == 'nfgw':
-                max_workers = 1
-            else:
-                max_workers = min(len(batches), 16) 
+            max_workers = 1 if active_e_step == 'nfgw' else min(len(current_batches), 3)
             with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                 futures = []
-                for batch_idx, (source_batch_indices, target_batch_indices) in enumerate(batches):
+                for batch_idx, (source_batch_indices, target_batch_indices) in enumerate(current_batches):
                     futures.append(
                         executor.submit(process_cluster, batch_idx, source_batch_indices, target_batch_indices)
                     )
                 
-                # Thu thập kết quả
                 for future in concurrent.futures.as_completed(futures):
                     b_idx, result = future.result()
                     batch_results[b_idx] = result
-                    logging.info(f"  Batch {b_idx+1}/{len(batches)}: Transport computed (CUDA Parallel)")
+                    logging.info(f"  Batch {b_idx+1}/{len(current_batches)}: Transport computed (CUDA Parallel)")
         else:
-            for batch_idx, (source_batch_indices, target_batch_indices) in enumerate(batches):
+            for batch_idx, (source_batch_indices, target_batch_indices) in enumerate(current_batches):
                 b_idx, result = process_cluster(batch_idx, source_batch_indices, target_batch_indices)
                 batch_results[b_idx] = result
-                logging.info(f"  Batch {b_idx+1}/{len(batches)}: Transport computed (MPS Sequential)")
+                logging.info(f"  Batch {b_idx+1}/{len(current_batches)}: Transport computed (MPS Sequential)")
 
-        # Track convergence by comparing mappings with previous iteration
         for batch_idx, result in enumerate(batch_results):
             T = result['T']
             mapping_curr = T.argmax(dim=1).cpu().numpy()
 
             if it > 0 and batch_idx in prev_iter_mappings:
                 mapping_prev = prev_iter_mappings[batch_idx]
-                n_changed = np.sum(mapping_curr != mapping_prev)
-                n_total = len(mapping_curr)
-                pct_changed = 100.0 * n_changed / n_total if n_total > 0 else 0.0
+                
+                min_len = min(len(mapping_curr), len(mapping_prev))
+                if min_len > 0:
+                    n_changed = np.sum(mapping_curr[:min_len] != mapping_prev[:min_len])
+                    pct_changed = 100.0 * n_changed / min_len
+                    convergence_data.append({
+                        'iter': it,
+                        'batch_idx': batch_idx,
+                        'n_changed': n_changed,
+                        'n_total_valid': min_len,
+                        'pct_changed': pct_changed
+                    })
+                    logging.info(f"  Convergence: Batch {batch_idx}: {n_changed}/{min_len} cells changed ({pct_changed:.1f}%)")
 
-                convergence_data.append({
-                    'iter': it,
-                    'batch_idx': batch_idx,
-                    'n_changed': n_changed,
-                    'n_total_valid': n_total,
-                    'pct_changed': pct_changed
-                })
-
-                logging.info(f"  Convergence: Batch {batch_idx}: {n_changed}/{n_total} cells changed ({pct_changed:.1f}%)")
-
-            # Store current mapping for next iteration
             prev_iter_mappings[batch_idx] = mapping_curr
 
-        # ===== PHASE 2: M-STEP ON AGGREGATED DATA =====
+        # ===== PHASE 2: M-STEP =====
         logging.info(f"=== M-STEP: Training on aggregated data from all batches ===")
 
         if m_step_method == 'global':
-            # Aggregate training data from ALL batches
             source_agg, target_agg, agg_stats = aggregate_training_data_from_batches(
                 batch_results=batch_results,
                 features_source_all=features_a,
@@ -468,7 +410,6 @@ def align_features_fgw(
                 confidence_percentile=confidence_percentile
             )
 
-            # Train model ONCE on aggregated data
             step_losses, feature_mean, feature_std = train_global_model(
                 model=model,
                 optimizer=optimizer,
@@ -481,16 +422,13 @@ def align_features_fgw(
                 metric=m_step_metric,
                 structure_sample_size=structure_sample_size,
                 device=device_t,
-                features_target_all=features_b  # Pass FULL target dataset for correct scaler
+                features_target_all=features_b  
             )
 
-            # Store scaler for later (needed to unstandardize model outputs)
             if it == 0:
-                # First iteration: initialize scaler storage
                 global_feature_mean = feature_mean
                 global_feature_std = feature_std
             elif feature_mean is not None:
-                # Update scaler (should be consistent across iterations for euclidean)
                 global_feature_mean = feature_mean
                 global_feature_std = feature_std
 
@@ -498,53 +436,28 @@ def align_features_fgw(
             logging.info(f"M-step: Trained on {len(source_agg)} aggregated cells, avg loss={avg_loss:.6f}")
 
         elif m_step_method == 'transfer':
-            # Apply transfer ONCE using all transport plans
             features_a_transformed = apply_transfer_method(
                 batch_results=batch_results,
                 features_target_all=features_b,
                 n_source_total=n_a,
                 device=device_t
             )
-
             logging.info(f"M-step: Applied transfer to {n_a} source cells")
 
-        # ===== DEBUG PLOTS (runs for both methods) =====
-        # Generate debug plots AFTER processing all batches (every iteration)
+        # ===== DEBUG PLOTS =====
         if debug_plots_path:
             logging.info(f"Generating debug plots for iteration {it+1}...")
 
-            # UMAP visualization using ALL target data (not just one batch)
             if m_step_method == 'transfer':
-                # For transfer method, use the TRANSFERRED features (target expressions transferred to source)
-                # This shows the actual result of the transfer method
                 a_hat_cpu = features_a_transformed.detach().cpu().numpy()
-                logging.info("Transfer method: Using TRANSFERRED source features for UMAP (target expressions transferred to source)")
             else:
-                # For global method, use model output
                 with torch.no_grad():
-                    model.eval()  # Set to eval mode for inference
-
-                    # Variance diagnostics BEFORE global transformation
-                    source_var_before = features_a.var(dim=0).mean().item()
-                    source_std_before = features_a.std(dim=0).mean().item()
-                    source_range_before = (features_a.max() - features_a.min()).item()
-                    logging.info(f"VARIANCE CHECK - Source BEFORE global transform: var={source_var_before:.6f}, std={source_std_before:.6f}, range={source_range_before:.6f}")
-
+                    model.eval()  
                     a_hat_global = apply_model_with_scaling(features_a)
-
-                    # Variance diagnostics AFTER global transformation
-                    trans_var_after = a_hat_global.var(dim=0).mean().item()
-                    trans_std_after = a_hat_global.std(dim=0).mean().item()
-                    trans_range_after = (a_hat_global.max() - a_hat_global.min()).item()
-                    logging.info(f"VARIANCE CHECK - Source AFTER global transform: var={trans_var_after:.6f}, std={trans_std_after:.6f}, range={trans_range_after:.6f}")
-                    logging.info(f"VARIANCE PRESERVATION RATIO (global): {trans_std_after/source_std_before:.4f}")
-
                     a_hat_cpu = a_hat_global.detach().cpu().numpy()
 
-            # Use sketched observations if geosketch was applied
             if sketch_to_original is not None:
                 obs_sketched = adata_a.obs.iloc[sketch_to_original].copy()
-                # Also subset spatial coordinates if present
                 obsm_dict = {}
                 if spatial_key and spatial_key in adata_a.obsm:
                     obsm_dict[spatial_key] = adata_a.obsm[spatial_key][sketch_to_original]
@@ -553,23 +466,22 @@ def align_features_fgw(
                 obsm_dict = {}
                 if spatial_key and spatial_key in adata_a.obsm:
                     obsm_dict[spatial_key] = adata_a.obsm[spatial_key]
+                    
             adata_a_transformed = ad.AnnData(X=a_hat_cpu, obs=obs_sketched, obsm=obsm_dict if obsm_dict else None)
-            adata_a_transformed.obs["type"] = "source_transformed"  # Back to transformed since we're showing transferred features
+            adata_a_transformed.obs["type"] = "source_transformed"  
 
-            # Ensure target copy preserves spatial coordinates
             adata_b_copy = adata_b.copy()
             adata_b_copy.obs["type"] = "target"
-            # Spatial coordinates should already be in adata_b.obsm if it's spatial data
 
             concat_adata_iter = ad.concat(
                 [adata_a_transformed, adata_b_copy], axis=0,
                 label="batch", keys=["source", "target"], index_unique="_",
             )
-            # Set common_CT column correctly (if present)
+            
             if cell_type_col in adata_a_transformed.obs.columns and cell_type_col in adata_b_copy.obs.columns:
                 common_ct_values = pd.concat([adata_a_transformed.obs[cell_type_col], adata_b_copy.obs[cell_type_col]])
                 concat_adata_iter.obs[cell_type_col] = common_ct_values.values
-            # Compute UMAP for visualization using rapids-singlecell
+                
             try:
                 rsc.tl.pca(concat_adata_iter)
                 rsc.pp.neighbors(concat_adata_iter, use_rep='X', metric=metric)
@@ -577,10 +489,8 @@ def align_features_fgw(
                 logging.info(f"UMAP computation successful for iteration {it+1}")
             except Exception as e:
                 logging.error(f"UMAP computation failed for iteration {it+1}: {e}")
-                # Skip plotting if UMAP fails
-                continue
+                pass
 
-            # Create dual UMAP plots using plot_utils
             plot_dual_umap(
                 concat_adata_iter,
                 cell_type_col=cell_type_col,
@@ -590,9 +500,6 @@ def align_features_fgw(
             )
             concat_adata_iter.write_h5ad(f'{str(debug_plots_path)}/umap/iter{it}.h5ad')
 
-            # ============================================================
-            # SPATIAL CHANNEL PLOTS (for spatial sampling strategy)
-            # ============================================================
             if sampling_strategy == 'spatial' and spatial_key is not None:
                 plot_spatial_channels(
                     adata_source=adata_a_transformed,
@@ -600,51 +507,40 @@ def align_features_fgw(
                     spatial_key=spatial_key,
                     iteration=it+1,
                     save_path=debug_plots_path,
-                    channel_idx=2  # Using channel 2 as specified in the original code
+                    channel_idx=2  
                 )
-
-                # Also plot spatial mapping visualization
-                # Extract hard mapping from current transport matrix
                 try:
-                    # Combine transport from all batches (similar to line 749-765)
                     T_full_for_mapping = torch.zeros(n_a, n_b_orig, device=device_t, dtype=torch.float32)
-                    for result in batch_results:
-                        T = result['T']
-                        source_indices = result['source_indices']
-                        target_indices = result['target_indices']
+                    if active_e_step == 'nfgw' or len(batch_results) == 1:
+                        T_full_for_mapping = batch_results[0]['T']
+                    else:
+                        for result in batch_results:
+                            T = result['T']
+                            source_indices = result['source_indices']
+                            target_indices = result['target_indices']
 
-                        if sampling_strategy == 'spatial':
-                            # For spatial, place batch transport directly
-                            source_idx_tensor = torch.from_numpy(source_indices).long().to(device_t)
-                            target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
-                            T_full_for_mapping[source_idx_tensor[:, None], target_idx_tensor] = T
-                        elif use_stratified_pairing:
-                            # For stratified pairing, place batch transport in full matrix
-                            source_idx_tensor = torch.from_numpy(source_indices).long().to(device_t)
-                            target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
-                            T_full_for_mapping[source_idx_tensor[:, None], target_idx_tensor] = T
-                        else:
-                            # For non-stratified, source covers all indices
-                            target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
-                            T_full_for_mapping[:, target_idx_tensor] = T
+                            if sampling_strategy == 'spatial':
+                                source_idx_tensor = torch.from_numpy(source_indices).long().to(device_t)
+                                target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
+                                T_full_for_mapping[source_idx_tensor[:, None], target_idx_tensor] = T
+                            elif active_stratified:
+                                source_idx_tensor = torch.from_numpy(source_indices).long().to(device_t)
+                                target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
+                                T_full_for_mapping[source_idx_tensor[:, None], target_idx_tensor] = T
+                            else:
+                                target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
+                                T_full_for_mapping[:, target_idx_tensor] = T
 
-                    # Extract hard mapping (argmax)
                     mapping_current = T_full_for_mapping.argmax(dim=1).cpu().numpy()
-
-                    # Mark invalid mappings (where max transport is too small)
                     T_max_vals = T_full_for_mapping.max(dim=1)[0]
                     invalid_mask = (T_max_vals < 1e-6).cpu().numpy()
                     mapping_current[invalid_mask] = -1
 
-                    # Get spatial coordinates
                     coords_source = adata_a.obsm[spatial_key].astype(np.float32)
                     coords_target = adata_b.obsm[spatial_key].astype(np.float32)
-
-                    # Handle sketched source if applicable
                     if sketch_to_original is not None:
                         coords_source = coords_source[sketch_to_original]
 
-                    # Plot spatial mapping
                     plot_spatial_mapping(
                         coords_source=coords_source,
                         coords_target=coords_target,
@@ -656,42 +552,29 @@ def align_features_fgw(
                 except Exception as e:
                     logging.warning(f"Failed to create spatial mapping plot: {e}")
 
-            # ============================================================
-            # ADDITIONAL DEBUG PLOT: Transfer-based UMAP (for all methods)
-            # ============================================================
-            # This shows what the alignment looks like using just T @ features_b
-            # Helps separate "is T good?" from "is W good?"
+            if active_e_step == 'nfgw' or len(batch_results) == 1:
+                T_full_all_debug = batch_results[0]['T']
+            else:
+                T_full_all_debug = torch.zeros(n_a, n_b_orig, device=device_t, dtype=torch.float32)
+                for result in batch_results:
+                    T = result['T']
+                    source_indices = result['source_indices']
+                    target_indices = result['target_indices']
 
-            # Reconstruct full transport matrix from batch_results
-            T_full_all_debug = batch_results[0]['T']
-            for result in batch_results:
-                T = result['T']
-                source_indices = result['source_indices']
-                target_indices = result['target_indices']
+                    if active_stratified:
+                        source_idx_tensor = torch.from_numpy(source_indices).long().to(device_t)
+                        target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
+                        T_full_all_debug[source_idx_tensor[:, None], target_idx_tensor] = T
+                    else:
+                        target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
+                        T_full_all_debug[:, target_idx_tensor] = T
 
-                if use_stratified_pairing:
-                    # Convert numpy indices to torch tensors for CUDA compatibility
-                    source_idx_tensor = torch.from_numpy(source_indices).long().to(device_t)
-                    target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
-                    # For stratified pairing, place batch transport in full matrix
-                    T_full_all_debug[source_idx_tensor[:, None], target_idx_tensor] = T
-                else:
-                    # Convert numpy indices to torch tensors for CUDA compatibility
-                    target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
-                    # For non-stratified, source covers all indices
-                    T_full_all_debug[:, target_idx_tensor] = T
-
-            # ===== TARGET CELL CONVERGENCE TRACKING (for linear assignment only) =====
-            # Track which target cells changed their matched source from previous iteration
             if use_linear_assignment and it > 0:
-                # Compute inverse mapping: target -> source
-                # T_full_all_debug is binary after linear assignment
-                T_transpose = T_full_all_debug.t()  # (n_target, n_source)
-                target_to_source_curr = T_transpose.argmax(dim=1).cpu().numpy()  # (n_target,) - which source maps to each target
-                target_has_match_curr = (T_transpose.max(dim=1)[0] > 0.5).cpu().numpy()  # Boolean mask
+                T_transpose = T_full_all_debug.t()  
+                target_to_source_curr = T_transpose.argmax(dim=1).cpu().numpy()  
+                target_has_match_curr = (T_transpose.max(dim=1)[0] > 0.5).cpu().numpy()  
 
                 if 'target_to_source_prev' in locals():
-                    # Compare with previous iteration
                     target_changed = (target_to_source_curr != target_to_source_prev) & target_has_match_curr & target_has_match_prev
                     n_target_changed = target_changed.sum()
                     n_target_matched = target_has_match_curr.sum()
@@ -699,40 +582,30 @@ def align_features_fgw(
 
                     convergence_data.append({
                         'iteration': it,
-                        'batch_idx': 'ALL_TARGETS',  # Special marker for target cells
+                        'batch_idx': 'ALL_TARGETS',  
                         'n_changed': n_target_changed,
                         'n_total_valid': n_target_matched,
                         'pct_changed': pct_target_changed
                     })
-
-                    logging.info(f"  Target convergence: {n_target_changed}/{n_target_matched} targets changed source match ({pct_target_changed:.1f}%)")
-
-                # Store for next iteration
                 target_to_source_prev = target_to_source_curr
                 target_has_match_prev = target_has_match_curr
 
-            # Get appropriate observations
             if sketch_to_original is not None:
                 obs_sketched = adata_a.obs.iloc[sketch_to_original].copy()
             else:
                 obs_sketched = adata_a.obs.copy()
 
-            # Reconstruct full focused_mask from batch_results (for M-step training visualization)
             focused_mask_full = torch.zeros(n_a, device=device_t, dtype=torch.bool)
             for result in batch_results:
                 focused_mask = result.get('focused_mask', None)
                 if focused_mask is not None:
                     source_indices = result['source_indices']
-                    if use_stratified_pairing:
-                        # Convert numpy indices to torch tensors for CUDA compatibility
+                    if active_stratified:
                         source_idx_tensor = torch.from_numpy(source_indices).long().to(device_t)
-                        # Map batch-local focused_mask to full source indices
                         focused_mask_full[source_idx_tensor] = focused_mask
                     else:
-                        # For non-stratified, source covers all indices
                         focused_mask_full[:] = focused_mask
 
-            # Create transfer debug UMAP using plot_utils
             plot_transfer_debug_umap(
                 T_full=T_full_all_debug,
                 features_b=features_b,
@@ -742,16 +615,16 @@ def align_features_fgw(
                 iteration=it+1,
                 save_dir=os.path.join(debug_plots_path, 'umap_transfer'),
                 metric='euclidean',
-                focused_mask_full=focused_mask_full,  # NEW: Pass M-step training mask
-                use_linear_assignment=use_linear_assignment  # NEW: Pass flag for third panel
+                focused_mask_full=focused_mask_full,  
+                use_linear_assignment=use_linear_assignment  
             )
 
-            # Weight heatmap using plot_utils
             plot_weight_heatmap(
                 model=model,
                 title=f'Transformation Weights Iter {it+1}',
                 save_path=os.path.join(debug_plots_path, 'heatmap', f"W_iter_{it+1:04d}.png")
             )
+
         if 'T_full_all_debug' in locals():
             del T_full_all_debug
         if 'T_full_for_mapping' in locals():
@@ -764,72 +637,46 @@ def align_features_fgw(
         gc.collect()
         torch.cuda.empty_cache()
         
-    # Extract mappings from final batch_results (for final output)
     logging.info("Extracting mappings from final transport plans...")
     batch_mappings = []
     for batch_idx, result in enumerate(batch_results):
         T = result['T']
         source_indices = result['source_indices']
         target_indices = result['target_indices']
-
-        # Get hard assignments (argmax per source)
-        mapping_batch = T.argmax(dim=1).cpu().numpy()  # Maps source -> target_batch_indices
-
+        mapping_batch = T.argmax(dim=1).cpu().numpy()  
         batch_mappings.append((batch_idx, mapping_batch, target_indices))
         logging.info(f"Batch {batch_idx}: extracted mapping for {len(mapping_batch)} source cells")
 
-    # ============================================================
-    # CONVERGENCE PLOT: Show how mappings converge over iterations
-    # ============================================================
     if debug_plots_path:
         plot_convergence(
             convergence_data=convergence_data,
             save_dir=os.path.join(debug_plots_path, 'convergence')
         )
 
-    # Apply transformation based on method
     if m_step_method == 'transfer':
         logging.info("Transfer method: Using features from final iteration...")
-
-        if features_a_transformed is None:
-            logging.error("features_a_transformed is None! This should not happen for transfer method.")
-            raise RuntimeError("Transfer method failed: features_a_transformed not computed")
-
-        logging.info(f"Transfer method: Using transformed features of shape {features_a_transformed.shape}")
         
-        # Create transformed source data
         a_hat_cpu = features_a_transformed.detach().cpu().numpy()
-        logging.info("Transfer method: Using TRANSFERRED source features for final UMAP (target expressions transferred to source)")
-        # Use sketched observations if geosketch was applied
         if sketch_to_original is not None:
             obs_sketched = adata_a.obs.iloc[sketch_to_original].copy()
         else:
             obs_sketched = adata_a.obs.copy()
         adata_a_transformed = ad.AnnData(X=a_hat_cpu, obs=obs_sketched)
-        adata_a_transformed.obs["type"] = "source_transformed"  # Back to transformed since we're showing transferred features
+        adata_a_transformed.obs["type"] = "source_transformed"  
         
-        # Create a dummy model for consistency (not used in transfer method)
         model = FeatureTransform(input_dim=d_a, output_dim=d_b, hidden_dim=hidden_dim, dropout=dropout).to(device_t)
         
-        # Create mapping_final for transfer method (combine mappings from all batches)
-        logging.info("Transfer method: Combining mappings from all batches...")
-        mapping_final = np.full(n_a, -1, dtype=np.int64)  # Map from source to target
+        mapping_final = np.full(n_a, -1, dtype=np.int64)  
         
         for batch_idx, mapping_batch, target_batch_indices in batch_mappings:
-            logging.info(f"Batch {batch_idx}: mapping_batch.shape={mapping_batch.shape}, target_batch_indices.shape={target_batch_indices.shape}")
-            # mapping_batch maps source indices to target batch indices
             valid_mapping = mapping_batch >= 0
             if valid_mapping.any():
-                # For valid mappings, map to original target indices
-                valid_source_indices = np.where(valid_mapping)[0]  # Get source indices with valid mappings
-                target_batch_indices_for_valid = mapping_batch[valid_mapping]  # Target batch indices for valid mappings
-                mapped_targets = target_batch_indices[target_batch_indices_for_valid]  # Original target indices
-                
-                # Only update if we don't already have a mapping for this source index
+                valid_source_indices = np.where(valid_mapping)[0]  
+                target_batch_indices_for_valid = mapping_batch[valid_mapping]  
+                mapped_targets = target_batch_indices[target_batch_indices_for_valid]  
                 mask = mapping_final[valid_source_indices] == -1
                 mapping_final[valid_source_indices[mask]] = mapped_targets[mask]
         
-        # Create final concatenated data for transfer method
         adata_b_copy = adata_b.copy()
         adata_b_copy.obs["type"] = "target"
         
@@ -838,13 +685,10 @@ def align_features_fgw(
             label="batch", keys=["source", "target"], index_unique="_",
         )
         
-        # Set common_CT column correctly (if present)
         if cell_type_col in adata_a_transformed.obs.columns and cell_type_col in adata_b_copy.obs.columns:
             common_ct_values = pd.concat([adata_a_transformed.obs[cell_type_col], adata_b_copy.obs[cell_type_col]])
             concat_adata.obs[cell_type_col] = common_ct_values.values
-        print(concat_adata.obs.head())
         
-        # Compute UMAP for final visualization with rapids_singlecell
         try:
             rsc.tl.pca(concat_adata)
             rsc.pp.neighbors(concat_adata, use_rep='X', metric=metric)
@@ -852,59 +696,33 @@ def align_features_fgw(
             logging.info("Final UMAP computation successful")
         except Exception as e:
             logging.error(f"Final UMAP computation failed: {e}")
-            # Continue without UMAP for final plots
 
     else:  # m_step_method == 'global'
-        # Combine mappings from all batches
         logging.info("Combining mappings from all batches...")
-        logging.info(f"n_a (sketched source size): {n_a}")
-        logging.info(f"n_b_orig (original target size): {n_b_orig}")
-        mapping_final = np.full(n_a, -1, dtype=np.int64)  # Map from source to target
+        mapping_final = np.full(n_a, -1, dtype=np.int64)  
 
         for batch_idx, mapping_batch, target_batch_indices in batch_mappings:
-            logging.info(f"Batch {batch_idx}: mapping_batch.shape={mapping_batch.shape}, target_batch_indices.shape={target_batch_indices.shape}")
-            # mapping_batch maps source indices to target batch indices
             valid_mapping = mapping_batch >= 0
             if valid_mapping.any():
-                # For valid mappings, map to original target indices
-                valid_source_indices = np.where(valid_mapping)[0]  # Get source indices with valid mappings
-                target_batch_indices_for_valid = mapping_batch[valid_mapping]  # Target batch indices for valid mappings
-                mapped_targets = target_batch_indices[target_batch_indices_for_valid]  # Original target indices
-
-                # Only update if we don't already have a mapping for this source index
+                valid_source_indices = np.where(valid_mapping)[0]  
+                target_batch_indices_for_valid = mapping_batch[valid_mapping]  
+                mapped_targets = target_batch_indices[target_batch_indices_for_valid]  
                 mask = mapping_final[valid_source_indices] == -1
                 mapping_final[valid_source_indices[mask]] = mapped_targets[mask]
 
-        # Create final concatenated data for UMAP
         logging.info("Creating final concatenated data...")
         with torch.no_grad():
-            model.eval()  # Set to eval mode for final inference
-
-            # Variance diagnostics BEFORE final global transformation
-            source_var_before = features_a.var(dim=0).mean().item()
-            source_std_before = features_a.std(dim=0).mean().item()
-            source_range_before = (features_a.max() - features_a.min()).item()
-            logging.info(f"FINAL VARIANCE CHECK - Source BEFORE global transform: var={source_var_before:.6f}, std={source_std_before:.6f}, range={source_range_before:.6f}")
-
+            model.eval()  
             a_hat_global = apply_model_with_scaling(features_a)
-
-            # Variance diagnostics AFTER final global transformation
-            trans_var_after = a_hat_global.var(dim=0).mean().item()
-            trans_std_after = a_hat_global.std(dim=0).mean().item()
-            trans_range_after = (a_hat_global.max() - a_hat_global.min()).item()
-            logging.info(f"FINAL VARIANCE CHECK - Source AFTER global transform: var={trans_var_after:.6f}, std={trans_std_after:.6f}, range={trans_range_after:.6f}")
-            logging.info(f"FINAL VARIANCE PRESERVATION RATIO (global): {trans_std_after/source_std_before:.4f}")
-
             a_hat_cpu = a_hat_global.detach().cpu().numpy()
-        # Use sketched observations if geosketch was applied
+
         if sketch_to_original is not None:
             obs_sketched = adata_a.obs.iloc[sketch_to_original].copy()
         else:
             obs_sketched = adata_a.obs.copy()
         adata_a_transformed = ad.AnnData(X=a_hat_cpu, obs=obs_sketched)
-        adata_a_transformed.obs["type"] = "source_transformed"  # Keep this for global method
+        adata_a_transformed.obs["type"] = "source_transformed"  
         
-        # Create final concatenated data
         adata_b_copy = adata_b.copy()
         adata_b_copy.obs["type"] = "target"
         
@@ -912,27 +730,18 @@ def align_features_fgw(
             [adata_a_transformed, adata_b_copy], axis=0,
             label="batch", keys=["source", "target"], index_unique="_",
         )
-        # Set common_CT column correctly (if present)
         if cell_type_col in adata_a_transformed.obs.columns and cell_type_col in adata_b_copy.obs.columns:
             common_ct_values = pd.concat([adata_a_transformed.obs[cell_type_col], adata_b_copy.obs[cell_type_col]])
             concat_adata.obs[cell_type_col] = common_ct_values.values
-        print(concat_adata.obs.head())
         
-        # Compute UMAP for final visualization with rapids_singlecell
         try:
             rsc.tl.pca(concat_adata)
             rsc.pp.neighbors(concat_adata, use_rep='X', metric=metric)
             rsc.tl.umap(concat_adata)
-            logging.info("Final UMAP computation successful")
         except Exception as e:
-            logging.error(f"Final UMAP computation failed: {e}")
-            # Continue without UMAP for final plots
+            pass
     
-    # Generate final debug plots using plot_utils
     if debug_plots_path:
-        logging.info("Generating final debug plots...")
-
-        # Final UMAP plot
         plot_dual_umap(
             concat_adata,
             cell_type_col=cell_type_col,
@@ -940,8 +749,6 @@ def align_features_fgw(
             save_path=os.path.join(debug_plots_path, 'umap', 'umap_final.png'),
             type_palette={'source_transformed': '#1f77b4', 'target': '#ff7f0e'}
         )
-
-        # Final weight heatmap
         plot_weight_heatmap(
             model=model,
             title='Final Transformation Weights',
@@ -951,19 +758,16 @@ def align_features_fgw(
     logging.info(f"Alignment completed. Final mapping: {np.sum(mapping_final >= 0)}/{len(mapping_final)} source cells mapped")
 
     # Reconstruct full transport matrix for output
-    logging.info("Reconstructing full transport matrix for output...")
-    
-    if e_step_method == 'nfgw' or len(batch_results) == 1:
+    if active_e_step == 'nfgw' or len(batch_results) == 1:
         T_full = batch_results[0]['T']
     else:
-        # Giữ lại logic cũ cho các phương pháp chia lô (batches) nhỏ
         T_full = torch.zeros(n_a, n_b_orig, device=device_t, dtype=torch.float32)
         for result in batch_results:
             T = result['T']
             source_indices = result['source_indices']
             target_indices = result['target_indices']
 
-            if use_stratified_pairing:
+            if active_stratified:
                 source_idx_tensor = torch.from_numpy(source_indices).long().to(device_t)
                 target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
                 T_full[source_idx_tensor[:, None], target_idx_tensor] = T
@@ -971,7 +775,6 @@ def align_features_fgw(
                 target_idx_tensor = torch.from_numpy(target_indices).long().to(device_t)
                 T_full[:, target_idx_tensor] = T
 
-    # Save model to disk (if debug_plots_path is provided and m_step_method is 'global')
     if True:
         from model_utils import save_alignment_model
         dir_path = "../datasets/scGPT_example/"
@@ -984,7 +787,5 @@ def align_features_fgw(
             feature_std=global_feature_std,
             gene_names=adata_a.var_names.tolist()
         )
-        logging.info(f"Model saved to {model_save_path}")
 
-    # Return scaler for applying model to new data (None if cosine metric was used)
     return model, mapping_final, concat_adata, T_full, global_feature_mean, global_feature_std
