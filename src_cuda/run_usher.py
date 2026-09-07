@@ -2,7 +2,7 @@ import concurrent.futures
 import contextlib
 import logging
 import os
-from typing import Optional, Tuple, Dict
+from typing import Optional, Tuple, Dict, List
 import anndata as ad
 import numpy as np
 import torch
