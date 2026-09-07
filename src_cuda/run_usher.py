@@ -245,21 +245,21 @@ def align_features_fgw(
             target_soft_list = []
             
             for result in batch_results:
-                T_matrix = result['T']  # Ma trận xác suất mềm
+                T_matrix = result['T']  
                 src_idx = result['source_indices']
                 tgt_idx = result['target_indices']
                 mask = result['focused_mask']
                 
-                # 1. Chuẩn hóa lại hàng cho an toàn tuyệt đối
-                T_safe = T_matrix / (T_matrix.sum(dim=1, keepdim=True) + 1e-12)
+                tau = 0.08  
+                T_sharp = T_matrix ** (1.0 / tau)
                 
-                # 2. Tạo Soft-Target (Barycenter) bằng phép nhân ma trận (T @ Target_Features)
+                T_safe = T_sharp / (T_sharp.sum(dim=1, keepdim=True) + 1e-12)
+                
                 feat_t = features_b[tgt_idx]
-                y_soft = torch.matmul(T_safe, feat_t)
+                y_firm = torch.matmul(T_safe, feat_t)
                 
-                # 3. Lọc lấy những tế bào có độ tự tin cao (Entropy thấp)
                 source_list.append(features_a[src_idx][mask])
-                target_soft_list.append(y_soft[mask])
+                target_soft_list.append(y_firm[mask])
                 
             source_agg = torch.cat(source_list, dim=0)
             target_agg = torch.cat(target_soft_list, dim=0)
