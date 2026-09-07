@@ -242,7 +242,7 @@ def align_features_fgw(
         # =====================================================================
         if m_step_method == 'global':
             source_list = []
-            target_hybrid_list = []  # Đổi tên list
+            target_hybrid_list = []
             
             for result in batch_results:
                 T_matrix = result['T']  
@@ -251,13 +251,26 @@ def align_features_fgw(
                 mask = result['focused_mask']
                 feat_t = features_b[tgt_idx]
                 
-                T_safe = T_matrix / (T_matrix.sum(dim=1, keepdim=True) + 1e-12)
-                y_soft = torch.matmul(T_safe, feat_t)
-                
-                best_match_indices = T_matrix.argmax(dim=1)
+                # 1. Trích xuất Pseudo Hard-target và Độ tự tin (Confidence)
+                best_match_probs, best_match_indices = T_matrix.max(dim=1)
                 y_hard = feat_t[best_match_indices]
                 
-                beta = 0.5
+                # 2. Temperature Sharpening cho Soft-target
+                # Giảm tau (< 1.0) giúp làm giảm hiệu ứng "co rút Barycenter" 
+                # bằng cách phạt nặng các xác suất đuôi dài, ép T tập trung vào nhóm lân cận.
+                tau = 0.5 
+                T_sharp = torch.pow(T_matrix.clamp(min=1e-12), 1.0 / tau)
+                T_safe = T_sharp / T_sharp.sum(dim=1, keepdim=True)
+                y_soft = torch.matmul(T_safe, feat_t)
+                
+                # 3. Dynamic Beta (Lai nhận thức độ tự tin)
+                # Tế bào có độ tự tin cao -> beta cao -> bám vào y_hard để bung rộng không gian (Tăng KBET).
+                # Tế bào có độ tự tin thấp -> beta thấp -> bám vào y_soft để giữ mượt cấu trúc (Giữ NMI cao).
+                beta = best_match_probs.unsqueeze(1)  # Đưa về shape (N, 1) để nhân ma trận
+                
+                # (Tùy chọn) Có thể nhân hệ số để khuếch đại lực trộn lô nếu KBET vẫn thấp
+                beta = torch.clamp(beta * 1.5, max=1.0) 
+                
                 y_hybrid = beta * y_hard + (1.0 - beta) * y_soft
                 
                 source_list.append(features_a[src_idx][mask])
@@ -265,7 +278,7 @@ def align_features_fgw(
                 
             source_agg = torch.cat(source_list, dim=0)
             target_agg = torch.cat(target_hybrid_list, dim=0)
-
+            
         elif m_step_method == 'transfer':
             features_a_transformed = apply_transfer_method(
                 batch_results=batch_results, features_target_all=features_b,
