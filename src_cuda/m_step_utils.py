@@ -148,7 +148,7 @@ def train_global_model(
     features_target_all: Optional[torch.Tensor] = None
 ) -> List[float]:
     """
-    Train global transformation model using Anti-Overcorrection Structural Loss.
+    Train global transformation model using Anti-Overcorrection Structural Loss (VRAM Optimized).
     """
     model.train()
     torch.set_grad_enabled(True)
@@ -171,14 +171,14 @@ def train_global_model(
     with torch.no_grad():
         source_original_anchor = source_features.clone()
 
-    logging.info("  [M-step] Chạy Adam Optimizer với Cơ chế Chống Overcorrection (Structural Loss)...")
+    logging.info("  [M-step] Chạy Adam Optimizer với Cơ chế Chống Overcorrection (VRAM Safe)...")
     for step in range(steps_per_iter):
         optimizer.zero_grad()
 
         # Forward pass
         source_transformed = model(source_features)
         
-        # ===== Loss 1: Cross-domain alignment (Trộn Lô) =====
+        # ===== Loss 1: Cross-domain alignment =====
         if metric == 'cosine':
             source_norm = F.normalize(source_transformed, p=2, dim=1)
             target_norm = F.normalize(target_features, p=2, dim=1)
@@ -186,20 +186,19 @@ def train_global_model(
         else:  
             loss_cross = F.mse_loss(source_transformed, target_features)
         
-        # ===== Loss 2: Variance preservation (Chống co rút) =====
+        # ===== Loss 2: Variance preservation =====
         loss_var = (source_transformed.std(dim=0) - target_features.std(dim=0)).abs().mean()
 
-        # ===== Loss 3: Structural Preservation (CHỐNG OVERCORRECTION) =====
+        # ===== Loss 3: Structural Preservation (VRAM OPTIMIZED) =====
         loss_struct = torch.tensor(0.0, device=device)
         if lambda_struct > 0.0:
-            # Lấy mẫu ngẫu nhiên để tính ma trận khoảng cách chéo (tiết kiệm VRAM)
-            n_samples = min(structure_sample_size or 512, source_features.shape[0])
+            # FIX LỖI OOM: Khống chế tối đa 256 điểm để tránh bùng nổ ma trận Gradient O(N^2 * D)
+            n_samples = min(256, source_features.shape[0])
             idx = torch.randperm(source_features.shape[0], device=device)[:n_samples]
             
             src_orig_subset = source_original_anchor[idx]
             src_trans_subset = source_transformed[idx]
             
-            # Tính khoảng cách cặp (Pairwise distances) cho bản gốc và bản sau biến đổi
             if metric == 'cosine':
                 orig_dists = 1.0 - torch.mm(F.normalize(src_orig_subset, p=2, dim=1), 
                                             F.normalize(src_orig_subset, p=2, dim=1).T)
@@ -209,7 +208,6 @@ def train_global_model(
             else:
                 orig_dists = torch.pdist(src_orig_subset, p=2)
                 trans_dists = torch.pdist(src_trans_subset, p=2)
-                # Dùng smooth_l1_loss (Huber) để tránh phạt quá gắt các ngoại lệ
                 loss_struct = F.smooth_l1_loss(trans_dists, orig_dists)
 
         # ===== Combined loss =====
@@ -219,7 +217,6 @@ def train_global_model(
             logging.error(f"Non-finite loss at step {step}: loss={loss.item()}")
             break
 
-        # Backprop
         loss.backward()
         optimizer.step()
 
