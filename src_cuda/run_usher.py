@@ -21,7 +21,7 @@ from e_step_utils import compute_transport_batch
 from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, plot_transfer_debug_umap
 
 # =====================================================================
-# 🌟 KIẾN TRÚC MỚI: MIXTURE-CONDITIONED FLOW MATCHING (SP-FM INSPIRED)
+# 🌟 KIẾN TRÚC MỚI: AdaLN + SCHRÖDINGER BRIDGES (SDE)
 # =====================================================================
 class MixtureFlowMatchingVectorField(nn.Module):
     """
@@ -34,7 +34,7 @@ class MixtureFlowMatchingVectorField(nn.Module):
         self.input_dim = dim
         self.output_dim = dim
         self.hidden_dim = hidden_dim
-        self.use_residual = False
+        self.use_residual = False  # Biến này để tương thích với hàm save_alignment_model
         
         # Mạng nội suy Thời gian và Cụm riêng biệt
         self.time_mlp = nn.Sequential(
@@ -48,7 +48,6 @@ class MixtureFlowMatchingVectorField(nn.Module):
         self.x_proj = nn.Linear(dim, hidden_dim)
         
         # Mạng AdaLN (Tạo tham số Scale và Shift từ điều kiện)
-        # Output x2 vì cần sinh ra cả tham số Scale (Gamma) và Shift (Beta)
         self.cond_proj1 = nn.Linear(context_dim * 2, hidden_dim * 2)
         self.cond_proj2 = nn.Linear(context_dim * 2, hidden_dim * 2)
         
@@ -61,7 +60,7 @@ class MixtureFlowMatchingVectorField(nn.Module):
         self.act = nn.SiLU()
         self.dropout = nn.Dropout(dropout)
         
-        # Khởi tạo ZERO cho tính ổn định của ODE
+        # Khởi tạo ZERO cho tính ổn định của ODE/SDE
         nn.init.zeros_(self.lin2.weight)
         nn.init.zeros_(self.lin2.bias)
         nn.init.zeros_(self.cond_proj1.weight)
@@ -98,7 +97,8 @@ class MixtureFlowMatchingVectorField(nn.Module):
         
         return out
 
-def train_mixture_flow_model(
+
+def train_schrodinger_bridge_model(
     model: nn.Module,
     optimizer: torch.optim.Optimizer,
     source_features: torch.Tensor,
@@ -106,6 +106,7 @@ def train_mixture_flow_model(
     source_contexts: torch.Tensor,
     steps_per_iter: int,
     device: torch.device,
+    sigma: float = 0.2
 ) -> List[float]:
     model.train()
     step_losses = []
@@ -114,20 +115,22 @@ def train_mixture_flow_model(
     for step in range(steps_per_iter):
         optimizer.zero_grad()
 
-        # Lấy mẫu ngẫu nhiên các cặp mỏ neo (từ E-step Hungarian)
+        # Lấy mẫu mỏ neo
         indices = torch.randint(0, source_features.shape[0], (batch_size,), device=device)
         x0 = source_features[indices]
         x1 = target_features[indices]
         c = source_contexts[indices]
 
-        # Lấy mẫu t ngẫu nhiên U[0,1]
+        # Lấy mẫu t ngẫu nhiên (Uniform distribution)
         t = torch.rand(batch_size, 1, device=device)
         
-        # Đường thẳng nội suy cơ sở
-        xt = (1.0 - t) * x0 + t * x1
-        v_target = x1 - x0
+        # 🌟 MA THUẬT SDE: Bơm nhiễu Brownian (Brownian Bridge)
+        noise = torch.randn_like(x0)
+        # Nhiễu đạt cực đại ở giữa chặng (t=0.5) và triệt tiêu ở 2 đầu (t=0 và t=1)
+        std = sigma * torch.sqrt(t * (1.0 - t)) 
+        xt = (1.0 - t) * x0 + t * x1 + std * noise
 
-        # Dự đoán vector vận tốc theo ngữ cảnh
+        v_target = x1 - x0
         v_pred = model(xt, t, c)
 
         loss = F.mse_loss(v_pred, v_target)
@@ -142,11 +145,12 @@ def train_mixture_flow_model(
     return step_losses
 
 
-def apply_mixture_flow_ode_solver(
+def apply_sb_sde_solver(
     model: nn.Module,
     features: torch.Tensor,
     contexts: torch.Tensor,
-    n_steps: int = 10
+    n_steps: int = 40,
+    sigma: float = 0.2
 ) -> torch.Tensor:
     model.eval()
     with torch.no_grad():
@@ -155,8 +159,17 @@ def apply_mixture_flow_ode_solver(
         for step in range(n_steps):
             t_val = step * dt
             t_tensor = torch.full((x.shape[0], 1), t_val, device=features.device)
+            
+            # Tính lực đẩy (Drift) từ mạng AdaLN
             v = model(x, t_tensor, contexts)
-            x = x + v * dt
+            
+            # 🌟 MA THUẬT SDE: Bơm nhiễu Euler-Maruyama Method
+            dw = torch.randn_like(x) * np.sqrt(dt)
+            # Tắt nhiễu ở 5 bước cuối để tế bào hạ cánh chính xác vào tâm
+            current_sigma = sigma if step < (n_steps - 5) else 0.0
+            
+            x = x + v * dt + current_sigma * dw
+            
     return x
 
 
@@ -250,12 +263,11 @@ def align_features_fgw(
     if sketch_to_original is not None:
         features_a = features_a[sketch_to_original]
 
-    # Bản đồ ngữ cảnh: Gắn mỗi tế bào Xenium với ID của cụm E-step (Mixture Component)
+    # Bản đồ ngữ cảnh
     source_to_context = torch.zeros(n_a, dtype=torch.long, device=device_t)
     for b_idx, (src, _) in enumerate(batches):
         source_to_context[src] = b_idx
 
-    # Khởi tạo mô hình Mixture Flow Matching
     model = MixtureFlowMatchingVectorField(dim=d_a, num_mixtures=len(batches), hidden_dim=hidden_dim, dropout=dropout).to(device_t)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
@@ -266,7 +278,7 @@ def align_features_fgw(
     # =====================================================================
     # E-M ITERATIONS
     # =====================================================================
-    for it in tqdm(range(n_iters), desc="E-M Alignment (Mixture Flow)"):
+    for it in tqdm(range(n_iters), desc="E-M Alignment (Schrödinger Bridge)"):
         
         if use_stratified_pairing and not stratified_pairing_fix:
             batches, auxiliary_data, _ = prepare_celltype_batches(
@@ -277,7 +289,6 @@ def align_features_fgw(
             )
             auxiliary_features_source = auxiliary_data.get('celltype_probs_a')
             auxiliary_features_target = auxiliary_data.get('celltype_probs_b')
-            # Cập nhật lại bối cảnh nếu batching thay đổi
             for b_idx, (src, _) in enumerate(batches):
                 source_to_context[src] = b_idx
 
@@ -290,8 +301,8 @@ def align_features_fgw(
                     features_source_base = features_a
                 else:
                     with torch.no_grad():
-                        # Dịch chuyển tế bào bằng ODE theo ngữ cảnh của cụm
-                        features_source_base = apply_mixture_flow_ode_solver(model, features_a, source_to_context, n_steps=5)
+                        # Dùng bộ giải SDE để dịch chuyển tế bào
+                        features_source_base = apply_sb_sde_solver(model, features_a, source_to_context, n_steps=5, sigma=0.2)
 
                 if metric == 'cosine':
                     features_s_norm = F.normalize(features_source_base, p=2, dim=1)
@@ -342,7 +353,7 @@ def align_features_fgw(
             prev_iter_mappings[batch_idx] = mapping_curr
 
         # =====================================================================
-        # 🌟 M-STEP: CHUẨN BỊ DỮ LIỆU & HUẤN LUYỆN DÒNG CHẢY
+        # 🌟 M-STEP: CHUẨN BỊ DỮ LIỆU & HUẤN LUYỆN SB-SDE
         # =====================================================================
         source_list = []
         target_list = []
@@ -360,7 +371,6 @@ def align_features_fgw(
 
             if focused_mask.sum().item() == 0: continue
 
-            # Rút trích các cặp mỏ neo
             best_targets_local = T.argmax(dim=1)[focused_mask]
             
             focused_global_idx = src_idx[torch.where(focused_mask)[0].cpu().numpy()]
@@ -369,7 +379,6 @@ def align_features_fgw(
             source_list.append(features_a[torch.from_numpy(focused_global_idx).long().to(device_t)])
             target_list.append(features_b[torch.from_numpy(best_targets_global).long().to(device_t)])
             
-            # Khởi tạo vector context dựa trên số hiệu lô (Mixture Component ID)
             context_list.append(torch.full((len(focused_global_idx),), batch_idx, dtype=torch.long, device=device_t))
 
         if len(source_list) > 0:
@@ -377,18 +386,18 @@ def align_features_fgw(
             target_agg = torch.cat(target_list, dim=0)
             context_agg = torch.cat(context_list, dim=0)
 
-            # Huấn luyện Mixture Flow Vector Field
-            step_losses = train_mixture_flow_model(
+            # Huấn luyện Schrödinger Bridge SDE với nhiễu
+            step_losses = train_schrodinger_bridge_model(
                 model=model, optimizer=optimizer, source_features=source_agg,
                 target_features=target_agg, source_contexts=context_agg,
-                steps_per_iter=steps_per_iter, device=device_t
+                steps_per_iter=steps_per_iter, device=device_t, sigma=0.2
             )
 
         # ===== DEBUG PLOTS =====
         if debug_plots_path:
             with torch.no_grad():
                 model.eval()  
-                a_hat_cpu = apply_mixture_flow_ode_solver(model, features_a, source_to_context, n_steps=10).detach().cpu().numpy()
+                a_hat_cpu = apply_sb_sde_solver(model, features_a, source_to_context, n_steps=10, sigma=0.2).detach().cpu().numpy()
 
             obs_sketched = adata_a.obs.iloc[sketch_to_original].copy() if sketch_to_original is not None else adata_a.obs.copy()
             adata_a_transformed = ad.AnnData(X=a_hat_cpu, obs=obs_sketched)
@@ -421,7 +430,7 @@ def align_features_fgw(
     # Final transformation
     with torch.no_grad():
         model.eval()
-        a_hat_cpu = apply_mixture_flow_ode_solver(model, features_a, source_to_context, n_steps=20).detach().cpu().numpy()
+        a_hat_cpu = apply_sb_sde_solver(model, features_a, source_to_context, n_steps=20, sigma=0.2).detach().cpu().numpy()
 
     obs_sketched = adata_a.obs.iloc[sketch_to_original].copy() if sketch_to_original is not None else adata_a.obs.copy()
     adata_a_transformed = ad.AnnData(X=a_hat_cpu, obs=obs_sketched)
