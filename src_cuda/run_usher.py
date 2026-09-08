@@ -34,6 +34,7 @@ class MixtureFlowMatchingVectorField(nn.Module):
         self.input_dim = dim
         self.output_dim = dim
         self.hidden_dim = hidden_dim
+        self.use_residual = False
         
         # Mạng nội suy Thời gian và Cụm riêng biệt
         self.time_mlp = nn.Sequential(
