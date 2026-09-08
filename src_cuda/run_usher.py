@@ -28,7 +28,6 @@ class FeatureTransform(nn.Module):
     def __init__(self, input_dim: int, output_dim: int, hidden_dim: Optional[int] = None, dropout: float = 0.0):
         super().__init__()
         
-        # BỔ SUNG: Khai báo các thuộc tính để hàm save_alignment_model có thể đọc được
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.hidden_dim = hidden_dim
@@ -41,7 +40,6 @@ class FeatureTransform(nn.Module):
         else:
             self.net = nn.Sequential(
                 nn.Linear(input_dim, hidden_dim),
-                nn.LayerNorm(hidden_dim),
                 nn.SiLU(),
                 nn.Dropout(dropout),
                 nn.Linear(hidden_dim, output_dim)
