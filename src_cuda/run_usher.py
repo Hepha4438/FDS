@@ -25,14 +25,15 @@ from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, pl
 # 🌟 KIẾN TRÚC GỐC USHER: LOW-COMPLEXITY TRANSFORM 🌟
 # =====================================================================
 class FeatureTransform(nn.Module):
-    """
-    Theo chuẩn USHER: Mạng Feedforward độ phức tạp thấp (1 lớp ẩn hoặc Tuyến tính).
-    Tránh xé rách không gian, chỉ tập trung vào phép xoay, kéo giãn và tịnh tiến.
-    """
     def __init__(self, input_dim: int, output_dim: int, hidden_dim: Optional[int] = None, dropout: float = 0.0):
         super().__init__()
         
-        # Nếu không cấp hidden_dim, nó sẽ trở thành USHER-L (Linear strictly)
+        # BỔ SUNG: Khai báo các thuộc tính để hàm save_alignment_model có thể đọc được
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.hidden_dim = hidden_dim
+        self.use_residual = False
+        
         if hidden_dim is None:
             self.net = nn.Linear(input_dim, output_dim)
             nn.init.eye_(self.net.weight)
