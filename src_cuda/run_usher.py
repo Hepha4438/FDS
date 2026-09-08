@@ -94,7 +94,8 @@ def train_mixture_flow_model(
         c = source_contexts[indices]
 
         # Lấy mẫu t ngẫu nhiên U[0,1]
-        t = torch.rand(batch_size, 1, device=device)
+        beta_dist = torch.distributions.Beta(2.0, 1.0)
+        t = beta_dist.sample((batch_size, 1)).to(device)
         
         # Đường thẳng nội suy cơ sở
         xt = (1.0 - t) * x0 + t * x1
@@ -421,7 +422,6 @@ def align_features_fgw(
         from model_utils import save_alignment_model
         dir_path = "../datasets/scGPT_example/"
         os.makedirs(dir_path, exist_ok=True)
-        # Flow Matching không dùng Standardization Scaler nên trả về None
         save_alignment_model(
             model=model, 
             save_path=os.path.join(dir_path, 'alignment_model.pt'), 
