@@ -94,8 +94,7 @@ def train_mixture_flow_model(
         c = source_contexts[indices]
 
         # Lấy mẫu t ngẫu nhiên U[0,1]
-        beta_dist = torch.distributions.Beta(2.0, 1.0)
-        t = beta_dist.sample((batch_size, 1)).to(device)
+        t = torch.rand(batch_size, 1, device=device)
         
         # Đường thẳng nội suy cơ sở
         xt = (1.0 - t) * x0 + t * x1
