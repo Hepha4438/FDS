@@ -25,51 +25,77 @@ from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, pl
 # =====================================================================
 class MixtureFlowMatchingVectorField(nn.Module):
     """
-    Học trường vận tốc v(x, t, c), trong đó c là Mixture Context (Cụm/Batch ID).
-    Context c được biến đổi qua lớp Embedding, cho phép mô hình bẻ gãy 
-    không gian liên tục và tách Xenium thành các hòn đảo độc lập.
+    Kiến trúc Flow Matching sử dụng Adaptive Layer Normalization (AdaLN).
+    Ép Mạng Neural phải 'xé rách' không gian bằng cách dùng ngữ cảnh cụm (c) 
+    và thời gian (t) để can thiệp trực tiếp vào phân phối của từng layer.
     """
-    def __init__(self, dim: int, num_mixtures: int, context_dim: int = 32, hidden_dim: int = 512, dropout: float = 0.0):
+    def __init__(self, dim: int, num_mixtures: int, context_dim: int = 128, hidden_dim: int = 512, dropout: float = 0.0):
         super().__init__()
         self.input_dim = dim
         self.output_dim = dim
         self.hidden_dim = hidden_dim
-        self.use_residual = False
         
-        # Lớp Embedding để nhúng định danh Cụm/Batch thành vector ngữ cảnh
+        # Mạng nội suy Thời gian và Cụm riêng biệt
+        self.time_mlp = nn.Sequential(
+            nn.Linear(1, context_dim),
+            nn.SiLU(),
+            nn.Linear(context_dim, context_dim)
+        )
         self.mixture_embed = nn.Embedding(num_mixtures, context_dim)
         
-        # Đầu vào: x_t (dim) + t (1) + context (context_dim)
-        self.net = nn.Sequential(
-            nn.Linear(dim + 1 + context_dim, hidden_dim),
-            nn.LayerNorm(hidden_dim),
-            nn.SiLU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.LayerNorm(hidden_dim),
-            nn.SiLU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim, dim)
-        )
+        # Layer chiếu dữ liệu
+        self.x_proj = nn.Linear(dim, hidden_dim)
         
-        # Khởi tạo trọng số bằng 0 để đảm bảo tính ổn định ở các epoch đầu
-        for m in self.modules():
-            if isinstance(m, nn.Linear):
-                nn.init.normal_(m.weight, mean=0.0, std=0.01)
-                if m.bias is not None:
-                    nn.init.zeros_(m.bias)
-        nn.init.zeros_(self.net[-1].weight)
-        nn.init.zeros_(self.net[-1].bias)
+        # Mạng AdaLN (Tạo tham số Scale và Shift từ điều kiện)
+        # Output x2 vì cần sinh ra cả tham số Scale (Gamma) và Shift (Beta)
+        self.cond_proj1 = nn.Linear(context_dim * 2, hidden_dim * 2)
+        self.cond_proj2 = nn.Linear(context_dim * 2, hidden_dim * 2)
+        
+        # LayerNorm không có tham số học (sẽ được AdaLN điều khiển)
+        self.norm1 = nn.LayerNorm(hidden_dim, elementwise_affine=False)
+        self.norm2 = nn.LayerNorm(hidden_dim, elementwise_affine=False)
+        
+        self.lin1 = nn.Linear(hidden_dim, hidden_dim)
+        self.lin2 = nn.Linear(hidden_dim, dim)
+        self.act = nn.SiLU()
+        self.dropout = nn.Dropout(dropout)
+        
+        # Khởi tạo ZERO cho tính ổn định của ODE
+        nn.init.zeros_(self.lin2.weight)
+        nn.init.zeros_(self.lin2.bias)
+        nn.init.zeros_(self.cond_proj1.weight)
+        nn.init.zeros_(self.cond_proj1.bias)
+        nn.init.zeros_(self.cond_proj2.weight)
+        nn.init.zeros_(self.cond_proj2.bias)
 
     def forward(self, x: torch.Tensor, t: torch.Tensor, c: torch.Tensor) -> torch.Tensor:
         if t.ndim == 1:
             t = t.unsqueeze(1)
-        # Nhúng context c thành vector mật độ
-        emb = self.mixture_embed(c)
-        # Nối x, t và context vào với nhau
-        xt = torch.cat([x, t, emb], dim=1)
-        return self.net(xt)
-
+            
+        # 1. Trích xuất nhúng ngữ cảnh tổng hợp
+        t_emb = self.time_mlp(t)
+        c_emb = self.mixture_embed(c)
+        cond = torch.cat([t_emb, c_emb], dim=1)  # Shape: (batch, context_dim * 2)
+        
+        # 2. Sinh ra Scale và Shift cho từng block
+        scale1, shift1 = self.cond_proj1(cond).chunk(2, dim=1)
+        scale2, shift2 = self.cond_proj2(cond).chunk(2, dim=1)
+        
+        # 3. Block 1 với AdaLN
+        h = self.x_proj(x)
+        h_norm = self.norm1(h)
+        h = h_norm * (1.0 + scale1) + shift1  # Tác động lực xé cụm tại đây
+        h = self.act(h)
+        h = self.lin1(h)
+        h = self.dropout(h)
+        
+        # 4. Block 2 với AdaLN
+        h_norm = self.norm2(h)
+        h = h_norm * (1.0 + scale2) + shift2  # Tác động lực xé cụm lần 2
+        h = self.act(h)
+        out = self.lin2(h)
+        
+        return out
 
 def train_mixture_flow_model(
     model: nn.Module,
