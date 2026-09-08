@@ -106,7 +106,7 @@ def train_schrodinger_bridge_model(
     source_contexts: torch.Tensor,
     steps_per_iter: int,
     device: torch.device,
-    sigma: float = 0.2
+    sigma: float = 0.05  # ĐÃ GIẢM: 0.05 là mức nhiễu vàng cho không gian 512D
 ) -> List[float]:
     model.train()
     step_losses = []
@@ -115,22 +115,24 @@ def train_schrodinger_bridge_model(
     for step in range(steps_per_iter):
         optimizer.zero_grad()
 
-        # Lấy mẫu mỏ neo
         indices = torch.randint(0, source_features.shape[0], (batch_size,), device=device)
         x0 = source_features[indices]
         x1 = target_features[indices]
         c = source_contexts[indices]
 
-        # Lấy mẫu t ngẫu nhiên (Uniform distribution)
-        t = torch.rand(batch_size, 1, device=device)
-        
-        # 🌟 MA THUẬT SDE: Bơm nhiễu Brownian (Brownian Bridge)
+        # Tránh lỗi chia cho 0 ở hai đầu mút thời gian
+        t = torch.rand(batch_size, 1, device=device).clamp(1e-4, 1.0 - 1e-4)
         noise = torch.randn_like(x0)
-        # Nhiễu đạt cực đại ở giữa chặng (t=0.5) và triệt tiêu ở 2 đầu (t=0 và t=1)
-        std = sigma * torch.sqrt(t * (1.0 - t)) 
+        
+        # 🌟 Phương trình chuẩn: Brownian Bridge
+        std = sigma * torch.sqrt(t * (1.0 - t))
         xt = (1.0 - t) * x0 + t * x1 + std * noise
 
-        v_target = x1 - x0
+        # 🌟 MA THUẬT SỬA LỖI: Vận tốc mục tiêu phải có đạo hàm của nhiễu
+        # d/dt [sqrt(t - t^2)] = (1 - 2t) / (2 * sqrt(t - t^2))
+        d_std_dt = sigma * (1.0 - 2.0 * t) / (2.0 * torch.sqrt(t * (1.0 - t)))
+        v_target = (x1 - x0) + d_std_dt * noise
+
         v_pred = model(xt, t, c)
 
         loss = F.mse_loss(v_pred, v_target)
@@ -150,7 +152,7 @@ def apply_sb_sde_solver(
     features: torch.Tensor,
     contexts: torch.Tensor,
     n_steps: int = 40,
-    sigma: float = 0.2
+    sigma: float = 0.05
 ) -> torch.Tensor:
     model.eval()
     with torch.no_grad():
@@ -160,18 +162,18 @@ def apply_sb_sde_solver(
             t_val = step * dt
             t_tensor = torch.full((x.shape[0], 1), t_val, device=features.device)
             
-            # Tính lực đẩy (Drift) từ mạng AdaLN
             v = model(x, t_tensor, contexts)
             
-            # 🌟 MA THUẬT SDE: Bơm nhiễu Euler-Maruyama Method
+            # Nhiễu Euler-Maruyama
             dw = torch.randn_like(x) * np.sqrt(dt)
-            # Tắt nhiễu ở 5 bước cuối để tế bào hạ cánh chính xác vào tâm
-            current_sigma = sigma if step < (n_steps - 5) else 0.0
+            
+            # 🌟 Cơ chế Annealing: Giảm nhiễu tuyến tính về 0 khi tới đích 
+            # để tế bào không bị bay văng ra khỏi cụm ở giây cuối
+            current_sigma = sigma * max(0.0, 1.0 - (step / n_steps))
             
             x = x + v * dt + current_sigma * dw
             
     return x
-
 
 def align_features_fgw(
     adata_a: ad.AnnData,
