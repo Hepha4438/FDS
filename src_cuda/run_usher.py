@@ -22,33 +22,38 @@ from m_step_utils import train_global_model, apply_transfer_method, unstandardiz
 from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, plot_transfer_debug_umap, plot_spatial_channels, plot_spatial_mapping
 
 # =====================================================================
-# 🌟 KIẾN TRÚC TỐI THƯỢNG: RESIDUAL FEATURE TRANSFORM
+# 🌟 KIẾN TRÚC GỐC USHER: LOW-COMPLEXITY TRANSFORM 🌟
 # =====================================================================
-class ResidualFeatureTransform(nn.Module):
+class FeatureTransform(nn.Module):
     """
-    Kiến trúc ResNet f(x) = x + MLP(x).
-    Giữ lại nguyên bản cấu trúc sinh học (nhờ x) và dùng MLP để học vector 
-    phi tuyến tính dịch chuyển tế bào (Macro & Micro mixing).
+    Theo chuẩn USHER: Mạng Feedforward độ phức tạp thấp (1 lớp ẩn hoặc Tuyến tính).
+    Tránh xé rách không gian, chỉ tập trung vào phép xoay, kéo giãn và tịnh tiến.
     """
-    def __init__(self, dim: int, hidden_dim: int = 512, dropout: float = 0.1):
+    def __init__(self, input_dim: int, output_dim: int, hidden_dim: Optional[int] = None, dropout: float = 0.0):
         super().__init__()
-        self.mlp = nn.Sequential(
-            nn.Linear(dim, hidden_dim),
-            nn.LayerNorm(hidden_dim),
-            nn.SiLU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.LayerNorm(hidden_dim),
-            nn.SiLU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim, dim)
-        )
-        # Khởi tạo lớp cuối cùng bằng 0 để ở vòng lặp đầu, f(x) = x hoàn hảo
-        nn.init.zeros_(self.mlp[-1].weight)
-        nn.init.zeros_(self.mlp[-1].bias)
+        
+        # Nếu không cấp hidden_dim, nó sẽ trở thành USHER-L (Linear strictly)
+        if hidden_dim is None:
+            self.net = nn.Linear(input_dim, output_dim)
+            nn.init.eye_(self.net.weight)
+            nn.init.zeros_(self.net.bias)
+        else:
+            self.net = nn.Sequential(
+                nn.Linear(input_dim, hidden_dim),
+                nn.LayerNorm(hidden_dim),
+                nn.SiLU(),
+                nn.Dropout(dropout),
+                nn.Linear(hidden_dim, output_dim)
+            )
+            # Khởi tạo gần với ma trận đơn vị để bảo tồn cấu trúc hình học ban đầu
+            for m in self.modules():
+                if isinstance(m, nn.Linear):
+                    nn.init.normal_(m.weight, mean=0.0, std=0.01)
+                    if m.bias is not None:
+                        nn.init.zeros_(m.bias)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return x + self.mlp(x)
+        return self.net(x)
 
 
 def align_features_fgw(
@@ -74,7 +79,7 @@ def align_features_fgw(
     epsilon: float = 0.1,
     sinkhorn_iters: int = 1000,
     balanced_ot: bool = True,  
-    use_linear_assignment: bool = True,  # Bắt buộc dùng Hungarian của USHER
+    use_linear_assignment: bool = True,  # BẮT BUỘC: Thuật toán Hungarian để tạo khung xương 1-1
 
     knn_k: int = 30,  
     metric: str = 'cosine',  
@@ -95,7 +100,7 @@ def align_features_fgw(
     lambda_var: float = 0.1,  
     structure_sample_size: Optional[int] = 2048,  
     hidden_dim: Optional[int] = 512,  
-    dropout: float = 0.1,  
+    dropout: float = 0.0,  
     init_strategy: str = 'auto',  
     device: Optional[str] = None,
     debug_plots_path: Optional[str] = None,
@@ -154,8 +159,8 @@ def align_features_fgw(
         if sketch_to_original is not None:
             features_a = features_a[sketch_to_original]
 
-    # Khởi tạo mô hình Residual ResNet
-    model = ResidualFeatureTransform(dim=d_a, hidden_dim=hidden_dim, dropout=dropout).to(device_t)
+    # Khởi tạo mô hình theo chuẩn bài báo
+    model = FeatureTransform(input_dim=d_a, output_dim=d_b, hidden_dim=hidden_dim, dropout=dropout).to(device_t)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     features_a_transformed = None
@@ -174,9 +179,9 @@ def align_features_fgw(
     # =====================================================================
     # E-M ITERATIONS
     # =====================================================================
-    for it in tqdm(range(n_iters), desc="E-M Alignment (Residual Net)"):
+    for it in tqdm(range(n_iters), desc="E-M Alignment (USHER Standard)"):
         
-        # Resample liên tục để tạo Stochastic Hungarian
+        # Resample liên tục (Stochastic Hungarian)
         if sampling_strategy == 'celltype' and use_stratified_pairing and not stratified_pairing_fix:
             from celltype_utils import prepare_celltype_batches
             batches, auxiliary_data, _ = prepare_celltype_batches(
@@ -191,7 +196,7 @@ def align_features_fgw(
         if m_step_method == 'transfer' and it == 0:
             features_a_transformed = features_a.clone()
 
-        # ===== E-STEP (Chuẩn USHER gốc) =====
+        # ===== E-STEP =====
         batch_results = [None] * len(batches)
         def process_cluster(b_idx, src_idx, tgt_idx):
             ctx = torch.cuda.stream(torch.cuda.Stream(device=device_t)) if device_t.type == 'cuda' else contextlib.nullcontext()
@@ -260,7 +265,7 @@ def align_features_fgw(
             prev_iter_mappings[batch_idx] = mapping_curr
 
         # =====================================================================
-        # 🌟 M-STEP: CHUẨN USHER NHƯNG ÁP DỤNG MÔ HÌNH RESIDUAL 🌟
+        # 🌟 M-STEP (USHER CHUẨN KẾT HỢP CHỐNG OVERCORRECTION) 🌟
         # =====================================================================
         if m_step_method == 'global':
             from m_step_utils import aggregate_training_data_from_batches
