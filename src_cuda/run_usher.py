@@ -361,4 +361,16 @@ def align_features_fgw(
         else:
             T_full[:, torch.from_numpy(result['target_indices']).long().to(device_t)] = result['T']
 
+    if True:
+        from model_utils import save_alignment_model
+        dir_path = "../datasets/scGPT_example/"
+        os.makedirs(dir_path, exist_ok=True)
+        save_alignment_model(
+            model=model, 
+            save_path=os.path.join(dir_path, 'alignment_model.pt'), 
+            feature_mean=global_feature_mean, 
+            feature_std=global_feature_std, 
+            gene_names=adata_a.var_names.tolist()
+        )
+
     return model, np.full(n_a, -1, dtype=np.int64), concat_adata, T_full, global_feature_mean, global_feature_std
