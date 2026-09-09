@@ -26,7 +26,7 @@ from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, pl
 # 🌟 KIẾN TRÚC MỚI: LANDMARK CROSS-ATTENTION TRANSFORM (LCAT) 🌟
 # =====================================================================
 class LandmarkCrossAttentionTransform(nn.Module):
-    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, hidden_dim: int = 128, temperature: float = 0.1):
+    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, hidden_dim: int = 128, temperature: float = 0.25):
         super().__init__()
         input_dim = source_features.shape[1]
         self.input_dim = input_dim
@@ -199,7 +199,7 @@ def align_features_fgw(
         output_dim=d_b, 
         num_landmarks=4096, 
         hidden_dim=128,
-        temperature=0.1
+        temperature=0.25
     ).to(device_t)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
