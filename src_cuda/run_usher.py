@@ -327,11 +327,9 @@ def align_features_fgw(
             adata_a_transformed = ad.AnnData(X=a_hat_cpu, obs=obs_sketched, obsm=obsm_dict if obsm_dict else None)
             adata_a_transformed.obs["type"] = "source_transformed"  
 
-            adata_b_copy = adata_b.copy()
+            # SỬA LỖI Ở ĐÂY CHO DEBUG PLOT
+            adata_b_copy = ad.AnnData(X=X_b, obs=adata_b.obs.copy())
             adata_b_copy.obs["type"] = "target"
-            
-            # Ghi đè lại .X bằng ma trận PCA để UMAP vẽ đẹp
-            adata_b_copy.X = X_b
 
             concat_adata_iter = ad.concat([adata_a_transformed, adata_b_copy], axis=0, label="batch", keys=["source", "target"], index_unique="_")
             
@@ -369,9 +367,9 @@ def align_features_fgw(
     adata_a_transformed = ad.AnnData(X=a_hat_cpu, obs=obs_sketched)
     adata_a_transformed.obs["type"] = "source_transformed"  
     
-    adata_b_copy = adata_b.copy()
+    # SỬA LỖI Ở ĐÂY CHO FINAL PLOT
+    adata_b_copy = ad.AnnData(X=X_b, obs=adata_b.obs.copy())
     adata_b_copy.obs["type"] = "target"
-    adata_b_copy.X = X_b # Ghi đè lại PCA cho target để ghép đúng chiều
 
     concat_adata = ad.concat([adata_a_transformed, adata_b_copy], axis=0, label="batch", keys=["source", "target"], index_unique="_")
     if cell_type_col in adata_a_transformed.obs.columns and cell_type_col in adata_b_copy.obs.columns:
