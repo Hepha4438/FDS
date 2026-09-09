@@ -26,7 +26,7 @@ from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, pl
 # 🌟 KIẾN TRÚC MỚI: LANDMARK CROSS-ATTENTION TRANSFORM (LCAT) 🌟
 # =====================================================================
 class LandmarkCrossAttentionTransform(nn.Module):
-    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, hidden_dim: int = 128, init_temperature: float = 0.5):
+    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, hidden_dim: int = 128, temperature: float = 0.5):
         super().__init__()
         input_dim = source_features.shape[1]
         self.input_dim = input_dim
@@ -34,7 +34,8 @@ class LandmarkCrossAttentionTransform(nn.Module):
         self.hidden_dim = hidden_dim
         self.use_residual = False
         
-        self.temperature = nn.Parameter(torch.tensor([init_temperature], dtype=torch.float32))
+        # Lưu nhiệt độ cố định dưới dạng buffer
+        self.register_buffer("temperature", torch.tensor([temperature], dtype=torch.float32))
         
         # 1. TÌM LANDMARKS BẰNG KMEANS
         features_np = source_features.detach().cpu().numpy()
@@ -66,22 +67,14 @@ class LandmarkCrossAttentionTransform(nn.Module):
         nn.init.normal_(self.W_K.weight, std=0.01)
         
         self.local_displacements = nn.Parameter(torch.zeros(num_landmarks, output_dim))
-        
-        # Cổng khuếch đại Gamma
         self.gamma = nn.Parameter(torch.ones(1) * 1.0)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         global_out = self.global_linear(x)
-        
         Q = self.W_Q(x)
         K = self.W_K(self.landmarks)
         
-        # 🌟 BẢO VỆ TOÁN HỌC: Đảm bảo temperature luôn dương và > 0
-        safe_temp = torch.abs(self.temperature) + 1e-4
-        
-        # Tính Scaled Dot-Product Attention
-        scores = torch.mm(Q, K.t()) / ((self.hidden_dim ** 0.5) * safe_temp)
-        
+        scores = torch.mm(Q, K.t()) / ((self.hidden_dim ** 0.5) * self.temperature)
         attn_weights = F.softmax(scores, dim=-1)
         local_out = torch.mm(attn_weights, self.local_displacements)
         
@@ -199,7 +192,7 @@ def align_features_fgw(
         output_dim=d_b, 
         num_landmarks=4096, 
         hidden_dim=128,
-        init_temperature=0.5
+        temperature=0.5
     ).to(device_t)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
