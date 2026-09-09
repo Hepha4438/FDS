@@ -62,6 +62,8 @@ def align_features_fgw(
     m_step_method: str = 'global',  
     sampling_strategy: str = 'celltype',  
 
+    pca_bottleneck_dim: Optional[int] = 50,  # 🌟 NEW: KÍCH HOẠT PCA BOTTLENECK
+
     sketch_size: int = 1000,  
     sketch_obsm_key: str = 'X_umap',
     use_stratified_pairing: bool = True,  
@@ -116,14 +118,37 @@ def align_features_fgw(
         for subdir in ["umap", "heatmap", "umap_transfer", "convergence"] + (["channels"] if sampling_strategy == 'spatial' else []):
             os.makedirs(os.path.join(debug_plots_path, subdir), exist_ok=True)
 
-    X_a = _to_dense_float32(adata_a.X)
-    X_b = _to_dense_float32(adata_b.X)
+    X_a_full = _to_dense_float32(adata_a.X)
+    X_b_full = _to_dense_float32(adata_b.X)
+    
+    n_a_orig = X_a_full.shape[0]
+    
+    # =====================================================================
+    # 🌟 PCA BOTTLENECK (Lọc nhiễu kỹ thuật trên không gian chung) 🌟
+    # =====================================================================
+    if pca_bottleneck_dim is not None and pca_bottleneck_dim < X_a_full.shape[1]:
+        print(f"🔄 Đang áp dụng PCA Bottleneck: Giảm từ {X_a_full.shape[1]}D xuống {pca_bottleneck_dim}D...")
+        from sklearn.decomposition import PCA
+        X_combined = np.vstack([X_a_full, X_b_full])
+        pca = PCA(n_components=pca_bottleneck_dim, random_state=2026)
+        X_combined_pca = pca.fit_transform(X_combined).astype(np.float32)
+        
+        X_a = X_combined_pca[:n_a_orig]
+        X_b = X_combined_pca[n_a_orig:]
+        print(f"✅ PCA Hoàn tất! Không gian OT hiện tại: {pca_bottleneck_dim} chiều.")
+    else:
+        X_a = X_a_full
+        X_b = X_b_full
 
     features_a = torch.from_numpy(X_a).to(device_t)
     features_b = torch.from_numpy(X_b).to(device_t)
 
     n_a_orig, d_a = features_a.shape
     n_b_orig, d_b = features_b.shape
+    
+    # Đảm bảo mạng có hidden_dim phù hợp nếu hidden_dim lớn hơn đầu vào sau PCA
+    if hidden_dim is not None and hidden_dim > d_a * 4:
+        hidden_dim = d_a * 4  # Tự động điều chỉnh mạng để tránh over-fitting trên không gian nhỏ
 
     # =====================================================================
     # DATA BATCHING
@@ -304,6 +329,9 @@ def align_features_fgw(
 
             adata_b_copy = adata_b.copy()
             adata_b_copy.obs["type"] = "target"
+            
+            # Ghi đè lại .X bằng ma trận PCA để UMAP vẽ đẹp
+            adata_b_copy.X = X_b
 
             concat_adata_iter = ad.concat([adata_a_transformed, adata_b_copy], axis=0, label="batch", keys=["source", "target"], index_unique="_")
             
@@ -343,6 +371,8 @@ def align_features_fgw(
     
     adata_b_copy = adata_b.copy()
     adata_b_copy.obs["type"] = "target"
+    adata_b_copy.X = X_b # Ghi đè lại PCA cho target để ghép đúng chiều
+
     concat_adata = ad.concat([adata_a_transformed, adata_b_copy], axis=0, label="batch", keys=["source", "target"], index_unique="_")
     if cell_type_col in adata_a_transformed.obs.columns and cell_type_col in adata_b_copy.obs.columns:
         concat_adata.obs[cell_type_col] = pd.concat([adata_a_transformed.obs[cell_type_col], adata_b_copy.obs[cell_type_col]]).values
