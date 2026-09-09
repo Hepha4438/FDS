@@ -140,15 +140,13 @@ def train_global_model(
     target_features: torch.Tensor,
     steps_per_iter: int,
     lambda_cross: float,
-    lambda_struct: float,
     lambda_var: float,
     metric: str,
-    structure_sample_size: Optional[int],
     device: torch.device,
     features_target_all: Optional[torch.Tensor] = None
 ) -> List[float]:
     """
-    Train global transformation model using Anti-Overcorrection Structural Loss (VRAM Optimized).
+    Train global transformation model (USHER Original Standard - No Structural Loss).
     """
     model.train()
     torch.set_grad_enabled(True)
@@ -167,11 +165,7 @@ def train_global_model(
         source_features = standardize_features(source_features, feature_mean, feature_std)
         target_features = standardize_features(target_features, feature_mean, feature_std)
 
-    # Lưu lại bản gốc (đã chuẩn hóa) để làm mốc tính khoảng cách topology
-    with torch.no_grad():
-        source_original_anchor = source_features.clone()
-
-    logging.info("  [M-step] Chạy Adam Optimizer với Cơ chế Chống Overcorrection (VRAM Safe)...")
+    logging.info("  [M-step] Chạy Adam Optimizer (Bản gốc USHER)...")
     for step in range(steps_per_iter):
         optimizer.zero_grad()
 
@@ -189,29 +183,8 @@ def train_global_model(
         # ===== Loss 2: Variance preservation =====
         loss_var = (source_transformed.std(dim=0) - target_features.std(dim=0)).abs().mean()
 
-        # ===== Loss 3: Structural Preservation (VRAM OPTIMIZED) =====
-        loss_struct = torch.tensor(0.0, device=device)
-        if lambda_struct > 0.0:
-            # FIX LỖI OOM: Khống chế tối đa 256 điểm để tránh bùng nổ ma trận Gradient O(N^2 * D)
-            n_samples = min(256, source_features.shape[0])
-            idx = torch.randperm(source_features.shape[0], device=device)[:n_samples]
-            
-            src_orig_subset = source_original_anchor[idx]
-            src_trans_subset = source_transformed[idx]
-            
-            if metric == 'cosine':
-                orig_dists = 1.0 - torch.mm(F.normalize(src_orig_subset, p=2, dim=1), 
-                                            F.normalize(src_orig_subset, p=2, dim=1).T)
-                trans_dists = 1.0 - torch.mm(F.normalize(src_trans_subset, p=2, dim=1), 
-                                             F.normalize(src_trans_subset, p=2, dim=1).T)
-                loss_struct = F.mse_loss(trans_dists, orig_dists)
-            else:
-                orig_dists = torch.pdist(src_orig_subset, p=2)
-                trans_dists = torch.pdist(src_trans_subset, p=2)
-                loss_struct = F.smooth_l1_loss(trans_dists, orig_dists)
-
-        # ===== Combined loss =====
-        loss = lambda_cross * loss_cross + lambda_var * loss_var + lambda_struct * loss_struct
+        # ===== Combined loss (Chỉ còn 2 thành phần) =====
+        loss = lambda_cross * loss_cross + lambda_var * loss_var
 
         if not torch.isfinite(loss):
             logging.error(f"Non-finite loss at step {step}: loss={loss.item()}")
@@ -223,7 +196,7 @@ def train_global_model(
         step_losses.append(loss.item())
 
         if (step + 1) % 10 == 0 or step == 0:
-            logging.info(f"  Step {step+1}/{steps_per_iter}: loss={loss.item():.6f} (cross={loss_cross.item():.4f}, var={loss_var.item():.4f}, struct={loss_struct.item():.4f})")
+            logging.info(f"  Step {step+1}/{steps_per_iter}: loss={loss.item():.6f} (cross={loss_cross.item():.4f}, var={loss_var.item():.4f})")
 
     if step_losses:
         logging.info(f"M-step completed: {len(step_losses)} steps, avg loss = {np.mean(step_losses):.6f}")
