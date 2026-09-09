@@ -26,13 +26,14 @@ from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, pl
 # 🌟 KIẾN TRÚC MỚI: LANDMARK CROSS-ATTENTION TRANSFORM (LCAT) 🌟
 # =====================================================================
 class LandmarkCrossAttentionTransform(nn.Module):
-    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, hidden_dim: int = 128):
+    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, hidden_dim: int = 128, temperature: float = 0.1):
         super().__init__()
         input_dim = source_features.shape[1]
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.hidden_dim = hidden_dim
         self.use_residual = False
+        self.temperature = temperature  # Thêm tham số Nhiệt độ
         
         # 1. TÌM LANDMARKS BẰNG KMEANS
         features_np = source_features.detach().cpu().numpy()
@@ -44,6 +45,7 @@ class LandmarkCrossAttentionTransform(nn.Module):
             candidate_indices = np.random.choice(n_samples, num_candidates, replace=False)
             candidate_features = features_np[candidate_indices]
             
+            from sklearn.cluster import KMeans
             kmeans = KMeans(n_clusters=num_landmarks, n_init=1, random_state=42)
             kmeans.fit(candidate_features)
             landmarks_np = kmeans.cluster_centers_
@@ -53,41 +55,37 @@ class LandmarkCrossAttentionTransform(nn.Module):
         self.register_buffer("landmarks", torch.tensor(landmarks_np, dtype=torch.float32))
         
         # 2. KHỞI TẠO CÁC THAM SỐ HỌC
-        # Khung xương Linear (Global Rigid Transform)
         self.global_linear = nn.Linear(input_dim, output_dim)
         nn.init.eye_(self.global_linear.weight)
         nn.init.zeros_(self.global_linear.bias)
         
-        # Attention Projections: W_Q (Query) và W_K (Key)
         self.W_Q = nn.Linear(input_dim, hidden_dim, bias=False)
         self.W_K = nn.Linear(input_dim, hidden_dim, bias=False)
-        
-        # Khởi tạo ma trận chiếu góc nhỏ để ban đầu không phá vỡ Topology
         nn.init.normal_(self.W_Q.weight, std=0.01)
         nn.init.normal_(self.W_K.weight, std=0.01)
         
-        # Value (Lực dịch chuyển cục bộ)
         self.local_displacements = nn.Parameter(torch.zeros(num_landmarks, output_dim))
+        
+        # 🌟 THÊM MỚI: Cổng khuếch đại Gamma (Learnable Gating)
+        # Bắt đầu ở mức 1.0, mạng sẽ tự động học cách phóng to/thu nhỏ lực kéo
+        self.gamma = nn.Parameter(torch.ones(1) * 1.0)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # 1. Chuyển động toàn cục
         global_out = self.global_linear(x)
         
-        # 2. Tính Query và Key
-        Q = self.W_Q(x)  # shape: (N, hidden_dim)
-        K = self.W_K(self.landmarks)  # shape: (num_landmarks, hidden_dim)
+        Q = self.W_Q(x)
+        K = self.W_K(self.landmarks)
         
-        # 3. Scaled Dot-Product Attention
-        # Dùng Dot-product chia cho căn bậc 2 số chiều để đo tương đồng góc
-        scores = torch.mm(Q, K.t()) / (self.hidden_dim ** 0.5)  # shape: (N, num_landmarks)
+        # 🌟 TINH CHỈNH 1: Ép nhiệt độ (Temperature) vào mẫu số
+        # Khi temperature = 0.1, các điểm số (scores) sẽ bị phóng to lên 10 lần.
+        # Softmax sẽ trở nên "nhọn" hơn, ép tế bào chỉ bám theo 1-2 mỏ neo gần nhất.
+        scores = torch.mm(Q, K.t()) / ((self.hidden_dim ** 0.5) * self.temperature)
         
-        # Softmax đảm bảo tổng lực kéo luôn bằng 1
         attn_weights = F.softmax(scores, dim=-1)
-        
-        # 4. Cộng lực biến dạng cục bộ
         local_out = torch.mm(attn_weights, self.local_displacements)
         
-        return global_out + local_out
+        # 🌟 TINH CHỈNH 2: Nhân lực biến dạng cục bộ với Gamma
+        return global_out + (self.gamma * local_out)
 
 def align_features_fgw(
     adata_a: ad.AnnData,
@@ -200,7 +198,8 @@ def align_features_fgw(
         source_features=features_a_std, 
         output_dim=d_b, 
         num_landmarks=4096, 
-        hidden_dim=128
+        hidden_dim=128,
+        temperature=0.1
     ).to(device_t)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
