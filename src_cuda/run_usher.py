@@ -179,9 +179,13 @@ def align_features_fgw(
         if sketch_to_original is not None:
             features_a = features_a[sketch_to_original]
 
-    # Khởi tạo mô hình RBF-Augmented Transform
+    global_feature_mean = features_b.mean(dim=0, keepdim=True)
+    global_feature_std = features_b.std(dim=0, keepdim=True).clamp(min=1e-6)
+    
+    features_a_std = (features_a - global_feature_mean) / global_feature_std
+
     model = RBFAugmentedTransform(
-        source_features=features_a, 
+        source_features=features_a_std, 
         output_dim=d_b, 
         num_landmarks=4096, 
         sigma='auto'
