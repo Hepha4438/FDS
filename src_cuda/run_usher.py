@@ -26,7 +26,7 @@ from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, pl
 # 🌟 KIẾN TRÚC MỚI: RBF-AUGMENTED TRANSFORM (Biến dạng mượt cục bộ) 🌟
 # =====================================================================
 class RBFAugmentedTransform(nn.Module):
-    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 512, sigma: float = 1.0):
+    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, sigma: str = 'auto'):
         super().__init__()
         input_dim = source_features.shape[1]
         self.input_dim = input_dim
@@ -34,7 +34,7 @@ class RBFAugmentedTransform(nn.Module):
         self.use_residual = False
         
         # ==========================================
-        # 1. TÌM LANDMARKS BẰNG KMEANS (Chạy 1 lần)
+        # 1. TÌM LANDMARKS BẰNG KMEANS
         # ==========================================
         features_np = source_features.detach().cpu().numpy()
         n_samples = features_np.shape[0]
@@ -51,38 +51,40 @@ class RBFAugmentedTransform(nn.Module):
         else:
             landmarks_np = features_np[np.random.choice(n_samples, num_landmarks, replace=False)]
             
-        # Lưu tọa độ mỏ neo như một hằng số không cần tính đạo hàm (Buffer)
         self.register_buffer("landmarks", torch.tensor(landmarks_np, dtype=torch.float32))
         
-        # Tham số kiểm soát vùng ảnh hưởng (độ rộng RBF)
-        self.sigma = sigma
-        
         # ==========================================
-        # 2. KHỞI TẠO CÁC THAM SỐ HỌC (LEARNABLE)
+        # 2. ADAPTIVE SIGMA CHO KHÔNG GIAN 512D
         # ==========================================
-        # Khung xương Linear (Global Rigid Transform)
+        if sigma == 'auto':
+            with torch.no_grad():
+                # Tính ma trận khoảng cách giữa chính các mỏ neo
+                dists = torch.cdist(self.landmarks, self.landmarks, p=2)
+                # Dùng median distance chia đôi để đảm bảo các vùng RBF giao thoa vừa phải
+                self.sigma = torch.median(dists).item() / 2.0
+                print(f"🌟 [RBF-Auto] Đã tự động cấu hình sigma = {self.sigma:.4f} cho {num_landmarks} landmarks.")
+        else:
+            self.sigma = float(sigma)
+            
+        # ==========================================
+        # 3. KHỞI TẠO CÁC THAM SỐ HỌC (LEARNABLE)
+        # ==========================================
         self.global_linear = nn.Linear(input_dim, output_dim)
         nn.init.eye_(self.global_linear.weight)
         nn.init.zeros_(self.global_linear.bias)
         
-        # Ma trận vector dịch chuyển cục bộ (V) cho 512 landmarks
         self.local_displacements = nn.Parameter(torch.zeros(num_landmarks, output_dim))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # 1. Chuyển động toàn cục (Baseline cũ)
         global_out = self.global_linear(x)
         
-        # 2. Tính khoảng cách bình phương từ tế bào tới 512 mỏ neo
         dist_sq = torch.cdist(x, self.landmarks, p=2).pow(2)
-        
-        # 3. Tính trọng số RBF
+        # Sử dụng sigma đã được tự động hiệu chỉnh
         rbf_weights = torch.exp(-dist_sq / (2 * self.sigma ** 2))
         
-        # 4. Cộng lực biến dạng cục bộ
         local_out = torch.mm(rbf_weights, self.local_displacements)
         
         return global_out + local_out
-
 
 def align_features_fgw(
     adata_a: ad.AnnData,
