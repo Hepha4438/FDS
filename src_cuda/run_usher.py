@@ -12,6 +12,7 @@ from tqdm import tqdm
 import pandas as pd
 import rapids_singlecell as rsc
 import scanpy as sc
+from sklearn.cluster import KMeans
 
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -22,37 +23,65 @@ from m_step_utils import train_global_model, apply_transfer_method, unstandardiz
 from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, plot_transfer_debug_umap, plot_spatial_channels, plot_spatial_mapping
 
 # =====================================================================
-# 🌟 KIẾN TRÚC GỐC USHER: LOW-COMPLEXITY TRANSFORM 🌟
+# 🌟 KIẾN TRÚC MỚI: RBF-AUGMENTED TRANSFORM (Biến dạng mượt cục bộ) 🌟
 # =====================================================================
-class FeatureTransform(nn.Module):
-    def __init__(self, input_dim: int, output_dim: int, hidden_dim: Optional[int] = None, dropout: float = 0.0):
+class RBFAugmentedTransform(nn.Module):
+    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 512, sigma: float = 1.0):
         super().__init__()
-        
+        input_dim = source_features.shape[1]
         self.input_dim = input_dim
         self.output_dim = output_dim
-        self.hidden_dim = hidden_dim
         self.use_residual = False
         
-        if hidden_dim is None:
-            self.net = nn.Linear(input_dim, output_dim)
-            nn.init.eye_(self.net.weight)
-            nn.init.zeros_(self.net.bias)
+        # ==========================================
+        # 1. TÌM LANDMARKS BẰNG KMEANS (Chạy 1 lần)
+        # ==========================================
+        features_np = source_features.detach().cpu().numpy()
+        n_samples = features_np.shape[0]
+        num_landmarks = min(num_landmarks, n_samples)
+        
+        if n_samples > num_landmarks * 10:
+            num_candidates = num_landmarks * 10
+            candidate_indices = np.random.choice(n_samples, num_candidates, replace=False)
+            candidate_features = features_np[candidate_indices]
+            
+            kmeans = KMeans(n_clusters=num_landmarks, n_init=1, random_state=42)
+            kmeans.fit(candidate_features)
+            landmarks_np = kmeans.cluster_centers_
         else:
-            self.net = nn.Sequential(
-                nn.Linear(input_dim, hidden_dim),
-                nn.SiLU(),
-                nn.Dropout(dropout),
-                nn.Linear(hidden_dim, output_dim)
-            )
-            # Khởi tạo gần với ma trận đơn vị để bảo tồn cấu trúc hình học ban đầu
-            for m in self.modules():
-                if isinstance(m, nn.Linear):
-                    nn.init.normal_(m.weight, mean=0.0, std=0.01)
-                    if m.bias is not None:
-                        nn.init.zeros_(m.bias)
+            landmarks_np = features_np[np.random.choice(n_samples, num_landmarks, replace=False)]
+            
+        # Lưu tọa độ mỏ neo như một hằng số không cần tính đạo hàm (Buffer)
+        self.register_buffer("landmarks", torch.tensor(landmarks_np, dtype=torch.float32))
+        
+        # Tham số kiểm soát vùng ảnh hưởng (độ rộng RBF)
+        self.sigma = sigma
+        
+        # ==========================================
+        # 2. KHỞI TẠO CÁC THAM SỐ HỌC (LEARNABLE)
+        # ==========================================
+        # Khung xương Linear (Global Rigid Transform)
+        self.global_linear = nn.Linear(input_dim, output_dim)
+        nn.init.eye_(self.global_linear.weight)
+        nn.init.zeros_(self.global_linear.bias)
+        
+        # Ma trận vector dịch chuyển cục bộ (V) cho 512 landmarks
+        self.local_displacements = nn.Parameter(torch.zeros(num_landmarks, output_dim))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.net(x)
+        # 1. Chuyển động toàn cục (Baseline cũ)
+        global_out = self.global_linear(x)
+        
+        # 2. Tính khoảng cách bình phương từ tế bào tới 512 mỏ neo
+        dist_sq = torch.cdist(x, self.landmarks, p=2).pow(2)
+        
+        # 3. Tính trọng số RBF
+        rbf_weights = torch.exp(-dist_sq / (2 * self.sigma ** 2))
+        
+        # 4. Cộng lực biến dạng cục bộ
+        local_out = torch.mm(rbf_weights, self.local_displacements)
+        
+        return global_out + local_out
 
 
 def align_features_fgw(
@@ -156,7 +185,14 @@ def align_features_fgw(
         if sketch_to_original is not None:
             features_a = features_a[sketch_to_original]
 
-    model = FeatureTransform(input_dim=d_a, output_dim=d_b, hidden_dim=hidden_dim, dropout=dropout).to(device_t)
+    # Khởi tạo mô hình RBF-Augmented Transform
+    model = RBFAugmentedTransform(
+        source_features=features_a, 
+        output_dim=d_b, 
+        num_landmarks=512, 
+        sigma=1.0
+    ).to(device_t)
+    
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     features_a_transformed = None
@@ -175,7 +211,7 @@ def align_features_fgw(
     # =====================================================================
     # E-M ITERATIONS
     # =====================================================================
-    for it in tqdm(range(n_iters), desc="E-M Alignment (USHER Standard)"):
+    for it in tqdm(range(n_iters), desc="E-M Alignment (RBF-Augmented)"):
         
         if sampling_strategy == 'celltype' and use_stratified_pairing and not stratified_pairing_fix:
             from celltype_utils import prepare_celltype_batches
