@@ -23,14 +23,15 @@ from m_step_utils import train_global_model, apply_transfer_method, unstandardiz
 from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, plot_transfer_debug_umap, plot_spatial_channels, plot_spatial_mapping
 
 # =====================================================================
-# 🌟 KIẾN TRÚC MỚI: RBF-AUGMENTED TRANSFORM (Biến dạng mượt cục bộ) 🌟
+# 🌟 KIẾN TRÚC MỚI: LANDMARK CROSS-ATTENTION TRANSFORM (LCAT) 🌟
 # =====================================================================
-class RBFAugmentedTransform(nn.Module):
-    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, sigma: str = 'auto'):
+class LandmarkCrossAttentionTransform(nn.Module):
+    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, hidden_dim: int = 128):
         super().__init__()
         input_dim = source_features.shape[1]
         self.input_dim = input_dim
         self.output_dim = output_dim
+        self.hidden_dim = hidden_dim
         self.use_residual = False
         
         # 1. TÌM LANDMARKS BẰNG KMEANS
@@ -51,31 +52,41 @@ class RBFAugmentedTransform(nn.Module):
             
         self.register_buffer("landmarks", torch.tensor(landmarks_np, dtype=torch.float32))
         
-        # 2. ADAPTIVE SIGMA (Lưu thẳng vào Buffer để đi theo Checkpoint)
-        if sigma == 'auto':
-            with torch.no_grad():
-                dists = torch.cdist(self.landmarks, self.landmarks, p=2)
-                sigma_val = torch.median(dists).item() / 2.0
-                print(f"🌟 [RBF-Auto] Đã tự động cấu hình sigma = {sigma_val:.4f} cho {num_landmarks} landmarks.")
-        else:
-            sigma_val = float(sigma)
-            
-        # Đăng ký sigma như một phần của mô hình (quan trọng)
-        self.register_buffer("sigma", torch.tensor(sigma_val, dtype=torch.float32))
-        
-        # 3. KHỞI TẠO CÁC THAM SỐ HỌC
+        # 2. KHỞI TẠO CÁC THAM SỐ HỌC
+        # Khung xương Linear (Global Rigid Transform)
         self.global_linear = nn.Linear(input_dim, output_dim)
         nn.init.eye_(self.global_linear.weight)
         nn.init.zeros_(self.global_linear.bias)
         
+        # Attention Projections: W_Q (Query) và W_K (Key)
+        self.W_Q = nn.Linear(input_dim, hidden_dim, bias=False)
+        self.W_K = nn.Linear(input_dim, hidden_dim, bias=False)
+        
+        # Khởi tạo ma trận chiếu góc nhỏ để ban đầu không phá vỡ Topology
+        nn.init.normal_(self.W_Q.weight, std=0.01)
+        nn.init.normal_(self.W_K.weight, std=0.01)
+        
+        # Value (Lực dịch chuyển cục bộ)
         self.local_displacements = nn.Parameter(torch.zeros(num_landmarks, output_dim))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # 1. Chuyển động toàn cục
         global_out = self.global_linear(x)
-        dist_sq = torch.cdist(x, self.landmarks, p=2).pow(2)
-        # Sử dụng self.sigma đã đăng ký
-        rbf_weights = torch.exp(-dist_sq / (2 * self.sigma ** 2))
-        local_out = torch.mm(rbf_weights, self.local_displacements)
+        
+        # 2. Tính Query và Key
+        Q = self.W_Q(x)  # shape: (N, hidden_dim)
+        K = self.W_K(self.landmarks)  # shape: (num_landmarks, hidden_dim)
+        
+        # 3. Scaled Dot-Product Attention
+        # Dùng Dot-product chia cho căn bậc 2 số chiều để đo tương đồng góc
+        scores = torch.mm(Q, K.t()) / (self.hidden_dim ** 0.5)  # shape: (N, num_landmarks)
+        
+        # Softmax đảm bảo tổng lực kéo luôn bằng 1
+        attn_weights = F.softmax(scores, dim=-1)
+        
+        # 4. Cộng lực biến dạng cục bộ
+        local_out = torch.mm(attn_weights, self.local_displacements)
+        
         return global_out + local_out
 
 def align_features_fgw(
@@ -184,11 +195,12 @@ def align_features_fgw(
     
     features_a_std = (features_a - global_feature_mean) / global_feature_std
 
-    model = RBFAugmentedTransform(
+    # Thay thế RBF bằng LCAT (Dimension = 128 là tiêu chuẩn)
+    model = LandmarkCrossAttentionTransform(
         source_features=features_a_std, 
         output_dim=d_b, 
         num_landmarks=4096, 
-        sigma='auto'
+        hidden_dim=128
     ).to(device_t)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -209,7 +221,7 @@ def align_features_fgw(
     # =====================================================================
     # E-M ITERATIONS
     # =====================================================================
-    for it in tqdm(range(n_iters), desc="E-M Alignment (RBF-Augmented)"):
+    for it in tqdm(range(n_iters), desc="E-M Alignment (Cross-Attention)"):
         
         if sampling_strategy == 'celltype' and use_stratified_pairing and not stratified_pairing_fix:
             from celltype_utils import prepare_celltype_batches
