@@ -44,7 +44,6 @@ class FeatureTransform(nn.Module):
                 nn.Dropout(dropout),
                 nn.Linear(hidden_dim, output_dim)
             )
-            # Khởi tạo gần với ma trận đơn vị để bảo tồn cấu trúc hình học ban đầu
             for m in self.modules():
                 if isinstance(m, nn.Linear):
                     nn.init.normal_(m.weight, mean=0.0, std=0.01)
@@ -62,7 +61,7 @@ def align_features_fgw(
     m_step_method: str = 'global',  
     sampling_strategy: str = 'celltype',  
 
-    pca_bottleneck_dim: Optional[int] = 50,  # 🌟 NEW: KÍCH HOẠT PCA BOTTLENECK
+    pca_bottleneck_dim: Optional[int] = 50,  
 
     sketch_size: int = 1000,  
     sketch_obsm_key: str = 'X_umap',
@@ -122,6 +121,7 @@ def align_features_fgw(
     X_b_full = _to_dense_float32(adata_b.X)
     
     n_a_orig = X_a_full.shape[0]
+    pca_model = None
     
     # =====================================================================
     # 🌟 PCA BOTTLENECK (Lọc nhiễu kỹ thuật trên không gian chung) 🌟
@@ -130,8 +130,8 @@ def align_features_fgw(
         print(f"🔄 Đang áp dụng PCA Bottleneck: Giảm từ {X_a_full.shape[1]}D xuống {pca_bottleneck_dim}D...")
         from sklearn.decomposition import PCA
         X_combined = np.vstack([X_a_full, X_b_full])
-        pca = PCA(n_components=pca_bottleneck_dim, random_state=2026)
-        X_combined_pca = pca.fit_transform(X_combined).astype(np.float32)
+        pca_model = PCA(n_components=pca_bottleneck_dim, random_state=2026)
+        X_combined_pca = pca_model.fit_transform(X_combined).astype(np.float32)
         
         X_a = X_combined_pca[:n_a_orig]
         X_b = X_combined_pca[n_a_orig:]
@@ -146,9 +146,8 @@ def align_features_fgw(
     n_a_orig, d_a = features_a.shape
     n_b_orig, d_b = features_b.shape
     
-    # Đảm bảo mạng có hidden_dim phù hợp nếu hidden_dim lớn hơn đầu vào sau PCA
     if hidden_dim is not None and hidden_dim > d_a * 4:
-        hidden_dim = d_a * 4  # Tự động điều chỉnh mạng để tránh over-fitting trên không gian nhỏ
+        hidden_dim = d_a * 4  
 
     # =====================================================================
     # DATA BATCHING
@@ -312,42 +311,6 @@ def align_features_fgw(
                 n_source_total=n_a, device=device_t
             )
 
-        # ===== DEBUG PLOTS =====
-        if debug_plots_path:
-            if m_step_method == 'transfer':
-                a_hat_cpu = features_a_transformed.detach().cpu().numpy()
-            else:
-                with torch.no_grad():
-                    model.eval()  
-                    a_hat_cpu = apply_model_with_scaling(features_a).detach().cpu().numpy()
-
-            obs_sketched = adata_a.obs.iloc[sketch_to_original].copy() if sketch_to_original is not None else adata_a.obs.copy()
-            obsm_dict = {spatial_key: adata_a.obsm[spatial_key][sketch_to_original]} if spatial_key and spatial_key in adata_a.obsm and sketch_to_original is not None else {}
-                    
-            adata_a_transformed = ad.AnnData(X=a_hat_cpu, obs=obs_sketched, obsm=obsm_dict if obsm_dict else None)
-            adata_a_transformed.obs["type"] = "source_transformed"  
-
-            # SỬA LỖI Ở ĐÂY CHO DEBUG PLOT
-            adata_b_copy = ad.AnnData(X=X_b, obs=adata_b.obs.copy())
-            adata_b_copy.obs["type"] = "target"
-
-            concat_adata_iter = ad.concat([adata_a_transformed, adata_b_copy], axis=0, label="batch", keys=["source", "target"], index_unique="_")
-            
-            if cell_type_col in adata_a_transformed.obs.columns and cell_type_col in adata_b_copy.obs.columns:
-                concat_adata_iter.obs[cell_type_col] = pd.concat([adata_a_transformed.obs[cell_type_col], adata_b_copy.obs[cell_type_col]]).values
-                
-            try:
-                rsc.tl.pca(concat_adata_iter)
-                rsc.pp.neighbors(concat_adata_iter, use_rep='X', metric=metric)
-                rsc.tl.umap(concat_adata_iter)
-            except Exception: pass
-
-            plot_dual_umap(
-                concat_adata_iter, cell_type_col=cell_type_col, title_prefix=f'UMAP Iter {it+1}',
-                save_path=os.path.join(debug_plots_path, 'umap', f"umap_iter_{it+1:04d}.png"),
-                type_palette={'source_transformed': '#1f77b4', 'target': '#ff7f0e'}
-            )
-
         import gc; gc.collect(); torch.cuda.empty_cache()
         
     batch_mappings = [(i, r['T'].argmax(dim=1).cpu().numpy(), r['target_indices']) for i, r in enumerate(batch_results)]
@@ -363,13 +326,19 @@ def align_features_fgw(
             model.eval()
             a_hat_cpu = apply_model_with_scaling(features_a).detach().cpu().numpy()
 
+    # 🌟 ĐỘT PHÁ TỪ Ý TƯỞNG CỦA BẠN: BỘ GIẢI MÃ (DECODER) VỀ LẠI 512D 🌟
+    if pca_model is not None:
+        print("🔄 Đang Decode (Inverse Transform) từ 50D về lại 512D gốc...")
+        a_hat_cpu = pca_model.inverse_transform(a_hat_cpu).astype(np.float32)
+
     obs_sketched = adata_a.obs.iloc[sketch_to_original].copy() if sketch_to_original is not None else adata_a.obs.copy()
     adata_a_transformed = ad.AnnData(X=a_hat_cpu, obs=obs_sketched)
     adata_a_transformed.obs["type"] = "source_transformed"  
     
-    # SỬA LỖI Ở ĐÂY CHO FINAL PLOT
-    adata_b_copy = ad.AnnData(X=X_b, obs=adata_b.obs.copy())
+    adata_b_copy = adata_b.copy()
     adata_b_copy.obs["type"] = "target"
+    # TRẢ VỀ DỮ LIỆU ĐÍCH 512 CHIỀU NGUYÊN BẢN (KHÔNG GHI ĐÈ X_b)
+    adata_b_copy.X = X_b_full
 
     concat_adata = ad.concat([adata_a_transformed, adata_b_copy], axis=0, label="batch", keys=["source", "target"], index_unique="_")
     if cell_type_col in adata_a_transformed.obs.columns and cell_type_col in adata_b_copy.obs.columns:
