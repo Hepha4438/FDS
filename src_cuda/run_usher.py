@@ -33,9 +33,7 @@ class RBFAugmentedTransform(nn.Module):
         self.output_dim = output_dim
         self.use_residual = False
         
-        # ==========================================
         # 1. TÌM LANDMARKS BẰNG KMEANS
-        # ==========================================
         features_np = source_features.detach().cpu().numpy()
         n_samples = features_np.shape[0]
         num_landmarks = min(num_landmarks, n_samples)
@@ -53,22 +51,19 @@ class RBFAugmentedTransform(nn.Module):
             
         self.register_buffer("landmarks", torch.tensor(landmarks_np, dtype=torch.float32))
         
-        # ==========================================
-        # 2. ADAPTIVE SIGMA CHO KHÔNG GIAN 512D
-        # ==========================================
+        # 2. ADAPTIVE SIGMA (Lưu thẳng vào Buffer để đi theo Checkpoint)
         if sigma == 'auto':
             with torch.no_grad():
-                # Tính ma trận khoảng cách giữa chính các mỏ neo
                 dists = torch.cdist(self.landmarks, self.landmarks, p=2)
-                # Dùng median distance chia đôi để đảm bảo các vùng RBF giao thoa vừa phải
-                self.sigma = torch.median(dists).item() / 2.0
-                print(f"🌟 [RBF-Auto] Đã tự động cấu hình sigma = {self.sigma:.4f} cho {num_landmarks} landmarks.")
+                sigma_val = torch.median(dists).item() / 2.0
+                print(f"🌟 [RBF-Auto] Đã tự động cấu hình sigma = {sigma_val:.4f} cho {num_landmarks} landmarks.")
         else:
-            self.sigma = float(sigma)
+            sigma_val = float(sigma)
             
-        # ==========================================
-        # 3. KHỞI TẠO CÁC THAM SỐ HỌC (LEARNABLE)
-        # ==========================================
+        # Đăng ký sigma như một phần của mô hình (quan trọng)
+        self.register_buffer("sigma", torch.tensor(sigma_val, dtype=torch.float32))
+        
+        # 3. KHỞI TẠO CÁC THAM SỐ HỌC
         self.global_linear = nn.Linear(input_dim, output_dim)
         nn.init.eye_(self.global_linear.weight)
         nn.init.zeros_(self.global_linear.bias)
@@ -77,13 +72,10 @@ class RBFAugmentedTransform(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         global_out = self.global_linear(x)
-        
         dist_sq = torch.cdist(x, self.landmarks, p=2).pow(2)
-        # Sử dụng sigma đã được tự động hiệu chỉnh
+        # Sử dụng self.sigma đã đăng ký
         rbf_weights = torch.exp(-dist_sq / (2 * self.sigma ** 2))
-        
         local_out = torch.mm(rbf_weights, self.local_displacements)
-        
         return global_out + local_out
 
 def align_features_fgw(
