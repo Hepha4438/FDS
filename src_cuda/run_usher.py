@@ -191,8 +191,8 @@ def align_features_fgw(
     model = RBFAugmentedTransform(
         source_features=features_a, 
         output_dim=d_b, 
-        num_landmarks=512, 
-        sigma=1.0
+        num_landmarks=4096, 
+        sigma='auto'
     ).to(device_t)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
