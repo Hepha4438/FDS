@@ -33,6 +33,8 @@ class LandmarkCrossAttentionTransform(nn.Module):
         self.output_dim = output_dim
         self.hidden_dim = hidden_dim
         
+        self.use_residual = False
+        
         self.start_temp = start_temp
         self.end_temp = end_temp
         self.register_buffer("temperature", torch.tensor([start_temp], dtype=torch.float32))
