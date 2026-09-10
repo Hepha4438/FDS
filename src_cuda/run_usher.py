@@ -70,9 +70,9 @@ class LandmarkCrossAttentionTransform(nn.Module):
 
         # 🌟 THÊM MỚI: Mạng MLP phi tuyến hóa (2 lớp)
         self.mlp = nn.Sequential(
-            nn.Linear(output_dim, 256),
+            nn.Linear(output_dim, 512),
             nn.GELU(),
-            nn.Linear(256, output_dim)
+            nn.Linear(512, output_dim)
         )
         # Khởi tạo MLP tiệm cận Identity để không gây sốc ở Epoch đầu
         nn.init.zeros_(self.mlp[2].weight)
