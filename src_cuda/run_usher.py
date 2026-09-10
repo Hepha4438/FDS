@@ -26,7 +26,7 @@ from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, pl
 # 🌟 KIẾN TRÚC MỚI: LANDMARK CROSS-ATTENTION TRANSFORM (LCAT) 🌟
 # =====================================================================
 class LandmarkCrossAttentionTransform(nn.Module):
-    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, hidden_dim: int = 128, start_temp: float = 0.5, end_temp: float = 1.05):
+    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, hidden_dim: int = 128, start_temp: float = 0.75, end_temp: float = 1.10):
         super().__init__()
         input_dim = source_features.shape[1]
         self.input_dim = input_dim
@@ -35,9 +35,13 @@ class LandmarkCrossAttentionTransform(nn.Module):
 
         self.use_residual = False
         
+        # 🌟 Cập nhật dải nhiệt độ mới
         self.start_temp = start_temp
         self.end_temp = end_temp
         self.register_buffer("temperature", torch.tensor([start_temp], dtype=torch.float32))
+        
+        # 🌟 Khai báo sẵn biến lưu Entropy Loss để an toàn
+        self.entropy_penalty = torch.tensor(0.0)
         
         features_np = source_features.detach().cpu().numpy()
         n_samples = features_np.shape[0]
@@ -81,6 +85,10 @@ class LandmarkCrossAttentionTransform(nn.Module):
         
         scores = torch.mm(Q, K.t()) / ((self.hidden_dim ** 0.5) * self.temperature)
         attn_weights = F.softmax(scores, dim=-1)
+        
+        # 🌟 THÊM MỚI: Tính toán Entropy Penalty
+        entropy = torch.sum(attn_weights * torch.log(attn_weights + 1e-8), dim=-1)
+        self.entropy_penalty = torch.mean(entropy)
         
         local_base = torch.mm(attn_weights, self.local_displacements)
         return global_out + (self.gamma * local_base)
@@ -197,8 +205,8 @@ def align_features_fgw(
         output_dim=d_b, 
         num_landmarks=4096, 
         hidden_dim=128,
-        start_temp=0.5,
-        end_temp=1.05
+        start_temp=0.75,
+        end_temp=1.10
     ).to(device_t)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
