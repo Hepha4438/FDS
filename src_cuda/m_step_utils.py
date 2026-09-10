@@ -167,6 +167,8 @@ def train_global_model(
 
     logging.info("  [M-step] Chạy Adam Optimizer (Bản gốc USHER)...")
     for step in range(steps_per_iter):
+        if hasattr(model, 'update_temperature'):
+            model.update_temperature(current_step=step, max_steps=steps_per_iter)
         optimizer.zero_grad()
 
         # Forward pass

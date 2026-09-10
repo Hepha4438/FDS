@@ -26,17 +26,17 @@ from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, pl
 # 🌟 KIẾN TRÚC MỚI: LANDMARK CROSS-ATTENTION TRANSFORM (LCAT) 🌟
 # =====================================================================
 class LandmarkCrossAttentionTransform(nn.Module):
-    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, hidden_dim: int = 128, temperature: float = 1.0):
+    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, hidden_dim: int = 128, start_temp: float = 0.5, end_temp: float = 1.05):
         super().__init__()
         input_dim = source_features.shape[1]
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.hidden_dim = hidden_dim
-        self.use_residual = False
         
-        self.register_buffer("temperature", torch.tensor([temperature], dtype=torch.float32))
+        self.start_temp = start_temp
+        self.end_temp = end_temp
+        self.register_buffer("temperature", torch.tensor([start_temp], dtype=torch.float32))
         
-        # 1. TÌM LANDMARKS BẰNG KMEANS (Đã phục hồi code đầy đủ)
         features_np = source_features.detach().cpu().numpy()
         n_samples = features_np.shape[0]
         num_landmarks = min(num_landmarks, n_samples)
@@ -55,7 +55,6 @@ class LandmarkCrossAttentionTransform(nn.Module):
             
         self.register_buffer("landmarks", torch.tensor(landmarks_np, dtype=torch.float32))
         
-        # 2. KHỞI TẠO CÁC THAM SỐ HỌC
         self.global_linear = nn.Linear(input_dim, output_dim)
         nn.init.eye_(self.global_linear.weight)
         nn.init.zeros_(self.global_linear.bias)
@@ -68,32 +67,21 @@ class LandmarkCrossAttentionTransform(nn.Module):
         self.local_displacements = nn.Parameter(torch.zeros(num_landmarks, output_dim))
         self.gamma = nn.Parameter(torch.ones(1) * 1.0)
 
-        # 🌟 THÊM MỚI: Mạng MLP phi tuyến hóa (2 lớp)
-        self.mlp = nn.Sequential(
-            nn.Linear(output_dim, 128),
-            nn.GELU(),
-            nn.Linear(128, output_dim)
-        )
-        # Khởi tạo MLP tiệm cận Identity để không gây sốc ở Epoch đầu
-        nn.init.zeros_(self.mlp[2].weight)
-        nn.init.zeros_(self.mlp[2].bias)
+    def update_temperature(self, current_step: int, max_steps: int):
+        progress = current_step / max(1, max_steps - 1)
+        new_temp = self.start_temp + (self.end_temp - self.start_temp) * progress
+        self.temperature[0] = new_temp
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         global_out = self.global_linear(x)
-        
         Q = self.W_Q(x)
         K = self.W_K(self.landmarks)
         
         scores = torch.mm(Q, K.t()) / ((self.hidden_dim ** 0.5) * self.temperature)
         attn_weights = F.softmax(scores, dim=-1)
         
-        # Tổ hợp tuyến tính ban đầu
         local_base = torch.mm(attn_weights, self.local_displacements)
-        
-        # 🌟 Đưa qua Mạng Phi Tuyến
-        local_out = self.mlp(local_base)
-        
-        return global_out + (self.gamma * local_out)
+        return global_out + (self.gamma * local_base)
 
 def align_features_fgw(
     adata_a: ad.AnnData,
@@ -207,7 +195,8 @@ def align_features_fgw(
         output_dim=d_b, 
         num_landmarks=4096, 
         hidden_dim=128,
-        temperature=1.0
+        start_temp=0.5,
+        end_temp=1.05
     ).to(device_t)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
