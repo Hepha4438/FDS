@@ -32,7 +32,7 @@ class LandmarkCrossAttentionTransform(nn.Module):
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.hidden_dim = hidden_dim
-        
+
         self.use_residual = False
         
         self.start_temp = start_temp

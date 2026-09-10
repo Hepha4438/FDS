@@ -185,8 +185,12 @@ def train_global_model(
         # ===== Loss 2: Variance preservation =====
         loss_var = (source_transformed.std(dim=0) - target_features.std(dim=0)).abs().mean()
 
-        # ===== Combined loss (Chỉ còn 2 thành phần) =====
+        # ===== Combined loss =====
         loss = lambda_cross * loss_cross + lambda_var * loss_var
+
+        alpha_entropy = 0.05
+        if hasattr(model, 'entropy_penalty'):
+            loss = loss + (alpha_entropy * model.entropy_penalty)
 
         if not torch.isfinite(loss):
             logging.error(f"Non-finite loss at step {step}: loss={loss.item()}")
@@ -198,7 +202,9 @@ def train_global_model(
         step_losses.append(loss.item())
 
         if (step + 1) % 10 == 0 or step == 0:
-            logging.info(f"  Step {step+1}/{steps_per_iter}: loss={loss.item():.6f} (cross={loss_cross.item():.4f}, var={loss_var.item():.4f})")
+            # Cập nhật log để tiện theo dõi giá trị entropy
+            ent_val = model.entropy_penalty.item() if hasattr(model, 'entropy_penalty') else 0.0
+            logging.info(f"  Step {step+1}/{steps_per_iter}: loss={loss.item():.6f} (cross={loss_cross.item():.4f}, var={loss_var.item():.4f}, ent={ent_val:.4f})")
 
     if step_losses:
         logging.info(f"M-step completed: {len(step_losses)} steps, avg loss = {np.mean(step_losses):.6f}")
