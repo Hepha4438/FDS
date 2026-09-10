@@ -36,8 +36,22 @@ class LandmarkCrossAttentionTransform(nn.Module):
         
         self.register_buffer("temperature", torch.tensor([temperature], dtype=torch.float32))
         
-        # 1. LANDMARKS BẰNG KMEANS (Giữ nguyên)
-        # ... [Giữ nguyên đoạn code KMeans cũ] ...
+        # 1. TÌM LANDMARKS BẰNG KMEANS (Đã phục hồi code đầy đủ)
+        features_np = source_features.detach().cpu().numpy()
+        n_samples = features_np.shape[0]
+        num_landmarks = min(num_landmarks, n_samples)
+        
+        if n_samples > num_landmarks * 10:
+            num_candidates = num_landmarks * 10
+            candidate_indices = np.random.choice(n_samples, num_candidates, replace=False)
+            candidate_features = features_np[candidate_indices]
+            
+            from sklearn.cluster import KMeans
+            kmeans = KMeans(n_clusters=num_landmarks, n_init=1, random_state=42)
+            kmeans.fit(candidate_features)
+            landmarks_np = kmeans.cluster_centers_
+        else:
+            landmarks_np = features_np[np.random.choice(n_samples, num_landmarks, replace=False)]
             
         self.register_buffer("landmarks", torch.tensor(landmarks_np, dtype=torch.float32))
         
