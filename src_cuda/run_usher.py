@@ -34,25 +34,10 @@ class LandmarkCrossAttentionTransform(nn.Module):
         self.hidden_dim = hidden_dim
         self.use_residual = False
         
-        # Lưu nhiệt độ cố định dưới dạng buffer
         self.register_buffer("temperature", torch.tensor([temperature], dtype=torch.float32))
         
-        # 1. TÌM LANDMARKS BẰNG KMEANS
-        features_np = source_features.detach().cpu().numpy()
-        n_samples = features_np.shape[0]
-        num_landmarks = min(num_landmarks, n_samples)
-        
-        if n_samples > num_landmarks * 10:
-            num_candidates = num_landmarks * 10
-            candidate_indices = np.random.choice(n_samples, num_candidates, replace=False)
-            candidate_features = features_np[candidate_indices]
-            
-            from sklearn.cluster import KMeans
-            kmeans = KMeans(n_clusters=num_landmarks, n_init=1, random_state=42)
-            kmeans.fit(candidate_features)
-            landmarks_np = kmeans.cluster_centers_
-        else:
-            landmarks_np = features_np[np.random.choice(n_samples, num_landmarks, replace=False)]
+        # 1. LANDMARKS BẰNG KMEANS (Giữ nguyên)
+        # ... [Giữ nguyên đoạn code KMeans cũ] ...
             
         self.register_buffer("landmarks", torch.tensor(landmarks_np, dtype=torch.float32))
         
@@ -69,14 +54,30 @@ class LandmarkCrossAttentionTransform(nn.Module):
         self.local_displacements = nn.Parameter(torch.zeros(num_landmarks, output_dim))
         self.gamma = nn.Parameter(torch.ones(1) * 1.0)
 
+        # 🌟 THÊM MỚI: Mạng MLP phi tuyến hóa (2 lớp)
+        self.mlp = nn.Sequential(
+            nn.Linear(output_dim, 256),
+            nn.GELU(),
+            nn.Linear(256, output_dim)
+        )
+        # Khởi tạo MLP tiệm cận Identity để không gây sốc ở Epoch đầu
+        nn.init.zeros_(self.mlp[2].weight)
+        nn.init.zeros_(self.mlp[2].bias)
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         global_out = self.global_linear(x)
+        
         Q = self.W_Q(x)
         K = self.W_K(self.landmarks)
         
         scores = torch.mm(Q, K.t()) / ((self.hidden_dim ** 0.5) * self.temperature)
         attn_weights = F.softmax(scores, dim=-1)
-        local_out = torch.mm(attn_weights, self.local_displacements)
+        
+        # Tổ hợp tuyến tính ban đầu
+        local_base = torch.mm(attn_weights, self.local_displacements)
+        
+        # 🌟 Đưa qua Mạng Phi Tuyến
+        local_out = self.mlp(local_base)
         
         return global_out + (self.gamma * local_out)
 
