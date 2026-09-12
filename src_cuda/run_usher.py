@@ -26,23 +26,26 @@ from plot_utils import plot_dual_umap, plot_weight_heatmap, plot_convergence, pl
 # 🌟 KIẾN TRÚC MỚI: LANDMARK CROSS-ATTENTION TRANSFORM (LCAT) 🌟
 # =====================================================================
 class LandmarkCrossAttentionTransform(nn.Module):
-    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, hidden_dim: int = 128, start_temp: float = 0.75, end_temp: float = 1.10):
+    def __init__(self, source_features: torch.Tensor, output_dim: int, num_landmarks: int = 4096, hidden_dim: int = 128, start_temp: float = 0.75, end_temp: float = 1.10, num_heads: int = 4):
         super().__init__()
         input_dim = source_features.shape[1]
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.hidden_dim = hidden_dim
 
+        # 🌟 Cấu hình Multi-Head (4 Đầu chú ý song song)
+        self.num_heads = num_heads
+        self.head_dim = hidden_dim // num_heads
+        self.head_v_dim = output_dim // num_heads
+        assert hidden_dim % num_heads == 0, "hidden_dim phải chia hết cho num_heads"
+        assert output_dim % num_heads == 0, "output_dim phải chia hết cho num_heads"
+
         self.use_residual = False
-        
-        # 🌟 Cập nhật dải nhiệt độ mới
         self.start_temp = start_temp
         self.end_temp = end_temp
         self.register_buffer("temperature", torch.tensor([start_temp], dtype=torch.float32))
         
-        # 🌟 Khai báo sẵn biến lưu Entropy Loss để an toàn
-        self.entropy_penalty = torch.tensor(0.0)
-        
+        # Lấy Landmarks
         features_np = source_features.detach().cpu().numpy()
         n_samples = features_np.shape[0]
         num_landmarks = min(num_landmarks, n_samples)
@@ -61,16 +64,24 @@ class LandmarkCrossAttentionTransform(nn.Module):
             
         self.register_buffer("landmarks", torch.tensor(landmarks_np, dtype=torch.float32))
         
+        # Biến đổi tuyến tính toàn cục
         self.global_linear = nn.Linear(input_dim, output_dim)
         nn.init.eye_(self.global_linear.weight)
         nn.init.zeros_(self.global_linear.bias)
         
+        # Mở rộng Q, K cho Multi-Head
         self.W_Q = nn.Linear(input_dim, hidden_dim, bias=False)
         self.W_K = nn.Linear(input_dim, hidden_dim, bias=False)
         nn.init.normal_(self.W_Q.weight, std=0.01)
         nn.init.normal_(self.W_K.weight, std=0.01)
         
-        self.local_displacements = nn.Parameter(torch.zeros(num_landmarks, output_dim))
+        # Ma trận biến dạng chia theo Head thay vì gộp chung
+        self.local_displacements = nn.Parameter(torch.zeros(num_landmarks, self.num_heads, self.head_v_dim))
+        
+        # Lớp trộn tín hiệu (Output Projection)
+        self.W_O = nn.Linear(output_dim, output_dim, bias=False)
+        nn.init.eye_(self.W_O.weight) 
+        
         self.gamma = nn.Parameter(torch.ones(1) * 1.0)
 
     def update_temperature(self, current_step: int, max_steps: int):
@@ -79,19 +90,27 @@ class LandmarkCrossAttentionTransform(nn.Module):
         self.temperature[0] = new_temp
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        batch_size = x.size(0)
         global_out = self.global_linear(x)
-        Q = self.W_Q(x)
-        K = self.W_K(self.landmarks)
         
-        scores = torch.mm(Q, K.t()) / ((self.hidden_dim ** 0.5) * self.temperature)
-        attn_weights = F.softmax(scores, dim=-1)
+        # Q, K tách thành các Head: [batch, num_heads, head_dim] và [num_landmarks, num_heads, head_dim]
+        Q = self.W_Q(x).view(batch_size, self.num_heads, self.head_dim)
+        K = self.W_K(self.landmarks).view(-1, self.num_heads, self.head_dim)
         
-        # 🌟 THÊM MỚI: Tính toán Entropy Penalty
-        entropy = torch.sum(attn_weights * torch.log(attn_weights + 1e-8), dim=-1)
-        self.entropy_penalty = torch.mean(entropy)
+        # Tính Attention cho 4 Heads độc lập bằng Tensor Einsum
+        scores = torch.einsum('bhd,lhd->bhl', Q, K) / ((self.head_dim ** 0.5) * self.temperature)
+        attn_weights = F.softmax(scores, dim=-1) # Kích thước: [batch, num_heads, num_landmarks]
         
-        local_base = torch.mm(attn_weights, self.local_displacements)
-        return global_out + (self.gamma * local_base)
+        # Lấy vector dịch chuyển theo từng Head
+        local_base = torch.einsum('bhl,lhv->bhv', attn_weights, self.local_displacements)
+        
+        # Ghép 4 Heads lại (Concat) thành không gian vector gốc
+        local_base = local_base.reshape(batch_size, self.output_dim)
+        
+        # Chiếu qua lớp W_O
+        local_out = self.W_O(local_base)
+        
+        return global_out + (self.gamma * local_out)
 
 def align_features_fgw(
     adata_a: ad.AnnData,
@@ -206,7 +225,7 @@ def align_features_fgw(
         num_landmarks=4096, 
         hidden_dim=128,
         start_temp=0.75,
-        end_temp=1.10
+        end_temp=1.0
     ).to(device_t)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
