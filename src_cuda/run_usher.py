@@ -33,7 +33,7 @@ class LandmarkCrossAttentionTransform(nn.Module):
         self.output_dim = output_dim
         self.hidden_dim = hidden_dim
 
-        # 🌟 Cấu hình Multi-Head (4 Đầu chú ý song song)
+        # Cấu hình Multi-Head
         self.num_heads = num_heads
         self.head_dim = hidden_dim // num_heads
         self.head_v_dim = output_dim // num_heads
@@ -45,7 +45,7 @@ class LandmarkCrossAttentionTransform(nn.Module):
         self.end_temp = end_temp
         self.register_buffer("temperature", torch.tensor([start_temp], dtype=torch.float32))
         
-        # Lấy Landmarks
+        # Tìm Landmarks
         features_np = source_features.detach().cpu().numpy()
         n_samples = features_np.shape[0]
         num_landmarks = min(num_landmarks, n_samples)
@@ -64,21 +64,18 @@ class LandmarkCrossAttentionTransform(nn.Module):
             
         self.register_buffer("landmarks", torch.tensor(landmarks_np, dtype=torch.float32))
         
-        # Biến đổi tuyến tính toàn cục
+        # Các tham số mạng
         self.global_linear = nn.Linear(input_dim, output_dim)
         nn.init.eye_(self.global_linear.weight)
         nn.init.zeros_(self.global_linear.bias)
         
-        # Mở rộng Q, K cho Multi-Head
         self.W_Q = nn.Linear(input_dim, hidden_dim, bias=False)
         self.W_K = nn.Linear(input_dim, hidden_dim, bias=False)
         nn.init.normal_(self.W_Q.weight, std=0.01)
         nn.init.normal_(self.W_K.weight, std=0.01)
         
-        # Ma trận biến dạng chia theo Head thay vì gộp chung
         self.local_displacements = nn.Parameter(torch.zeros(num_landmarks, self.num_heads, self.head_v_dim))
         
-        # Lớp trộn tín hiệu (Output Projection)
         self.W_O = nn.Linear(output_dim, output_dim, bias=False)
         nn.init.eye_(self.W_O.weight) 
         
@@ -89,25 +86,36 @@ class LandmarkCrossAttentionTransform(nn.Module):
         new_temp = self.start_temp + (self.end_temp - self.start_temp) * progress
         self.temperature[0] = new_temp
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, chunk_size: int = 16384) -> torch.Tensor:
+        """Bộ điều phối (Dispatcher) tự động chia nhỏ batch để chống OOM"""
+        batch_size = x.size(0)
+        
+        # Nếu batch nhỏ, đưa thẳng vào VRAM để tối ưu tốc độ
+        if batch_size <= chunk_size:
+            return self._forward_chunk(x)
+            
+        # Nếu batch vượt ngưỡng, chia nhỏ ra tính dần
+        outputs = []
+        for i in range(0, batch_size, chunk_size):
+            chunk = x[i:i + chunk_size]
+            outputs.append(self._forward_chunk(chunk))
+            
+        return torch.cat(outputs, dim=0)
+
+    def _forward_chunk(self, x: torch.Tensor) -> torch.Tensor:
+        """Hàm xử lý lõi Multi-Head Attention trên một block dữ liệu an toàn"""
         batch_size = x.size(0)
         global_out = self.global_linear(x)
         
-        # Q, K tách thành các Head: [batch, num_heads, head_dim] và [num_landmarks, num_heads, head_dim]
         Q = self.W_Q(x).view(batch_size, self.num_heads, self.head_dim)
         K = self.W_K(self.landmarks).view(-1, self.num_heads, self.head_dim)
         
-        # Tính Attention cho 4 Heads độc lập bằng Tensor Einsum
         scores = torch.einsum('bhd,lhd->bhl', Q, K) / ((self.head_dim ** 0.5) * self.temperature)
-        attn_weights = F.softmax(scores, dim=-1) # Kích thước: [batch, num_heads, num_landmarks]
+        attn_weights = F.softmax(scores, dim=-1)
         
-        # Lấy vector dịch chuyển theo từng Head
         local_base = torch.einsum('bhl,lhv->bhv', attn_weights, self.local_displacements)
-        
-        # Ghép 4 Heads lại (Concat) thành không gian vector gốc
         local_base = local_base.reshape(batch_size, self.output_dim)
         
-        # Chiếu qua lớp W_O
         local_out = self.W_O(local_base)
         
         return global_out + (self.gamma * local_out)
