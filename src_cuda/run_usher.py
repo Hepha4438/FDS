@@ -86,7 +86,8 @@ class LandmarkCrossAttentionTransform(nn.Module):
         new_temp = self.start_temp + (self.end_temp - self.start_temp) * progress
         self.temperature[0] = new_temp
 
-    def forward(self, x: torch.Tensor, chunk_size: int = 16384) -> torch.Tensor:
+    # Đổi tham số chunk_size ở dòng này
+    def forward(self, x: torch.Tensor, chunk_size: int = 2048) -> torch.Tensor:
         """Bộ điều phối (Dispatcher) tự động chia nhỏ batch để chống OOM"""
         batch_size = x.size(0)
         
