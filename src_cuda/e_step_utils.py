@@ -138,6 +138,73 @@ def compute_transport_gw(
     return T
 
 
+# def compute_transport_fgw(
+#     features_source: torch.Tensor,
+#     features_target: torch.Tensor,
+#     aux_features_source: Optional[np.ndarray],
+#     aux_features_target: Optional[np.ndarray],
+#     gamma: float,
+#     epsilon: float,
+#     alpha: float,
+#     metric: str,
+#     knn_k: int,
+#     use_knn_graph: bool,
+#     device: torch.device,
+#     iteration: int = 0,
+#     verbose: bool = False
+# ) -> torch.Tensor:
+    
+#     n_source = features_source.shape[0]
+#     n_target = features_target.shape[0]
+#     gamma_effective = 1.0 if iteration == 0 else gamma
+
+#     if use_knn_graph:
+#         C1 = compute_knn_graph_distance(features_source, k=knn_k, metric=metric, device=device)
+#         C2 = compute_knn_graph_distance(features_target, k=knn_k, metric=metric, device=device)
+#     else:
+#         C1 = torch.cdist(features_source, features_source, p=2)
+#         C1 = C1 / (C1.mean() + 1e-8)
+#         C2 = torch.cdist(features_target, features_target, p=2)
+#         C2 = C2 / (C2.mean() + 1e-8)
+
+#     if aux_features_source is not None and aux_features_target is not None:
+#         aux_source_torch = torch.from_numpy(aux_features_source).float().to(device)
+#         aux_target_torch = torch.from_numpy(aux_features_target).float().to(device)
+#         M_aux = torch.cdist(aux_source_torch, aux_target_torch, p=2)
+#         M_aux = M_aux / (M_aux.max().clamp(min=1e-8))
+        
+#         if metric == 'cosine':
+#             M_features = 1.0 - (features_source @ features_target.T)
+#         else:
+#             M_features = torch.cdist(features_source, features_target, p=2)
+#         M_features = M_features / (M_features.max().clamp(min=1e-8))
+
+#         M = (gamma_effective) * M_aux + (1-gamma_effective) * M_features
+#     else:
+#         if metric == 'cosine':
+#             M = 1.0 - (features_source @ features_target.T)
+#         else:
+#             M = torch.cdist(features_source, features_target, p=2)
+#         M = M / (M.max().clamp(min=1e-8))
+
+#     p = torch.ones(n_source, device=device, dtype=torch.float32) / n_source
+#     q = torch.ones(n_target, device=device, dtype=torch.float32) / n_target
+
+#     T = ot.gromov.entropic_fused_gromov_wasserstein(
+#         M=M, C1=C1, C2=C2, p=p, q=q, loss_fun='square_loss',
+#         epsilon=epsilon, alpha=alpha, max_iter=10000,
+#         tol=1e-6, verbose=verbose, log=False, backend='torch'
+#     )
+
+#     if not isinstance(T, torch.Tensor):
+#         T = torch.as_tensor(T, device=device).float()
+
+#     row_sums = T.sum(dim=1, keepdim=True)
+#     row_sums[row_sums == 0] = 1.0
+#     T = T / row_sums
+
+#     return T
+
 def compute_transport_fgw(
     features_source: torch.Tensor,
     features_target: torch.Tensor,
@@ -151,22 +218,38 @@ def compute_transport_fgw(
     use_knn_graph: bool,
     device: torch.device,
     iteration: int = 0,
-    verbose: bool = False
+    verbose: bool = False,
+    low_rank_dim: int = 64  # Tham số mới ép Low-Rank
 ) -> torch.Tensor:
     
     n_source = features_source.shape[0]
     n_target = features_target.shape[0]
     gamma_effective = 1.0 if iteration == 0 else gamma
 
-    if use_knn_graph:
-        C1 = compute_knn_graph_distance(features_source, k=knn_k, metric=metric, device=device)
-        C2 = compute_knn_graph_distance(features_target, k=knn_k, metric=metric, device=device)
+    # 🌟 BƯỚC CẢI TIẾN LOW-RANK FGW
+    # Giảm chiều không gian đặc trưng bằng PCA để ép ma trận cấu trúc thành Low-Rank.
+    # Thao tác này triệt tiêu nhiễu tần số cao (noise), giữ lại cấu trúc lõi của Cell Type.
+    if features_source.shape[1] > low_rank_dim:
+        U_s, S_s, V_s = torch.pca_lowrank(features_source, q=low_rank_dim)
+        features_source_lr = torch.matmul(features_source, V_s)
+        
+        U_t, S_t, V_t = torch.pca_lowrank(features_target, q=low_rank_dim)
+        features_target_lr = torch.matmul(features_target, V_t)
     else:
-        C1 = torch.cdist(features_source, features_source, p=2)
+        features_source_lr = features_source
+        features_target_lr = features_target
+
+    # Tính toán ma trận cấu trúc C1, C2 trên không gian Low-Rank
+    if use_knn_graph:
+        C1 = compute_knn_graph_distance(features_source_lr, k=knn_k, metric=metric, device=device)
+        C2 = compute_knn_graph_distance(features_target_lr, k=knn_k, metric=metric, device=device)
+    else:
+        C1 = torch.cdist(features_source_lr, features_source_lr, p=2)
         C1 = C1 / (C1.mean() + 1e-8)
-        C2 = torch.cdist(features_target, features_target, p=2)
+        C2 = torch.cdist(features_target_lr, features_target_lr, p=2)
         C2 = C2 / (C2.mean() + 1e-8)
 
+    # Tính toán ma trận trung gian (Feature Cost)
     if aux_features_source is not None and aux_features_target is not None:
         aux_source_torch = torch.from_numpy(aux_features_source).float().to(device)
         aux_target_torch = torch.from_numpy(aux_features_target).float().to(device)
@@ -190,6 +273,7 @@ def compute_transport_fgw(
     p = torch.ones(n_source, device=device, dtype=torch.float32) / n_source
     q = torch.ones(n_target, device=device, dtype=torch.float32) / n_target
 
+    # Đưa vào Sinkhorn FGW tiêu chuẩn (Lúc này C1, C2 đã mang đặc tính Low-Rank)
     T = ot.gromov.entropic_fused_gromov_wasserstein(
         M=M, C1=C1, C2=C2, p=p, q=q, loss_fun='square_loss',
         epsilon=epsilon, alpha=alpha, max_iter=10000,
@@ -204,7 +288,6 @@ def compute_transport_fgw(
     T = T / row_sums
 
     return T
-
 
 def apply_linear_assignment(
     T: torch.Tensor,
