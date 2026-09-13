@@ -304,14 +304,44 @@ def apply_linear_assignment(
     T: torch.Tensor,
     gamma_effective: float,
     e_step_method: str,
-    M: Optional[torch.Tensor] = None
+    M: Optional[torch.Tensor] = None,
+    K: int = 3,                 # 🌟 Sức chứa: 1 target scRNA-seq nhận tối đa K Xenium
+    tau_prob: float = 1e-4      # 🌟 Điểm neo ảo: Ngưỡng loại bỏ Outlier
 ) -> Tuple[torch.Tensor, np.ndarray, np.ndarray]:
     from scipy.optimize import linear_sum_assignment
-    cost_matrix = -T.cpu().numpy()  
-    row_indices, col_indices = linear_sum_assignment(cost_matrix)
+    
+    P = T.cpu().numpy()
+    n_source, n_target = P.shape
+    
+    # 1. Nhân bản bến đỗ đích (Capacity-Constrained K-to-1)
+    P_extended = np.repeat(P, K, axis=1)
+    
+    # 2. Đệm Điểm Neo Ảo (Dummy Nodes) nếu Xenium vẫn đông hơn sức chứa
+    if P_extended.shape[1] < n_source:
+        pad_size = n_source - P_extended.shape[1]
+        dummy_cols = np.zeros((n_source, pad_size))
+        P_extended = np.hstack((P_extended, dummy_cols))
+        
+    cost_matrix = -P_extended
+    
+    # 3. Chạy thuật toán Hungarian trên không gian mở rộng ảo
+    row_indices, col_indices_extended = linear_sum_assignment(cost_matrix)
+    
+    # 4. Outlier Rejection (Kích hoạt Tế bào Ảo)
+    # Từ chối ghép cặp nếu bị ép vào cột Dummy hoặc xác suất OT quá thấp
+    valid_mask = (P_extended[row_indices, col_indices_extended] >= tau_prob) & \
+                 (col_indices_extended < n_target * K)
+    
+    row_indices_valid = row_indices[valid_mask]
+    col_indices_extended_valid = col_indices_extended[valid_mask]
+    
+    # 5. Ánh xạ ngược về ID gốc của tế bào scRNA-seq
+    col_indices_valid = col_indices_extended_valid // K
+    
     T_sparse = torch.zeros_like(T)
-    T_sparse[row_indices, col_indices] = 1.0
-    return T_sparse, row_indices, col_indices
+    T_sparse[row_indices_valid, col_indices_valid] = 1.0
+    
+    return T_sparse, row_indices_valid, col_indices_valid
 
 
 def compute_transport_batch(
@@ -425,7 +455,8 @@ def compute_transport_batch(
     if use_linear_assignment:
         gamma_effective = 1.0 if iteration == 0 else gamma
         T, row_indices, col_indices = apply_linear_assignment(
-            T, gamma_effective, e_step_method, M=None
+            T, gamma_effective, e_step_method, M=None,
+            K=3, tau_prob=1e-4  # 🌟 Bật cấu hình Robust Hungarian
         )
 
     return {
