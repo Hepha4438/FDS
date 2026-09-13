@@ -219,22 +219,28 @@ def compute_transport_fgw(
     device: torch.device,
     iteration: int = 0,
     verbose: bool = False,
-    low_rank_dim: int = 64  # Tham số mới ép Low-Rank
+    low_rank_dim: int = 64  # Kích thước Low-Rank
 ) -> torch.Tensor:
     
     n_source = features_source.shape[0]
     n_target = features_target.shape[0]
     gamma_effective = 1.0 if iteration == 0 else gamma
 
-    # 🌟 BƯỚC CẢI TIẾN LOW-RANK FGW
-    # Giảm chiều không gian đặc trưng bằng PCA để ép ma trận cấu trúc thành Low-Rank.
-    # Thao tác này triệt tiêu nhiễu tần số cao (noise), giữ lại cấu trúc lõi của Cell Type.
+    # 🌟 CÁCH GIẢI QUYẾT LỖI MULTI-THREADING: PCA Tùy chỉnh an toàn qua Ma trận Hiệp phương sai
+    def fast_pca_threadsafe(X: torch.Tensor, q: int) -> torch.Tensor:
+        X_centered = X - X.mean(dim=0, keepdim=True)
+        # Tính Covariance Matrix (D x D). Với D=512, ma trận này cực kỳ nhẹ trên GPU
+        cov = torch.mm(X_centered.T, X_centered) / max(1, X.shape[0] - 1)
+        # Phân rã Eigenvalues an toàn với đa luồng
+        _, eigenvectors = torch.linalg.eigh(cov)
+        # Lấy q vector riêng có phương sai lớn nhất (nằm ở cuối)
+        V = eigenvectors[:, -q:]
+        return torch.mm(X_centered, V)
+
+    # Ép Low-Rank để làm sạch dữ liệu trước khi dựng đồ thị KNN
     if features_source.shape[1] > low_rank_dim:
-        U_s, S_s, V_s = torch.pca_lowrank(features_source, q=low_rank_dim)
-        features_source_lr = torch.matmul(features_source, V_s)
-        
-        U_t, S_t, V_t = torch.pca_lowrank(features_target, q=low_rank_dim)
-        features_target_lr = torch.matmul(features_target, V_t)
+        features_source_lr = fast_pca_threadsafe(features_source, low_rank_dim)
+        features_target_lr = fast_pca_threadsafe(features_target, low_rank_dim)
     else:
         features_source_lr = features_source
         features_target_lr = features_target
@@ -273,7 +279,7 @@ def compute_transport_fgw(
     p = torch.ones(n_source, device=device, dtype=torch.float32) / n_source
     q = torch.ones(n_target, device=device, dtype=torch.float32) / n_target
 
-    # Đưa vào Sinkhorn FGW tiêu chuẩn (Lúc này C1, C2 đã mang đặc tính Low-Rank)
+    # Tối ưu FGW với C1, C2 đã được nén Low-Rank
     T = ot.gromov.entropic_fused_gromov_wasserstein(
         M=M, C1=C1, C2=C2, p=p, q=q, loss_fun='square_loss',
         epsilon=epsilon, alpha=alpha, max_iter=10000,
