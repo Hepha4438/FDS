@@ -222,18 +222,23 @@ def compute_transport_fgw(
     low_rank_dim: int = 64  # Kích thước Low-Rank
 ) -> torch.Tensor:
     
+    # 🌟 KHỞI TẠO LOCK ĐỂ CHỐNG RACE CONDITION CỦA PYTORCH
+    if not hasattr(compute_transport_fgw, 'lock'):
+        import threading
+        compute_transport_fgw.lock = threading.Lock()
+        
     n_source = features_source.shape[0]
     n_target = features_target.shape[0]
     gamma_effective = 1.0 if iteration == 0 else gamma
 
-    # 🌟 CÁCH GIẢI QUYẾT LỖI MULTI-THREADING: PCA Tùy chỉnh an toàn qua Ma trận Hiệp phương sai
     def fast_pca_threadsafe(X: torch.Tensor, q: int) -> torch.Tensor:
         X_centered = X - X.mean(dim=0, keepdim=True)
-        # Tính Covariance Matrix (D x D). Với D=512, ma trận này cực kỳ nhẹ trên GPU
         cov = torch.mm(X_centered.T, X_centered) / max(1, X.shape[0] - 1)
-        # Phân rã Eigenvalues an toàn với đa luồng
-        _, eigenvectors = torch.linalg.eigh(cov)
-        # Lấy q vector riêng có phương sai lớn nhất (nằm ở cuối)
+        
+        # Khóa luồng: Chỉ cho phép 1 luồng gọi linalg cùng lúc để PyTorch khởi tạo cuSOLVER an toàn
+        with compute_transport_fgw.lock:
+            _, eigenvectors = torch.linalg.eigh(cov)
+            
         V = eigenvectors[:, -q:]
         return torch.mm(X_centered, V)
 
