@@ -262,9 +262,9 @@ def align_features_fgw(
             step_losses, feature_mean, feature_std = train_global_model(
                 model=model, optimizer=optimizer, source_features=source_agg,
                 target_features=target_agg, steps_per_iter=steps_per_iter,
-                lambda_cross=lambda_cross, lambda_struct=lambda_struct,
+                lambda_cross=lambda_cross,
                 lambda_var=lambda_var, metric=m_step_metric, 
-                structure_sample_size=structure_sample_size, device=device_t,
+                device=device_t,
                 features_target_all=features_b  
             )
             if it == 0 or feature_mean is not None:
