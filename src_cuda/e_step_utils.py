@@ -456,7 +456,7 @@ def compute_transport_batch(
         gamma_effective = 1.0 if iteration == 0 else gamma
         T, row_indices, col_indices = apply_linear_assignment(
             T, gamma_effective, e_step_method, M=None,
-            K=3, tau_prob=0.01
+            K=3, tau_prob=5e-5
         )
 
     return {
