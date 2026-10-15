@@ -44,59 +44,84 @@ USHER-CC           & 0.7219 & 0.5117 & 0.000 & 2 \\
 \end{table}
 
 \subsection{Benchmark against reference-preserving and reference-modifying baselines}\label{sec:res_bench}
-Table~\ref{tab:main} summarises the 12-pair benchmark; Figures~\ref{fig:grid} and~\ref{fig:gaps} show the
-per-technology breakdown and the paired tests. Ranked by mean over pairs, \frost is among the top three of 11
-methods on 15 of 17 metrics. The two exceptions are graph connectivity (sixth) and NMI (fourth). It has the highest
-mean on BRAS and xfer\_all, but its margin over ridge on these two is within noise: \frost is ahead in 6 and 5 of 12
-pairs, respectively.
+Figure~\ref{fig:grid} shows all 16 metrics per source technology (per tissue in Supplementary
+Figure~\ref{fig:grid_tissue}). Because batch\_v2 and bio\_v2 are means of the metrics beside them, ranking all 16
+would count the same information several times. We therefore summarise with a compact set (Table~\ref{tab:main}):
+the two group scores, their weighted total, and the four task metrics. On all seven, \frost ranks among the top
+three of 11 methods. It is first on xfer\_all; second on batch\_v2, total\_v2, rare\_purity and knn\_xen; third on
+bio\_v2 and xfer\_main. Where \frost is not first, the leader is usually one of its own ablations. USHER-CC leads
+batch\_v2, total\_v2 and rare\_purity; USHER-ST, which has no CORAL step, leads xfer\_main and knn\_xen. The one
+baseline that leads a column is ridge on bio\_v2. Table~\ref{tab:main} also reports gene imputation under the original
+protocol, where \frost ranks second. That protocol leaks the predicted gene into the source embedding, and when the
+leak is removed the ranking reverses (Section~\ref{sec:limitations}); we draw no conclusion from that column.
 
-Ridge is the informative comparison, because it uses the same auxiliary labels and the same moment matching as
-\frost and differs mainly in how source cells are paired with reference cells. \frost exceeds ridge in all 12 pairs
-on batch mixing (0.6593 vs 0.5447) and on the total score (0.6724 vs 0.6303). The two are level on label transfer
-(xfer\_main 0.6891 vs 0.6867; \frost ahead in 7 of 12 pairs). Ridge is better on biological conservation (bio\_v2
-0.6874 vs 0.6811; ridge ahead in 9 of 12 pairs). This is the only aggregate on which a linear baseline beats
-\frost, so \frost's advantage over ridge lies in mixing and in the total score, not in conserving biology. Because
-the total weights mixing at 0.4 and moment matching recovers much of it, the total should be read together with its
-two components. Against Symphony, the published reference-mapping method, \frost is ahead in all 12 pairs on
-xfer\_main, xfer\_all, bio\_v2, batch\_v2 and total\_v2. Part of this gap may reflect Symphony's own count-based
-representation (Section~\ref{sec:baselines}).
+Figure~\ref{fig:gaps} gives the paired tests against every baseline. Ridge is the informative comparison, because it
+uses the same auxiliary labels and the same moment matching as \frost and differs mainly in how source cells are
+paired with reference cells. \frost exceeds ridge in all 12 pairs on batch\_v2 (0.6593 vs 0.5447). It also exceeds
+ridge in all 12 on total\_v2 (0.6724 vs 0.6303), but this is not independent evidence: batch\_v2 ranges from 0.34 to
+0.66 across methods and bio\_v2 only from 0.60 to 0.69, so differences in total\_v2 are driven by mixing.
+On the remaining metrics \frost and ridge are not distinguishable. Ridge is ahead on bio\_v2 in 9 of 12 pairs
+(0.6874 vs 0.6811; median difference $-0.006$, $p=0.06$). \frost is ahead on xfer\_main in 7 of 12 (0.6891 vs
+0.6867, $p=0.29$). \frost has the highest mean on xfer\_all, but it is ahead of ridge in only 5 of 12 pairs
+($p=0.64$). The comparison is therefore best read as a Pareto trade-off rather than through a composite score:
+relative to ridge, \frost gains in mixing at no statistically detectable cost in conservation or transfer.
+
+Two simpler baselines also deserve mention. Per-assay mean centring is not significantly worse than \frost on
+xfer\_main (median $+0.020$, $p=0.27$) or knn\_xen ($p=0.79$). \frost's advantage over centring lies in mixing,
+conservation, xfer\_all and rare-type purity. Against Symphony, the published reference-mapping method, \frost is
+ahead in all 12 pairs on batch\_v2, bio\_v2, xfer\_main and xfer\_all. Part of that gap may reflect Symphony's own
+count-based representation (Section~\ref{sec:baselines}).
 
 \begin{table}[t]
 \centering
-\caption{Main benchmark: means over 12 pairs (three seeds for stochastic methods). Methods marked $^{*}$ modify the
-reference embedding. Best per column in bold.}
+\caption{Compact benchmark: means over 12 pairs (three seeds for stochastic methods). Methods marked $^{*}$ modify
+the reference embedding. Best per column in bold.
+$^{\dagger}$Original imputation protocol, which leaks the predicted gene into the source embedding; under the
+leakage-controlled protocol standard baselines exceed every USHER-family variant in 11 of 12 pairs
+(Section~\ref{sec:limitations}). Shown for completeness only. Symphony is not scored on imputation.}
 \label{tab:main}
 \small
-\begin{tabular}{@{}lccccccc@{}}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lcccccccc@{}}
 \toprule
-Method & batch\_v2 & bio\_v2 & total\_v2 & xfer\_main & xfer\_all & rare\_purity & knn\_xen \\
+Method & batch\_v2 & bio\_v2 & total\_v2 & xfer\_main & xfer\_all & rare\_purity & knn\_xen & imput.$^{\dagger}$ \\
 \midrule
-raw        & 0.3448 & 0.5956 & 0.4953 & 0.5972 & 0.3256 & 0.1547 & 0.3061 \\
-center     & 0.4419 & 0.6240 & 0.5511 & 0.6778 & 0.4066 & 0.2290 & 0.3308 \\
-CORAL      & 0.5939 & 0.6605 & 0.6339 & 0.6397 & 0.4027 & 0.2527 & 0.3088 \\
-MNN-ref    & 0.4258 & 0.6197 & 0.5421 & 0.6383 & 0.3619 & 0.1814 & 0.3182 \\
-ridge      & 0.5447 & \textbf{0.6874} & 0.6303 & 0.6867 & 0.4266 & 0.2623 & 0.3101 \\
-Harmony$^{*}$   & 0.4499 & 0.6204 & 0.5522 & 0.6512 & 0.3716 & 0.2012 & 0.3210 \\
-Scanorama$^{*}$ & 0.3843 & 0.6110 & 0.5203 & 0.6050 & 0.3422 & 0.1702 & 0.3089 \\
-Symphony$^{*}$  & 0.4861 & 0.6099 & 0.5604 & 0.4949 & 0.2990 & 0.1841 & 0.2470 \\
-USHER-ST   & 0.5479 & 0.6763 & 0.6249 & \textbf{0.6913} & 0.4074 & 0.2267 & \textbf{0.3372} \\
-USHER-CC   & \textbf{0.6600} & 0.6813 & \textbf{0.6728} & 0.6896 & 0.4288 & \textbf{0.2652} & 0.3322 \\
-\frost     & 0.6593 & 0.6811 & 0.6724 & 0.6891 & \textbf{0.4291} & 0.2642 & 0.3330 \\
+raw        & 0.3448 & 0.5956 & 0.4953 & 0.5972 & 0.3256 & 0.1547 & 0.3061 & 0.0955 \\
+center     & 0.4419 & 0.6240 & 0.5511 & 0.6778 & 0.4066 & 0.2290 & 0.3308 & 0.1073 \\
+CORAL      & 0.5939 & 0.6605 & 0.6339 & 0.6397 & 0.4027 & 0.2527 & 0.3088 & 0.0919 \\
+MNN-ref    & 0.4258 & 0.6197 & 0.5421 & 0.6383 & 0.3619 & 0.1814 & 0.3182 & 0.1034 \\
+ridge      & 0.5447 & \textbf{0.6874} & 0.6303 & 0.6867 & 0.4266 & 0.2623 & 0.3101 & 0.0620 \\
+Harmony$^{*}$   & 0.4499 & 0.6204 & 0.5522 & 0.6512 & 0.3716 & 0.2012 & 0.3210 & 0.1068 \\
+Scanorama$^{*}$ & 0.3843 & 0.6110 & 0.5203 & 0.6050 & 0.3422 & 0.1702 & 0.3089 & 0.0956 \\
+Symphony$^{*}$  & 0.4861 & 0.6099 & 0.5604 & 0.4949 & 0.2990 & 0.1841 & 0.2470 & -- \\
+USHER-ST   & 0.5479 & 0.6763 & 0.6249 & \textbf{0.6913} & 0.4074 & 0.2267 & \textbf{0.3372} & \textbf{0.1150} \\
+USHER-CC   & \textbf{0.6600} & 0.6813 & \textbf{0.6728} & 0.6896 & 0.4288 & \textbf{0.2652} & 0.3322 & 0.1096 \\
+\frost     & 0.6593 & 0.6811 & 0.6724 & 0.6891 & \textbf{0.4291} & 0.2642 & 0.3330 & 0.1145 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{figure}[t]
 \centering
-\fbox{\parbox{0.9\linewidth}{\centering\todo{Figure: per-technology means (fig\_grid.py), imputation column removed}}}
-\caption{Per-technology means of 16 metrics for all methods.}
+\includegraphics[width=\linewidth]{figs/fig_grid_tech.png}
+\caption{All 16 metrics, 11 methods. Each dot is the mean over three tissues for one source technology; the vertical
+bar is the mean over 12 pairs. Axes span the observed range of each metric, without min--max scaling across
+methods. Shaded columns are group scores of the metrics to their left: batch\_v2 is the mean of iLISI, kBET, BRAS
+and graph connectivity; bio\_v2 the mean of NMI, ARI, ASW, cLISI and isolated labels; total\_v2 $=0.4\,$batch\_v2
+$+\,0.6\,$bio\_v2. $^{*}$Methods that modify the reference embedding. The four pairs of a tissue share a reference
+and a patient, so the 12 pairs are not independent.}
 \label{fig:grid}
 \end{figure}
 
 \begin{figure}[t]
 \centering
-\fbox{\parbox{0.9\linewidth}{\centering\todo{Figure: median paired difference to \frost with Wilcoxon (fig3.py)}}}
-\caption{Paired differences between each baseline and \frost over 12 pairs (median of differences, exact Wilcoxon).}
+\includegraphics[width=\linewidth]{figs/fig_gaps.png}
+\caption{Paired comparison of each baseline with \frost over 12 pairs. The blue line marks \frost; the black tick
+marks the baseline, placed at minus the median of the 12 paired differences (\frost $-$ baseline). Bar, tick and
+printed value all use that median, which is the quantity the Wilcoxon signed-rank test examines. Values in bold have
+$p<0.05$. With 12 pairs $p$ cannot fall below $2/2^{12}\approx4.9\times10^{-4}$, and pairs within a tissue are
+not independent, so $p$ describes consistency and the median describes magnitude. $^{*}$Methods that modify the
+reference embedding.}
 \label{fig:gaps}
 \end{figure}
 
@@ -109,28 +134,11 @@ transfer by only $+0.0086$ (Table~\ref{tab:graphst}). In the main benchmark it r
 in local density fidelity is reported in Section~\ref{sec:limitations}.
 
 \paragraph{Reference floor.}\label{sec:res_floor}
-Table~\ref{tab:floor} varies the per-class floor in the USHER-ST configuration on the four COAD pairs. The floor
-was selected beforehand on a validation split of the training tiles (T2): the largest rare-type purity among floors
-that lost no more than 0.02 in xfer\_main or total score. That rule chose 200. On held-out tiles, larger floors
-continue to improve xfer\_main, xfer\_all and rare-type purity slightly, so 200 is a conservative choice rather than
-one tuned on evaluation data.
-
-\begin{table}[t]
-\centering
-\caption{Per-class reference floor, USHER-ST configuration, four COAD pairs $\times$ three seeds, held-out tiles.}
-\label{tab:floor}
-\small
-\begin{tabular}{@{}lcccccc@{}}
-\toprule
-Floor & xfer\_main & xfer\_all & rare\_purity & batch\_v2 & bio\_v2 & total\_v2 \\
-\midrule
-0    & 0.7210 & 0.4284 & 0.2201 & 0.6052 & 0.7020 & 0.6633 \\
-200  & 0.7229 & 0.4420 & 0.2405 & 0.6114 & 0.7049 & 0.6675 \\
-500  & 0.7291 & 0.4485 & 0.2547 & 0.6106 & 0.7048 & 0.6671 \\
-1000 & 0.7289 & 0.4551 & 0.2626 & 0.6109 & 0.7058 & 0.6678 \\
-\bottomrule
-\end{tabular}
-\end{table}
+The per-class floor was fixed before evaluation, on a validation split of the training tiles. The rule was the
+largest rare-type purity among floors that lost no more than 0.02 in xfer\_main or total score, with the 0.02
+threshold set in advance. That rule chose 200. On held-out tiles, larger floors improve xfer\_main, xfer\_all and
+rare-type purity slightly (Supplementary Table~\ref{tab:floor}), so 200 is conservative rather than tuned on
+evaluation data.
 
 \paragraph{Computational cost of the structure matrices.}\label{sec:res_cost}
 Table~\ref{tab:cost} times three structure configurations on the four COAD pairs (seed 0, 25 EM iterations): the
@@ -192,41 +200,59 @@ was run with one seed. The mixed form in
 \subsection{Comparison with USHER}\label{sec:res_usher}
 Table~\ref{tab:usher} compares \frost with the unmodified USHER reference implementation on the four COAD pairs. The
 two pipelines differ in four components at once (Table~\ref{tab:usher_vs_frost}), so this is a pipeline-level
-comparison, not an ablation. USHER was run with one seed.
+comparison, not an ablation. USHER was run with one seed, so differences are read through their consistency across
+the four pairs rather than through a test (the smallest attainable $p$ with four pairs is 0.125).
 
-USHER mixes the platforms better (batch\_v2 0.7269 vs 0.6987; \frost ahead in 1 of 4 pairs). \frost conserves
-biology better (bio\_v2 0.7050 vs 0.6913; 4 of 4 pairs). The total scores are level (0.7055 vs 0.7025). On label
-transfer the two are level (xfer\_main $+0.0038$). On the three metrics that probe rare types and local geometry,
-\frost is ahead in every pair: xfer\_all $+0.038$, rare-type purity $+0.038$ and knn\_xen $+0.034$. These are
-exactly the metrics outside USHER's own benchmark. Adding CORAL to USHER raises its mixing further (0.7448) without
-changing this pattern.
+The two methods sit at different points of the same trade-off, and their total scores are level (total\_v2 0.7055 vs
+0.7025; \frost ahead in 2 of 4 pairs). USHER mixes the platforms better on four of five mixing metrics: iLISI $-0.029$,
+kBET $-0.071$, BRAS $-0.015$, batch ASW $-0.012$ and batch\_v2 $-0.028$ (\frost minus USHER); graph connectivity
+is level. \frost conserves biology better on the cluster-based metrics, NMI $+0.037$ and ARI $+0.039$ (4 of 4 pairs
+each), and on cLISI $+0.010$ (3 of 4) and bio\_v2 $+0.014$ (4 of 4). It is slightly lower on label ASW ($-0.010$)
+and isolated labels ($-0.007$). It is also ahead on every task metric. The gains are small on xfer\_main ($+0.004$, 3 of 4) and clear on
+the three metrics that probe rare types and local geometry: xfer\_all $+0.038$, rare-type purity $+0.038$ and
+knn\_xen $+0.034$, each in 4 of 4 pairs. These are the metrics outside USHER's own benchmark. Adding CORAL to USHER
+raises its mixing further (batch\_v2 0.7448) without changing this pattern.
 
-\frost does not therefore surpass its base algorithm in aggregate quality; it trades some mixing for rare-type and
-local-geometry fidelity. It does so at a fraction of the cost. USHER recomputes exact structure matrices 200 times
-per pair against 8 for \frost (25-fold fewer, as $2BT$ against $2B$ with $T=25$). USHER's EM took 2{,}570--3{,}219\,s
-per pair, with 54--67\% spent building structure matrices. \frost took 361.7--435.0\,s at the same number of
-iterations. Both ran on the same hardware type, but the comparison also includes the other three differences.
+\frost reaches this point of the frontier at a fraction of the cost. USHER recomputes exact structure matrices
+200 times per pair, against 8 for \frost ($2BT$ against $2B$ with $T=25$). USHER's EM took 2{,}570--3{,}219\,s per
+pair (mean 2{,}911\,s), with 54--67\% spent building structure matrices. \frost took 361.7--435.0\,s (mean
+387.3\,s) at the same number of iterations, about 7.5-fold less. Both ran on the same hardware type, but the timing
+difference also includes the other three differences between the pipelines.
 
 \begin{table}[t]
 \centering
 \caption{USHER reference implementation versus \frost, four COAD pairs. USHER: one seed, 25 iterations. \frost and
-ridge: three seeds, means. Pipelines differ in four components (Table~\ref{tab:usher_vs_frost}).}
+ridge: three seeds, means. The pipelines differ in four components (Table~\ref{tab:usher_vs_frost}). Imputation is
+omitted because the archived values use the leaking protocol (Section~\ref{sec:limitations}).}
 \label{tab:usher}
 \small
-\begin{tabular}{@{}lcccc@{}}
+\begin{tabular}{@{}llcccc@{}}
 \toprule
-Metric & USHER & USHER + CORAL & \frost & ridge \\
+Group & Metric & USHER & USHER + CORAL & \frost & ridge \\
 \midrule
-iLISI        & 0.5551 & 0.6609 & 0.5261 & 0.2215 \\
-kBET         & 0.5153 & 0.5049 & 0.4440 & 0.1961 \\
-BRAS         & 0.8604 & 0.8387 & 0.8450 & 0.8502 \\
-batch\_v2    & 0.7269 & 0.7448 & 0.6987 & 0.5618 \\
-bio\_v2      & 0.6913 & 0.6902 & 0.7050 & 0.7091 \\
-total\_v2    & 0.7055 & 0.7120 & 0.7025 & 0.6502 \\
-xfer\_main   & 0.7052 & 0.6965 & 0.7090 & 0.7091 \\
-xfer\_all    & 0.4336 & 0.4405 & 0.4715 & 0.4663 \\
-rare\_purity & 0.2610 & 0.2803 & 0.2990 & 0.2909 \\
-knn\_xen     & 0.4119 & 0.4036 & 0.4456 & 0.4200 \\
+\multirow{6}{*}{Mixing}
+ & iLISI        & 0.5551 & 0.6609 & 0.5261 & 0.2215 \\
+ & kBET         & 0.5153 & 0.5049 & 0.4440 & 0.1961 \\
+ & BRAS         & 0.8604 & 0.8387 & 0.8450 & 0.8502 \\
+ & graph conn.  & 0.9768 & 0.9747 & 0.9800 & 0.9796 \\
+ & batch ASW    & 0.9268 & 0.9147 & 0.9152 & 0.9196 \\
+ & batch\_v2    & 0.7269 & 0.7448 & 0.6987 & 0.5618 \\
+\midrule
+\multirow{6}{*}{Conservation}
+ & NMI          & 0.6411 & 0.6412 & 0.6780 & 0.6739 \\
+ & ARI          & 0.6442 & 0.6461 & 0.6828 & 0.6924 \\
+ & ASW          & 0.5924 & 0.5852 & 0.5826 & 0.5904 \\
+ & cLISI        & 0.9837 & 0.9891 & 0.9935 & 0.9939 \\
+ & iso.\ labels & 0.5950 & 0.5896 & 0.5884 & 0.5951 \\
+ & bio\_v2      & 0.6913 & 0.6902 & 0.7050 & 0.7091 \\
+\midrule
+Total & total\_v2 & 0.7055 & 0.7120 & 0.7025 & 0.6502 \\
+\midrule
+\multirow{4}{*}{Tasks}
+ & xfer\_main   & 0.7052 & 0.6965 & 0.7090 & 0.7091 \\
+ & xfer\_all    & 0.4336 & 0.4405 & 0.4715 & 0.4663 \\
+ & rare\_purity & 0.2610 & 0.2803 & 0.2990 & 0.2909 \\
+ & knn\_xen     & 0.4119 & 0.4036 & 0.4456 & 0.4200 \\
 \bottomrule
 \end{tabular}
 \end{table}
