@@ -23,9 +23,8 @@ the auxiliary labels of \frost and applies the same moment matching (ridge). Ref
 Harmony~\citep{korsunsky2019harmony} and Scanorama~\citep{hie2019scanorama}, both fitted transductively on held-out
 tiles, which favours them (with its default matching threshold Scanorama returned the input unchanged on all
 three Stereo-seq pairs and on HCC Visium HD FFPE; we report the default), and Symphony~\citep{kang2021symphony}, which builds its own count-based space.
-Spatially aware: GraphST~\citep{long2023graphst} at published defaults. Its dense spatial graph exhausted memory at
-90{,}000 cells, so it is compared on a common subsample of 10{,}000 cells per side. We compare against GraphST as a
-representative spatial-integration method.
+Spatially aware: GraphST~\citep{long2023graphst}, a representative spatial-integration method, at published
+defaults on a common subsample (Section~\ref{sec:res_spatial}).
 
 \paragraph{Metrics.}\label{sec:metrics}
 The main benchmark uses \texttt{scib-metrics}~\citep{luecken2022scib} group scores for batch mixing (batch\_v2) and
@@ -39,5 +38,4 @@ nearest neighbours before and after integration.
 \paragraph{Statistics.}\label{sec:stats}
 For each comparison we report the median paired difference, the number of pairs $n$ and a two-sided exact Wilcoxon
 signed-rank test. Differences with $p<0.05$ are called significant; otherwise we report no significant difference,
-which is not evidence of equivalence. With 12 pairs the smallest attainable $p$ is $4.9\times10^{-4}$; with four
-pairs it is $0.125$. Stochastic methods use three seeds; the GraphST comparison uses one.
+which is not evidence of equivalence. With 12 pairs the smallest attainable $p$ is $4.9\times10^{-4}$. Stochastic methods use three seeds; the GraphST comparison uses one.

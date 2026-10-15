@@ -8,8 +8,7 @@ in exchange. GraphST is also worse than no alignment on transfer (mean differenc
 gain over it is mixing (mean $+0.377$, $p=0.0005$), the signature of over-correction. \frost improves on no alignment in both
 transfer ($p=0.0010$) and mixing ($p=0.0005$).
 
-GraphST also moves the reference (drift 0.966--0.989, mean 0.979), so anything built on it must be rebuilt; for
-every reference-preserving method drift is zero by construction. GraphST had to be subsampled (its dense spatial
+GraphST also moves the reference (drift 0.966--0.989, mean 0.979), so anything built on it must be rebuilt. GraphST had to be subsampled (its dense spatial
 graph exhausted memory at 90{,}000 cells), whereas \frost runs on all 40{,}000--45{,}000 cells per side. On the four
 COAD pairs GraphST training took 1{,}093.8\,s on average on the subsample and the \frost EM loop 387.3\,s on all cells
 at $T=25$ ($T=10$, used in the benchmark, was not timed), both excluding input preparation.
@@ -48,8 +47,7 @@ rare\_purity ($n=12$, $p=0.68$). total\_v2 is not independent evidence: batch\_v
 and bio\_v2 only 0.60--0.69, so total\_v2 follows mixing. The knn\_xen advantage is specific to ridge; against
 centring and Harmony it is not significant. Read as a Pareto trade-off (Figure~\ref{fig:pareto}), \frost gains mixing over ridge
 with no significant loss in conservation or transfer. \frost exceeds Symphony, the published reference-mapping method, on all
-seven metrics ($n=12$, $p$ from 0.0005 to 0.034), although part of that gap may reflect Symphony's own count-based
-representation; against centring and Harmony it is better on most metrics (Supplementary Table~\ref{tab:center_harmony}).
+seven metrics ($n=12$, $p$ from 0.0005 to 0.034); against centring and Harmony it is better on most metrics (Supplementary Table~\ref{tab:center_harmony}).
 
 \begin{table}[t]
 \centering
@@ -119,6 +117,14 @@ its cost appears at the gene level (Section~\ref{sec:limitations}). The per-clas
 rare\_purity by 0.020, about nine times the seed standard deviation, while every other compact metric changes by at
 most 0.006. The floor of 200 is kept in the reported configuration.
 
+\paragraph{Identity regularisation and M-step.}
+Raising $\lambda_{\mathrm{id}}$ above 0.3 lowers mixing and total score on both pairs; $\lambda_{\mathrm{id}}=0$ was
+evaluated only together with a two-layer M-step (Supplementary Table~\ref{tab:lambda}). USHER's two-layer M-step
+($\lambda_{\mathrm{id}}=0$, no target floor) mixes more, while the linear map transfers labels and predicts
+microenvironment better; the two branches differ in architecture, $\lambda_{\mathrm{id}}$ and floor simultaneously,
+so this is a pipeline-level comparison. We keep the linear map for the conservation end of the trade-off
+(Supplementary Table~\ref{tab:mstep}).
+
 \paragraph{Structure matrices and microenvironment.}\label{sec:res_niche}
 \frost and USHER-CC do not differ significantly on any metric (all $p\ge0.067$, largest median difference 0.0008).
 Three diagnostic arms on the four COAD pairs (seed 0, 25 iterations) take the difference apart (Table~\ref{tab:arms});
@@ -165,7 +171,6 @@ close to where USHER stops (0.046 against 0.059, medians at the end), suggesting
 iteration, which they share, matters more for convergence than those four components.
 
 Caching, not the landmark approximation, is also where the cost saving comes from: an EM iteration takes 15.4\,s
-with cached exact $\Cs$ and 18.3\,s with recomputed landmarks ($T=25$), and the microenvironment adds nothing
-measurable (15.5\,s; Supplementary Table~\ref{tab:cost}). Structure builds fall from $B(T+1)$ to $2B$, which no
+with cached exact $\Cs$ and 18.3\,s with recomputed landmarks ($T=25$; Supplementary Table~\ref{tab:cost}). Structure builds fall from $B(T+1)$ to $2B$, which no
 longer depends on $T$: 5.5-fold fewer at $T=10$ and 13-fold fewer at $T=25$; wall-clock at $T=10$ was not measured.
 

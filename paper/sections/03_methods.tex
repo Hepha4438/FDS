@@ -26,7 +26,6 @@ M-step updates $f_\theta$ on
   +\lambda_{\mathrm{var}}\bigl\|\mathrm{Var}\,f_\theta(\mathbf{X}^{s})-\mathrm{Var}\,\mathbf{X}^{t}\bigr\|_{1}
   +\lambda_{\mathrm{id}}\,\mathcal{R}_{\mathrm{id}}(\theta).
 \end{equation}
-USHER recomputes both $\Cs$ and $\Ct$ in every batch and iteration.
 
 \subsection{FROST}\label{sec:frost}
 \frost keeps this EM skeleton and changes five components. Supplementary Table~\ref{tab:usher_vs_frost} lists every
@@ -35,7 +34,7 @@ difference from the USHER reference implementation.
 \paragraph{(i) Auxiliary cost.} After aligning first moments, each source cell receives the label frequencies
 $\mathbf{p}^{s}_{i}$ among its 15 nearest reference cells, and
 $M_{\mathrm{aux}}(i,j)=\|\mathbf{p}^{s}_{i}-\mathbf{e}_{y_j}\|_{2}$ (max-normalised), where $\mathbf{e}_{y_j}$ is
-the one-hot annotation of reference cell $j$. No label model is trained on source genes.
+the one-hot annotation of reference cell $j$.
 
 \paragraph{(ii) Structure built once.} For each cell we sum the counts of its 15 nearest spatial neighbours in its own
 section and reduce them to 50 principal components, $\mathbf{N}_i$. $\Cs$ and $\Ct$ are exact hop-count geodesics on
