@@ -1,140 +1,76 @@
 \section{Methods}\label{sec:methods}
 
 \subsection{Problem setting}\label{sec:setting}
-Let $\mathbf{X}^{t}\in\mathbb{R}^{n_t\times d}$ be foundation-model (or PCA) embeddings of cells profiled on a
-\emph{reference} platform, together with their cell-type annotations, and let
-$\mathbf{X}^{s}\in\mathbb{R}^{n_s\times d}$ be embeddings of cells from the same tissue profiled on a different
-\emph{source} platform. We seek a map $f_\theta:\mathbb{R}^{d}\to\mathbb{R}^{d}$ that places source cells in the
-reference coordinate system, under one hard constraint: $\mathbf{X}^{t}$ is never modified. Every downstream object
-built on the reference---a nearest-neighbour index, a classifier, an annotated atlas---therefore remains valid
-after integration, and reference drift is zero by construction rather than by tuning. Source annotations are
-never used for fitting; they serve only for evaluation. Spatial coordinates are used only within each section, to
-describe a cell's microenvironment (Section~\ref{sec:frost}); no coordinate is ever compared across sections.
+Let $\mathbf{X}^{t}\in\mathbb{R}^{n_t\times d}$ be embeddings of annotated cells from a \emph{reference} platform
+and $\mathbf{X}^{s}\in\mathbb{R}^{n_s\times d}$ embeddings of cells from the same tissue on a \emph{source}
+platform. We learn $f_\theta:\mathbb{R}^{d}\to\mathbb{R}^{d}$ that places source cells in the reference coordinate
+system, under one hard constraint: $\mathbf{X}^{t}$ is never modified. Everything built on the reference therefore
+stays valid, and reference drift is zero by construction. Source labels are used only for evaluation. Spatial
+coordinates are used only within a section, to describe a cell's microenvironment; no coordinate is compared across
+sections.
 
 \subsection{Base algorithm: USHER}\label{sec:usher}
-\frost is built on USHER~\citep{pratapa2025usher}, which alternates between estimating cross-domain
-correspondences and fitting a low-capacity transform. In the E-step, a soft coupling $\mathbf{P}$ between the
-transformed source $f_\theta(\mathbf{X}^{s})$ and the reference is obtained from the fused Gromov--Wasserstein
-(FGW) problem~\citep{vayer2019fgw}
+USHER~\citep{pratapa2025usher} alternates between correspondences and a transform. The E-step solves the FGW
+problem~\citep{vayer2019fgw}
 \begin{equation}\label{eq:fgw}
   \mathbf{P}^{\star}=\arg\min_{\mathbf{P}\in\Pi}\;(1-\alpha)\,\langle \mathbf{M},\mathbf{P}\rangle
-  +\alpha\sum_{i,k,j,\ell}\bigl(C^{s}_{ik}-C^{t}_{j\ell}\bigr)^{2}P_{ij}P_{k\ell},
+  +\alpha\sum_{i,k,j,\ell}\bigl(C^{s}_{ik}-C^{t}_{j\ell}\bigr)^{2}P_{ij}P_{k\ell}
 \end{equation}
-solved with entropic regularisation $\varepsilon$~\citep{cuturi2013sinkhorn}. The cross-domain cost combines a
-feature term and an auxiliary term,
-$\mathbf{M}=\gamma\,\mathbf{M}_{\mathrm{aux}}+(1-\gamma)\,\mathbf{M}_{\mathrm{feat}}$, with
-$M_{\mathrm{feat}}(i,j)=d\bigl(f_\theta(\mathbf{x}^{s}_{i}),\mathbf{x}^{t}_{j}\bigr)$; the first iteration uses
-$\gamma=1$ as a warm start. $\Cs$ and $\Ct$ are within-domain geodesic distances on $k$-nearest-neighbour graphs
-of the embeddings, following SCOT~\citep{demetci2022scot}. Rows of $\mathbf{P}^{\star}$ with high entropy or
-low maximum are discarded (entropic filtering), and a linear assignment~\citep{kuhn1955hungarian} on the remainder
-yields one-to-one matches $\pi(i)$. In the M-step, $f_\theta$ is updated with Adam on
+with entropic regularisation $\varepsilon$~\citep{cuturi2013sinkhorn}, where
+$\mathbf{M}=\gamma\,\mathbf{M}_{\mathrm{aux}}+(1-\gamma)\,\mathbf{M}_{\mathrm{feat}}$ combines an auxiliary cost
+with $M_{\mathrm{feat}}(i,j)=d(f_\theta(\mathbf{x}^{s}_{i}),\mathbf{x}^{t}_{j})$ ($\gamma=1$ at the first
+iteration), and $\Cs,\Ct$ are geodesic distances on $k$-NN graphs~\citep{demetci2022scot}. High-entropy rows of
+$\mathbf{P}^{\star}$ are discarded and a linear assignment~\citep{kuhn1955hungarian} gives matches $\pi(i)$. The
+M-step updates $f_\theta$ on
 \begin{equation}\label{eq:mstep}
   \mathcal{L}(\theta)=\lambda_{\mathrm{cross}}\,\mathbb{E}_i\bigl\|f_\theta(\mathbf{x}^{s}_{i})-\mathbf{x}^{t}_{\pi(i)}\bigr\|
   +\lambda_{\mathrm{var}}\bigl\|\mathrm{Var}\,f_\theta(\mathbf{X}^{s})-\mathrm{Var}\,\mathbf{X}^{t}\bigr\|_{1}
-  +\lambda_{\mathrm{id}}\,\mathcal{R}_{\mathrm{id}}(\theta),
+  +\lambda_{\mathrm{id}}\,\mathcal{R}_{\mathrm{id}}(\theta).
 \end{equation}
-where $\mathcal{R}_{\mathrm{id}}$ penalises departure from the identity map. Embeddings are standardised with
-reference statistics before the E- and M-steps and de-standardised afterwards.
+USHER recomputes both $\Cs$ and $\Ct$ in every batch and iteration.
 
 \subsection{FROST}\label{sec:frost}
-\frost keeps the EM skeleton of USHER and changes five components: (i)--(v) below.
-Table~\ref{tab:usher_vs_frost} lists every difference from the USHER reference implementation as it was run in
-this study, together with the two intermediate variants used in the ablations; a numerical comparison with USHER
-is given in Section~\ref{sec:res_usher}.
+\frost keeps this EM skeleton and changes five components. Supplementary Table~\ref{tab:usher_vs_frost} lists every
+difference from the USHER reference implementation.
 
-\paragraph{(i) Auxiliary cost from the reference labels.}
-For each source cell we first align first moments (subtracting the source mean and adding the reference mean),
-then take the label frequencies $\mathbf{p}^{s}_{i}$ among its 15 nearest reference cells. Reference cells carry
-one-hot vectors $\mathbf{e}_{y_j}$ of their annotations, and
-$M_{\mathrm{aux}}(i,j)=\|\mathbf{p}^{s}_{i}-\mathbf{e}_{y_j}\|_{2}$, divided by its maximum. No label model is
-trained on source gene expression, so the auxiliary signal depends only on the embeddings and the reference
-annotation.
+\paragraph{(i) Auxiliary cost.} After aligning first moments, each source cell receives the label frequencies
+$\mathbf{p}^{s}_{i}$ among its 15 nearest reference cells, and
+$M_{\mathrm{aux}}(i,j)=\|\mathbf{p}^{s}_{i}-\mathbf{e}_{y_j}\|_{2}$ (max-normalised), where $\mathbf{e}_{y_j}$ is
+the one-hot annotation of reference cell $j$. No label model is trained on source genes.
 
-\paragraph{(ii) Structure matrices built once, on frozen inputs.}
-For every cell we sum the counts of its 15 nearest spatial neighbours within its own section, over the genes shared
-by the pair, and reduce them to 50 principal components, $\mathbf{N}_i$. Structure is computed on the augmented
-features $[\mathbf{x}_i,\;s\,\mathbf{N}_i]$, with $s=\overline{\|\mathbf{x}^{t}\|}/\overline{\|\mathbf{N}^{t}\|}$
-so that the two blocks have comparable norms. $\Cs$ and $\Ct$ are exact hop-count geodesics on the symmetrised
-$k$-NN graphs ($k=30$, cosine, unit edge weights) of these features, after projection onto their top 64 principal
-axes when the dimension exceeds 64. Each is normalised by its maximum. Both are computed from the \emph{unmapped}
-source and from the reference, once per batch, and cached across EM iterations. With $B$ batches and $T$
-iterations, \frost therefore builds $2B$ structure matrices, whereas USHER recomputes both in every batch and
-iteration ($2BT$). Freezing $\Cs$ is a departure from USHER, in which $\Cs$ is defined on the current estimate
-$f_\theta(\mathbf{X}^{s})$. In \frost FGW compares the source's own neighbourhood structure with the reference's,
-and the cost of building it is paid once. The microenvironment block adds no measurable cost
-(Section~\ref{sec:res_cost}), and its contribution to accuracy cannot be separated from that of freezing
-(Section~\ref{sec:res_niche}). The physical radius spanned by 15 neighbours differs between platforms (median
-16.7--33.9\um).
+\paragraph{(ii) Structure built once.} For each cell we sum the counts of its 15 nearest spatial neighbours in its own
+section and reduce them to 50 principal components, $\mathbf{N}_i$. $\Cs$ and $\Ct$ are exact hop-count geodesics on
+symmetrised $k$-NN graphs ($k=30$, cosine) of $[\mathbf{x}_i,\,s\mathbf{N}_i]$, with
+$s=\overline{\|\mathbf{x}^{t}\|}/\overline{\|\mathbf{N}^{t}\|}$, projected to 64 dimensions when larger.
+Both are computed from the \emph{unmapped} source and from the reference, once per batch, and cached. With $B$
+batches and $T$ iterations, \frost builds $2B$ structure matrices; USHER builds $2BT$.
 
-\paragraph{(iii) Reference sampling with a per-class floor.}
-FGW is solved on a reference subset of 20{,}000 cells. Its class composition follows the source composition
-estimated from the auxiliary labels of (i), but every reference class receives at least $\min(200,n_c)$ cells,
-where $n_c$ is the number of available cells; if the total exceeds the budget, only the allocation above the floor
-is scaled down. Because balanced FGW must transport all source mass, a purely proportional subset leaves too few
-reference cells of rare types for their source counterparts to be matched to. The floor was selected on a
-validation split (Section~\ref{sec:res_floor}).
+\paragraph{(iii) Reference floor.} FGW is solved on 20{,}000 reference cells whose class composition follows the
+source composition estimated in (i), with at least $\min(200,n_c)$ cells per class. Because balanced FGW must
+transport all source mass, a purely proportional subset starves rare types of partners.
 
-\paragraph{(iv) Linear M-step with identity regularisation.}
-$f_\theta(\mathbf{x})=\mathbf{W}\mathbf{x}+\mathbf{b}$ in standardised coordinates, with
-$\mathcal{R}_{\mathrm{id}}=\mathbb{E}_i\|(\mathbf{W}-\mathbf{I})\,\mathbf{x}^{s}_{i}\|^{2}/d$ and
-$\lambda_{\mathrm{id}}=0.3$. The bias is excluded from the penalty so that global translation remains free.
+\paragraph{(iv) Linear M-step.} $f_\theta(\mathbf{x})=\mathbf{W}\mathbf{x}+\mathbf{b}$ with
+$\mathcal{R}_{\mathrm{id}}=\mathbb{E}_i\|(\mathbf{W}-\mathbf{I})\mathbf{x}^{s}_{i}\|^{2}/d$ and
+$\lambda_{\mathrm{id}}=0.3$; translation is left free.
 
-\paragraph{(v) Post-hoc second-moment matching.}
-After EM, the mapped source embeddings $\mathbf{Z}=f_\theta(\mathbf{X}^{s})$ are passed through a closed-form
-CORAL transform~\citep{sun2016coral},
+\paragraph{(v) Post-hoc moment matching.} After EM, mapped embeddings pass through closed-form
+CORAL~\citep{sun2016coral},
 \begin{equation}\label{eq:coral}
   \tilde{\mathbf{z}}=(\mathbf{z}-\hat{\bm{\mu}}_{s})\,\hat{\bm{\Sigma}}_{s}^{-1/2}\bm{\Sigma}_{t}^{1/2}+\bm{\mu}_{t},
 \end{equation}
-with source statistics estimated on training-tile cells, reference statistics on all reference cells, and a ridge of
-$0.01\,\mathrm{tr}(\bm{\Sigma})/d$ added to both covariances. The step uses no labels, takes seconds on a CPU and
-does not touch the reference. It buys distribution-level agreement at a measurable cost in local density fidelity;
-we quantify this trade-off in Section~\ref{sec:limitations}.
+with a ridge of $0.01\,\mathrm{tr}(\bm{\Sigma})/d$ on both covariances. It uses no labels and leaves the reference
+untouched.
 
-\subsection{Variants used in the ablations}\label{sec:variants}
-\textbf{USHER-ST} shares (i), (iii) and (iv) with \frost but builds structure as in our earlier pipeline. $\Ct$ is
-the exact geodesic on the reference embeddings alone, cached. $\Cs$ is recomputed in every iteration on
-$f_\theta(\mathbf{X}^{s})$, using $L=512$ landmarks chosen as the candidates closest to the centroids of a $k$-means
-fit on $10L$ randomly drawn cells. With $D_{il}$ the hop distance from cell $i$ to landmark $l$,
+\paragraph{Ablation variants.} \textbf{USHER-ST} shares (i), (iii) and (iv) but builds structure as in our earlier
+pipeline: $\Ct$ exact and cached, $\Cs$ recomputed every iteration on $f_\theta(\mathbf{X}^{s})$ with $L=512$
+landmarks,
 \begin{equation}\label{eq:landmark}
-  C^{s}_{ik}=-\frac{1}{\beta}\log\sum_{l=1}^{L}\exp\bigl(-\beta\,(D_{il}+D_{kl})\bigr),\qquad \beta=2,
+  C^{s}_{ik}=-\beta^{-1}\log\textstyle\sum_{l=1}^{L}\exp\bigl(-\beta(D_{il}+D_{kl})\bigr),\qquad \beta=2,
 \end{equation}
-a soft minimum over paths routed through a landmark, followed by zeroing the diagonal and normalising by the
-maximum. \textbf{USHER-CC} is USHER-ST followed by (v). \textbf{\frost w/o CORAL} omits (v). A
-microenvironment-only variant, which builds structure on $\mathbf{N}$ alone, was run with a single seed.
+where $D_{il}$ is the hop distance to landmark $l$. It builds $B(T+1)$ matrices. \textbf{USHER-CC} adds (v) to
+USHER-ST.
 
-\begin{table}[t]
-\centering
-\caption{Configurations compared in this study. USHER is the reference implementation run unmodified.}
-\label{tab:usher_vs_frost}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}llll@{}}
-\toprule
-Component & USHER (as run here) & USHER-ST / USHER-CC & \frost \\
-\midrule
-$\mathbf{M}_{\mathrm{aux}}$ & logistic regression, shared genes & 15-NN label vote & 15-NN label vote \\
-$\varepsilon$ & 0.05 & 0.1 & 0.1 \\
-$\Ct$ & exact, every iteration & exact, cached & exact on $[\mathbf{x},s\mathbf{N}]$, cached \\
-$\Cs$ & exact on $f_\theta(\mathbf{x})$, every iteration & landmark on $f_\theta(\mathbf{x})$, every iteration & exact on $[\mathbf{x},s\mathbf{N}]$, cached \\
-Structure builds & $2BT$ & $B(T+1)$ & $2B$ \\
-M-step & two layers (hidden 512), $\lambda_{\mathrm{id}}=0$\textsuperscript{a} & linear, $\lambda_{\mathrm{id}}=0.3$ & linear, $\lambda_{\mathrm{id}}=0.3$ \\
-EM iterations & 25 & 10 & 10 \\
-Per-class floor & 200\textsuperscript{b} & 200 & 200 \\
-Post-hoc CORAL & with and without & no / yes & yes \\
-\bottomrule
-\end{tabular}
-
-\smallskip
-\raggedright\footnotesize
-\textsuperscript{a}The identity term is described in~\citep{pratapa2025usher} but is commented out in the
-reference implementation; we left that code unmodified.
-\textsuperscript{b}Not part of USHER; applied to both methods so that the comparison isolates the other components.
-\end{table}
-
-\paragraph{Hyperparameters.}
-All 12 pairs use one configuration: $\alpha=0.3$, $\gamma=0.4$ ($\gamma=1$ at the first iteration),
-$\varepsilon=0.1$, $k=30$, cosine $\mathbf{M}_{\mathrm{feat}}$; entropic filtering removes rows above the 90th
-percentile of row entropy or below the 10th percentile of row maximum; sketches of 4{,}300 cells;
-10 EM iterations of 100 Adam steps each (learning rate $10^{-3}$); $\lambda_{\mathrm{cross}}=0.9$,
-$\lambda_{\mathrm{var}}=0.1$, $\lambda_{\mathrm{id}}=0.3$. $\alpha$ and $\gamma$ are the values recommended
-in~\citep{pratapa2025usher}. FGW and the M-step run in single precision.
+\paragraph{Hyperparameters.} One configuration for all pairs: $\alpha=0.3$ and $\gamma=0.4$ as recommended
+in~\citep{pratapa2025usher}, $\varepsilon=0.1$, sketches of 4{,}300 cells, 10 EM iterations of 100 Adam steps
+(learning rate $10^{-3}$), $\lambda_{\mathrm{cross}}=0.9$, $\lambda_{\mathrm{var}}=0.1$. Entropic filtering removes
+rows above the 90th percentile of entropy or below the 10th percentile of row maximum.

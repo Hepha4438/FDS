@@ -3,20 +3,179 @@
 \renewcommand{\thetable}{S\arabic{table}}
 \renewcommand{\thefigure}{S\arabic{figure}}
 
+\subsection*{S1. Configurations}
+\begin{table}[h]
+\centering
+\caption{Configurations compared. USHER is the reference implementation run unmodified.}
+\label{tab:usher_vs_frost}
+\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{3.6cm}>{\raggedright\arraybackslash}p{3.6cm}>{\raggedright\arraybackslash}p{3.6cm}@{}}
+\toprule
+Component & USHER (as run here) & USHER-ST / USHER-CC & \frost \\
+\midrule
+$\mathbf{M}_{\mathrm{aux}}$ & logistic regression on shared genes & 15-NN label vote & 15-NN label vote \\
+$\varepsilon$ & 0.05 & 0.1 & 0.1 \\
+$\Ct$ & exact, every iteration & exact, cached & exact on $[\mathbf{x},s\mathbf{N}]$, cached \\
+$\Cs$ & exact on $f_\theta(\mathbf{x})$, every iteration & landmark on $f_\theta(\mathbf{x})$, every iteration & exact on $[\mathbf{x},s\mathbf{N}]$, cached \\
+Structure builds & $2BT$ & $B(T+1)$ & $2B$ \\
+M-step & two layers (hidden 512), $\lambda_{\mathrm{id}}=0$\textsuperscript{a} & linear, $\lambda_{\mathrm{id}}=0.3$ & linear, $\lambda_{\mathrm{id}}=0.3$ \\
+EM iterations & 25 & 10 & 10 \\
+Per-class floor & 200\textsuperscript{b} & 200 & 200 \\
+Post-hoc CORAL & with and without & no / yes & yes \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\raggedright
+\textsuperscript{a}The identity term is described in~\citep{pratapa2025usher} but commented out in the reference
+implementation, which we left unmodified. \textsuperscript{b}Not part of USHER; applied to both for comparability.
+\end{table}
+
 \begin{table}[h]
 \centering
 \caption{Representation used for each pair.}
 \label{tab:reps}
-\todo{Table S1: PCA / scGPT-spatial per pair (methods.md \S4)}
+\todo{PCA / scGPT-spatial per pair (methods.md \S4)}
+\end{table}
+
+\paragraph{Representations.} When the public scGPT-spatial checkpoint is loaded on GPUs without FlashAttention, the
+attention weights are silently not loaded because parameter names are not remapped; we remapped them and verified
+every tensor. Embeddings were extracted in half precision, and for assays where more than 5\% of cells exceed the
+1{,}200-gene input (where genes are sampled at random) we averaged five extraction seeds.
+
+\subsection*{S2. Metric definitions}\label{sec:supp_metrics}
+Group scores follow \texttt{scib-metrics} without min--max scaling across methods: batch\_v2 is the mean of iLISI,
+kBET, BRAS and graph connectivity; bio\_v2 is the mean of NMI, ARI, label ASW, cLISI and isolated-label score;
+total\_v2 $=0.4\,$batch\_v2 $+\,0.6\,$bio\_v2. xfer\_main is the balanced accuracy of a 15-NN vote of reference
+labels, after centring on the reference mean and unit normalisation, over shared recoverable groups; xfer\_all is the
+same over all groups with at least 20 cells on both sides. rare\_purity is the fraction of same-label reference
+neighbours among the 15-NN of cells from groups below 2\% of held-out tiles. knn\_xen is the balanced accuracy of
+predicting a cell's microenvironment class (eight $k$-means classes of spatial-neighbour label composition) from its 15
+reference neighbours. In the GraphST comparison, mixing is $1-\max(f_{\mathrm{same}}-0.5,0)/0.5$, with
+$f_{\mathrm{same}}$ the fraction of same-platform cells among 15 neighbours in the pooled unit-normalised embedding;
+transfer uses no centring.
+
+\subsection*{S3. Computing environment}
+Kaggle, 2$\times$NVIDIA T4 (16\,GB each), about 29\,GB RAM, 4 vCPUs. Main benchmark: PyTorch 2.10.0+cu128, NumPy
+2.0.2, SciPy 1.16.3, AnnData 0.11.4, POT 0.9.6.post1, scib-metrics 0.6.1, tangram-sc 1.0.4. GraphST comparison:
+PyTorch 2.11.0+cu128, Scanpy 1.12.4, AnnData 0.11.4. GraphST, harmonypy, Scanorama and symphonypy versions were not
+recorded~\todo{versions}. Peak memory was not measured.
+
+\subsection*{S4. Microenvironment term}\label{sec:supp_niche}
+The difference between \frost and USHER-CC measures the joint effect of three simultaneous changes to $\Cs$: adding
+the microenvironment, replacing landmark distances with exact geodesics, and replacing per-iteration recomputation on
+$f_\theta(\mathbf{X}^{s})$ with a single computation on the unmapped source. On the PCA pairs a fourth difference is
+added: the 64-dimensional low-rank projection applies to the augmented features but not to the 50-dimensional
+embeddings. We cannot separate the contribution of the microenvironment with the data at hand. Under the reversed
+imputation protocol it recovers part of the gene-level loss on COAD Stereo-seq (Table~\ref{tab:imp_rev}), still
+below no alignment.
+
+\subsection*{S5. Additional results}
+\begin{table}[h]
+\centering
+\caption{\frost against centring and Harmony on the compact metrics: median paired difference (\frost $-$ baseline)
+and exact Wilcoxon $p$, $n=12$.}
+\label{tab:center_harmony}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & \multicolumn{2}{c}{center} & \multicolumn{2}{c}{Harmony} \\
+Metric & median $\Delta$ & $p$ & median $\Delta$ & $p$ \\
+\midrule
+batch\_v2    & $+0.2091$ & 0.0005 & $+0.2289$ & 0.0010 \\
+bio\_v2      & $+0.0691$ & 0.0024 & $+0.0608$ & 0.0024 \\
+total\_v2    & $+0.1244$ & 0.0005 & $+0.1267$ & 0.0010 \\
+xfer\_main   & $+0.0203$ & 0.2661 & $+0.0298$ & 0.0122 \\
+xfer\_all    & $+0.0276$ & 0.0342 & $+0.0568$ & 0.0005 \\
+rare\_purity & $+0.0397$ & 0.0122 & $+0.0556$ & 0.0005 \\
+knn\_xen     & $-0.0021$ & 0.7910 & $-0.0006$ & 0.6221 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{USHER reference implementation versus \frost, four COAD pairs. USHER: one seed, 25 iterations; \frost and
+ridge: three seeds. With four pairs no paired test can reach significance (floor $p=0.125$). $\Delta$: \frost minus
+USHER. Imputation is omitted because the archived values use the leaking protocol.}
+\label{tab:usher}
+\begin{tabular}{@{}llccccc@{}}
+\toprule
+Group & Metric & USHER & USHER + CORAL & \frost & ridge & $\Delta$ \\
+\midrule
+\multirow{6}{*}{Mixing}
+ & iLISI        & 0.5551 & 0.6609 & 0.5261 & 0.2215 & $-0.0290$ \\
+ & kBET         & 0.5153 & 0.5049 & 0.4440 & 0.1961 & $-0.0713$ \\
+ & BRAS         & 0.8604 & 0.8387 & 0.8450 & 0.8502 & $-0.0154$ \\
+ & graph conn.  & 0.9768 & 0.9747 & 0.9800 & 0.9796 & $+0.0032$ \\
+ & batch ASW    & 0.9268 & 0.9147 & 0.9152 & 0.9196 & $-0.0116$ \\
+ & batch\_v2    & 0.7269 & 0.7448 & 0.6987 & 0.5618 & $-0.0282$ \\
+\midrule
+\multirow{6}{*}{Conservation}
+ & NMI          & 0.6411 & 0.6412 & 0.6780 & 0.6739 & $+0.0369$ \\
+ & ARI          & 0.6442 & 0.6461 & 0.6828 & 0.6924 & $+0.0386$ \\
+ & ASW          & 0.5924 & 0.5852 & 0.5826 & 0.5904 & $-0.0098$ \\
+ & cLISI        & 0.9837 & 0.9891 & 0.9935 & 0.9939 & $+0.0098$ \\
+ & iso.\ labels & 0.5950 & 0.5896 & 0.5884 & 0.5951 & $-0.0066$ \\
+ & bio\_v2      & 0.6913 & 0.6902 & 0.7050 & 0.7091 & $+0.0137$ \\
+\midrule
+Total & total\_v2 & 0.7055 & 0.7120 & 0.7025 & 0.6502 & $-0.0030$ \\
+\midrule
+\multirow{4}{*}{Tasks}
+ & xfer\_main   & 0.7052 & 0.6965 & 0.7090 & 0.7091 & $+0.0038$ \\
+ & xfer\_all    & 0.4336 & 0.4405 & 0.4715 & 0.4663 & $+0.0379$ \\
+ & rare\_purity & 0.2610 & 0.2803 & 0.2990 & 0.2909 & $+0.0380$ \\
+ & knn\_xen     & 0.4119 & 0.4036 & 0.4456 & 0.4200 & $+0.0337$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Leakage-controlled (reversed) imputation, Stereo-seq pairs: median Spearman correlation over genes. Only
+these three pairs were archived.}
+\label{tab:imp_rev}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Method & COAD (860 genes) & OV (837) & HCC (236) \\
+\midrule
+raw                  & 0.1850 & 0.1194 & \textbf{0.2892} \\
+center               & 0.1586 & 0.0959 & 0.1662 \\
+CORAL                & 0.1386 & 0.0548 & 0.0645 \\
+MNN-ref              & \textbf{0.2015} & \textbf{0.1248} & 0.2864 \\
+Harmony              & 0.1792 & 0.1228 & 0.2851 \\
+USHER-ST             & 0.0768 & 0.0882 & 0.0653 \\
+USHER-CC             & 0.0809 & 0.0792 & 0.0569 \\
+\frost w/o CORAL     & 0.1266 & 0.0808 & 0.0784 \\
+\frost               & 0.1251 & 0.0730 & 0.0588 \\
+niche-only           & 0.1404 & 0.0865 & 0.1107 \\
+niche-only + CORAL   & 0.1409 & 0.0762 & 0.0751 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Neighbour-based deconvolution, 22 settings (11 pairs $\times$ pseudo-spots of 4 and 8 cells). Wins: settings
+with the best JSD; below floor: settings worse than the prior-composition floor (JSD 0.1944).}
+\label{tab:deconv}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Method & mean JSD $\downarrow$ & Pearson $\uparrow$ & wins & below floor \\
+\midrule
+center           & \textbf{0.0855} & \textbf{0.6024} & 8 & 0 \\
+\frost w/o CORAL & 0.1123 & 0.5984 & 2 & 6 \\
+USHER-ST         & 0.1132 & 0.5984 & 0 & 6 \\
+\frost           & 0.1242 & 0.5849 & 0 & 5 \\
+raw              & 0.1340 & 0.5746 & 8 & 4 \\
+\bottomrule
+\end{tabular}
 \end{table}
 
 \begin{table}[h]
 \centering
 \caption{Per-class reference floor, USHER-ST configuration, four COAD pairs $\times$ three seeds, held-out tiles.
-The floor was selected on a validation split of the training tiles by a rule fixed in advance: the largest rare-type
-purity among floors losing no more than 0.02 in xfer\_main or total score. That rule chose 200.}
+Selected on a validation split by a rule fixed in advance: the largest rare-type purity among floors losing no more
+than 0.02 in xfer\_main or total score.}
 \label{tab:floor}
-\small
 \begin{tabular}{@{}lcccccc@{}}
 \toprule
 Floor & xfer\_main & xfer\_all & rare\_purity & batch\_v2 & bio\_v2 & total\_v2 \\
@@ -29,7 +188,16 @@ Floor & xfer\_main & xfer\_all & rare\_purity & batch\_v2 & bio\_v2 & total\_v2 
 \end{tabular}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figs/fig_grid_tech.png}
+\caption{All 16 metrics, 11 methods. Each dot is the mean over three tissues for one source technology; the bar is the
+mean over 12 pairs. Axes span the observed range, without min--max scaling. Shaded columns are group scores of the
+metrics to their left. $^{*}$Modifies the reference.}
+\label{fig:grid}
+\end{figure}
+
+\begin{figure}[p]
 \centering
 \includegraphics[width=\linewidth]{figs/fig_grid_tissue.png}
 \caption{As Figure~\ref{fig:grid}, but each dot is the mean over four source technologies for one tissue.}
