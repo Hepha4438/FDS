@@ -1,3 +1,5 @@
+# Chạy: cd fig_code && python3 fig_grid.py   (cần matplotlib, numpy, scipy; KHÔNG dùng python3 -I)
+# Dữ liệu: data.json md5 33c26b15e01a157762f4cb111b208c0b
 """Lưới toàn cảnh: 11 phương pháp × 16 chỉ số, xếp thành HAI DẢI chồng nhau.
 
 Vì sao hai dải: 16 cột trên một hàng ngang cần ~15 inch; đặt vừa bề ngang trang

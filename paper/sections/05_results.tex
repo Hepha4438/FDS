@@ -2,15 +2,15 @@
 
 \subsection{A spatially aware baseline fails in the reference-preserving setting}\label{sec:res_spatial}
 Table~\ref{tab:graphst} compares \frost with GraphST on a common subsample of 10{,}000 source and 10{,}000
-reference cells per pair. \frost transfers labels more accurately than GraphST in all 12 pairs (mean transfer
-0.7223 vs 0.3731; mean paired difference $+0.349$, range $+0.210$ to $+0.458$; exact Wilcoxon
-$p=4.9\times10^{-4}$, the smallest value attainable with 12 pairs). It also mixes the platforms better in 10 of
-12 pairs, so GraphST's deficit in transfer is not the price of better mixing.
+reference cells per pair. \frost transfers labels more accurately than GraphST (median paired difference $+0.376$,
+$n=12$, $p=0.0005$, the smallest value attainable with 12 pairs). Mixing does not differ significantly
+($+0.092$, $n=12$, $p=0.064$). GraphST therefore loses label transfer without gaining mixing in exchange.
 
-GraphST is also worse than performing no alignment at all. Its transfer is below that of the unaligned embeddings
-in 11 of 12 pairs (mean difference $-0.243$, $p=0.0015$). Its only gain over no alignment is in mixing
-($+0.377$, 12 of 12 pairs), which is the signature of over-correction: the two platforms become indistinguishable
-because cell-type structure has been destroyed.
+GraphST is also worse than performing no alignment at all. Its transfer is lower than that of the unaligned
+embeddings (mean difference $-0.243$, $n=12$, $p=0.0015$), and its only gain over them is in mixing ($+0.377$,
+$n=12$, $p=0.0005$). This is the signature of over-correction: the platforms become harder to tell apart because
+cell-type structure has been destroyed. \frost, by contrast, improves on no alignment in both transfer ($p=0.0010$)
+and mixing ($p=0.0005$; $n=12$ for both).
 
 The reference itself moves. GraphST re-embeds both sections, and the 15-NN neighbourhoods of reference cells
 overlap little with those before integration (drift 0.966--0.989 across pairs, mean 0.979). Any classifier,
@@ -51,26 +51,27 @@ the two group scores, their weighted total, and the four task metrics. On all se
 three of 11 methods. It is first on xfer\_all; second on batch\_v2, total\_v2, rare\_purity and knn\_xen; third on
 bio\_v2 and xfer\_main. Where \frost is not first, the leader is usually one of its own ablations. USHER-CC leads
 batch\_v2, total\_v2 and rare\_purity; USHER-ST, which has no CORAL step, leads xfer\_main and knn\_xen. The one
-baseline that leads a column is ridge on bio\_v2. Table~\ref{tab:main} also reports gene imputation under the original
-protocol, where \frost ranks second. That protocol leaks the predicted gene into the source embedding, and when the
-leak is removed the ranking reverses (Section~\ref{sec:limitations}); we draw no conclusion from that column.
+baseline that leads a column is ridge on bio\_v2. Table~\ref{tab:main} also reports gene imputation under the
+original protocol, where \frost ranks second. That advantage exists only under a protocol that leaks the predicted
+gene; Section~\ref{sec:limitations} explains why it reverses once the leak is removed.
 
-Figure~\ref{fig:gaps} gives the paired tests against every baseline. Ridge is the informative comparison, because it
-uses the same auxiliary labels and the same moment matching as \frost and differs mainly in how source cells are
-paired with reference cells. \frost exceeds ridge in all 12 pairs on batch\_v2 (0.6593 vs 0.5447). It also exceeds
-ridge in all 12 on total\_v2 (0.6724 vs 0.6303), but this is not independent evidence: batch\_v2 ranges from 0.34 to
-0.66 across methods and bio\_v2 only from 0.60 to 0.69, so differences in total\_v2 are driven by mixing.
-On the remaining metrics \frost and ridge are not distinguishable. Ridge is ahead on bio\_v2 in 9 of 12 pairs
-(0.6874 vs 0.6811; median difference $-0.006$, $p=0.06$). \frost is ahead on xfer\_main in 7 of 12 (0.6891 vs
-0.6867, $p=0.29$). \frost has the highest mean on xfer\_all, but it is ahead of ridge in only 5 of 12 pairs
-($p=0.64$). The comparison is therefore best read as a Pareto trade-off rather than through a composite score:
-relative to ridge, \frost gains in mixing at no statistically detectable cost in conservation or transfer.
+Figure~\ref{fig:gaps} gives the paired tests against every baseline. We call a difference significant at $p<0.05$
+(exact Wilcoxon) and otherwise report no significant difference. Ridge is the informative comparison, because it uses
+the same auxiliary labels and the same moment matching as \frost and differs mainly in how source cells are paired
+with reference cells. \frost exceeds ridge on batch\_v2 ($n=12$, $p=0.0005$), total\_v2 ($n=12$, $p=0.0005$) and
+knn\_xen ($n=12$, $p=0.0015$). It does not differ significantly on bio\_v2 (median $-0.006$, $n=12$, $p=0.06$; ridge
+slightly higher), xfer\_main ($n=12$, $p=0.29$), xfer\_all ($n=11$, $p=0.64$) or rare\_purity ($n=12$, $p=0.68$).
+The total\_v2 result is not independent evidence. batch\_v2 ranges from 0.34 to 0.66 across methods and bio\_v2
+only from 0.60 to 0.69, so differences in total\_v2 are driven by mixing. The knn\_xen advantage is specific to
+ridge: \frost does not differ significantly from centring ($p=0.79$) or Harmony ($p=0.62$) on that metric. Read as a
+Pareto trade-off rather than through a composite score, \frost gains in mixing over ridge with no significant loss
+in conservation or transfer.
 
-Two simpler baselines also deserve mention. Per-assay mean centring is not significantly worse than \frost on
-xfer\_main (median $+0.020$, $p=0.27$) or knn\_xen ($p=0.79$). \frost's advantage over centring lies in mixing,
-conservation, xfer\_all and rare-type purity. Against Symphony, the published reference-mapping method, \frost is
-ahead in all 12 pairs on batch\_v2, bio\_v2, xfer\_main and xfer\_all. Part of that gap may reflect Symphony's own
-count-based representation (Section~\ref{sec:baselines}).
+Against the simpler baselines the picture is consistent. \frost exceeds per-assay centring on batch\_v2, bio\_v2,
+total\_v2, xfer\_all and rare\_purity. It does not differ significantly on xfer\_main ($p=0.27$) or knn\_xen
+($p=0.79$). It exceeds Harmony on every compact metric except knn\_xen ($p=0.62$). It exceeds Symphony, the published
+reference-mapping method, on all seven ($p$ between 0.0005 and 0.034); part of that gap may reflect Symphony's
+own count-based representation (Section~\ref{sec:baselines}).
 
 \begin{table}[t]
 \centering
@@ -78,7 +79,7 @@ count-based representation (Section~\ref{sec:baselines}).
 the reference embedding. Best per column in bold.
 $^{\dagger}$Original imputation protocol, which leaks the predicted gene into the source embedding; under the
 leakage-controlled protocol standard baselines exceed every USHER-family variant in 11 of 12 pairs
-(Section~\ref{sec:limitations}). Shown for completeness only. Symphony is not scored on imputation.}
+(Section~\ref{sec:limitations}). Symphony is not scored on imputation.}
 \label{tab:main}
 \small
 \setlength{\tabcolsep}{4pt}
@@ -101,7 +102,7 @@ USHER-CC   & \textbf{0.6600} & 0.6813 & \textbf{0.6728} & 0.6896 & 0.4288 & \tex
 \end{tabular}
 \end{table}
 
-\begin{figure}[t]
+\begin{figure}[p]
 \centering
 \includegraphics[width=\linewidth]{figs/fig_grid_tech.png}
 \caption{All 16 metrics, 11 methods. Each dot is the mean over three tissues for one source technology; the vertical
@@ -113,7 +114,7 @@ and a patient, so the 12 pairs are not independent.}
 \label{fig:grid}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[!t]
 \centering
 \includegraphics[width=\linewidth]{figs/fig_gaps.png}
 \caption{Paired comparison of each baseline with \frost over 12 pairs. The blue line marks \frost; the black tick
@@ -128,10 +129,13 @@ reference embedding.}
 \subsection{Ablations}\label{sec:res_ablation}
 
 \paragraph{Post-hoc moment matching.}\label{sec:res_coral}
-Adding CORAL to USHER-ST (giving USHER-CC) raises mixing on the common subsample by $+0.191$ ($p=0.0015$) but
-transfer by only $+0.0086$ (Table~\ref{tab:graphst}). In the main benchmark it raises batch\_v2 from 0.5479 to
-0.6600, while xfer\_main is unchanged (0.6913 vs 0.6896). The step is therefore mainly a mixing correction. Its cost
-in local density fidelity is reported in Section~\ref{sec:limitations}.
+On the common subsample, adding CORAL to USHER-ST (giving USHER-CC) raises mixing by $+0.191$ ($n=12$, $p=0.0015$)
+and transfer by only $+0.0086$ (Table~\ref{tab:graphst}). On the main benchmark, \frost exceeds USHER-ST on
+batch\_v2 ($p=0.0005$), total\_v2 ($p=0.0010$), xfer\_all ($p=0.0068$) and rare\_purity ($p=0.0024$), and does not
+differ significantly on bio\_v2, xfer\_main or knn\_xen ($n=12$, except $n=11$ for xfer\_main). The two differ in
+CORAL and in how the structure matrices are built; since the latter has no detectable effect (below), we attribute
+the gain to CORAL. CORAL is thus justified on the cell-level metrics at no significant cost there. Its cost appears
+at the gene level (Section~\ref{sec:limitations}).
 
 \paragraph{Reference floor.}\label{sec:res_floor}
 The per-class floor was fixed before evaluation, on a validation split of the training tiles. The rule was the
@@ -173,45 +177,26 @@ $\Cs$ thread time (s)            & 333.9 & 122.2 & 122.9 \\
 \end{table}
 
 \paragraph{Structure matrices and the microenvironment term.}\label{sec:res_niche}
-The difference $\Delta=$ \frost $-$ USHER-CC measures the joint effect of three simultaneous changes to $\Cs$: adding
-the microenvironment, replacing landmark distances with exact geodesics, and replacing per-iteration recomputation
-on $f_\theta(\mathbf{X}^{s})$ with a single computation on the unmapped source. On the PCA pairs a fourth difference
-is added: the 64-dimensional low-rank projection applies to the augmented features but not to the 50-dimensional
-embeddings. We cannot separate the contribution of the microenvironment with the data at hand.
-
-On the main benchmark $\Delta$ is indistinguishable from zero. Across the 17 metrics it is positive in 8 and
-negative in 9, and exceeds the seed standard deviation in 6. On the five aggregates the mean difference lies between
-$-0.0007$ and $+0.0003$, with 5--8 of 12 pairs positive. Two metrics reach $p<0.05$ (label ASW $+0.0005$, cLISI
-$+0.0003$), with differences in the fourth decimal place. On the common subsample $\Delta$ is $+0.0009$ for transfer
-and $+0.0011$ for mixing (both $p=0.53$). We therefore do not claim that the microenvironment improves cell-level
-integration. We keep it in \frost because it is free and because of the one setting in which it changes a gene-level
-outcome.
-
-That setting is gene-expression imputation from the coarsest-sampled source. Under a leakage-controlled protocol
-(Section~\ref{sec:limitations}), $\Delta$ is $+0.0442$ for COAD Stereo-seq, with disjoint bootstrap confidence
-intervals. It is $+0.0019$ and $-0.0062$ for HCC and OV Stereo-seq. For the nine non-Stereo-seq pairs only the
-original protocol was archived, and there $\Delta$ averages $+0.0003$. Even for COAD Stereo-seq, no alignment does better (0.1850, against 0.1409 for the best
-USHER-family variant). The microenvironment thus repairs part of the gene-level damage that alignment itself causes,
-in one pair; it is not a source of spatial information. The microenvironment-only variant is larger still on all
-three Stereo-seq pairs, but it is $0.0301$ below the mixed form on HCC Visium HD FFPE (disjoint intervals), and it
-was run with one seed. The mixed form in
-\frost keeps most of the Stereo-seq effect without that failure.
+\frost and USHER-CC are indistinguishable on every metric: on the compact set, all $p\ge0.26$ ($n=12$), with no
+median difference larger than 0.0008 in absolute value; on the common subsample, $p=0.75$ for transfer and $p=0.067$
+for mixing. The difference measures the joint effect of three simultaneous changes to $\Cs$: adding the
+microenvironment, replacing landmark distances with exact geodesics, and replacing per-iteration recomputation on
+$f_\theta(\mathbf{X}^{s})$ with a single computation on the unmapped source. On the PCA pairs a fourth difference is
+added: the 64-dimensional low-rank projection applies to the augmented features but not to the 50-dimensional
+embeddings. We cannot separate the contribution of the microenvironment with the data at hand. What the frozen
+construction does change is cost, as shown above.
 
 \subsection{Comparison with USHER}\label{sec:res_usher}
-Table~\ref{tab:usher} compares \frost with the unmodified USHER reference implementation on the four COAD pairs. The
-two pipelines differ in four components at once (Table~\ref{tab:usher_vs_frost}), so this is a pipeline-level
-comparison, not an ablation. USHER was run with one seed, so differences are read through their consistency across
-the four pairs rather than through a test (the smallest attainable $p$ with four pairs is 0.125).
+Table~\ref{tab:usher} compares \frost with the unmodified USHER reference implementation on the four COAD pairs. With
+four pairs and a single seed, no paired test can reach significance (exact two-sided floor $p=0.125$); we
+therefore report differences descriptively. The two pipelines also differ in four components at once
+(Table~\ref{tab:usher_vs_frost}), so this is a pipeline-level comparison, not an ablation.
 
-The two methods sit at different points of the same trade-off, and their total scores are level (total\_v2 0.7055 vs
-0.7025; \frost ahead in 2 of 4 pairs). USHER mixes the platforms better on four of five mixing metrics: iLISI $-0.029$,
-kBET $-0.071$, BRAS $-0.015$, batch ASW $-0.012$ and batch\_v2 $-0.028$ (\frost minus USHER); graph connectivity
-is level. \frost conserves biology better on the cluster-based metrics, NMI $+0.037$ and ARI $+0.039$ (4 of 4 pairs
-each), and on cLISI $+0.010$ (3 of 4) and bio\_v2 $+0.014$ (4 of 4). It is slightly lower on label ASW ($-0.010$)
-and isolated labels ($-0.007$). It is also ahead on every task metric. The gains are small on xfer\_main ($+0.004$, 3 of 4) and clear on
-the three metrics that probe rare types and local geometry: xfer\_all $+0.038$, rare-type purity $+0.038$ and
-knn\_xen $+0.034$, each in 4 of 4 pairs. These are the metrics outside USHER's own benchmark. Adding CORAL to USHER
-raises its mixing further (batch\_v2 0.7448) without changing this pattern.
+The two methods sit at different points of the same trade-off, and their total scores are level (total\_v2 0.7055
+for USHER, 0.7025 for \frost). USHER is higher on the mixing group score (batch\_v2 $-0.028$, \frost minus USHER);
+\frost is higher on the conservation group score (bio\_v2 $+0.014$) and on every task metric, with the largest
+differences on the three that probe rare types and local geometry: xfer\_all, rare-type purity and knn\_xen ($+0.034$ to $+0.038$). These are the metrics outside
+USHER's own benchmark. Adding CORAL to USHER raises its mixing further without changing this pattern.
 
 \frost reaches this point of the frontier at a fraction of the cost. USHER recomputes exact structure matrices
 200 times per pair, against 8 for \frost ($2BT$ against $2B$ with $T=25$). USHER's EM took 2{,}570--3{,}219\,s per
@@ -222,37 +207,37 @@ difference also includes the other three differences between the pipelines.
 \begin{table}[t]
 \centering
 \caption{USHER reference implementation versus \frost, four COAD pairs. USHER: one seed, 25 iterations. \frost and
-ridge: three seeds, means. The pipelines differ in four components (Table~\ref{tab:usher_vs_frost}). Imputation is
+ridge: three seeds, means. The pipelines differ in four components (Table~\ref{tab:usher_vs_frost}). $\Delta$: \frost minus USHER. Imputation is
 omitted because the archived values use the leaking protocol (Section~\ref{sec:limitations}).}
 \label{tab:usher}
 \small
-\begin{tabular}{@{}llcccc@{}}
+\begin{tabular}{@{}llccccc@{}}
 \toprule
-Group & Metric & USHER & USHER + CORAL & \frost & ridge \\
+Group & Metric & USHER & USHER + CORAL & \frost & ridge & $\Delta$ \\
 \midrule
 \multirow{6}{*}{Mixing}
- & iLISI        & 0.5551 & 0.6609 & 0.5261 & 0.2215 \\
- & kBET         & 0.5153 & 0.5049 & 0.4440 & 0.1961 \\
- & BRAS         & 0.8604 & 0.8387 & 0.8450 & 0.8502 \\
- & graph conn.  & 0.9768 & 0.9747 & 0.9800 & 0.9796 \\
- & batch ASW    & 0.9268 & 0.9147 & 0.9152 & 0.9196 \\
- & batch\_v2    & 0.7269 & 0.7448 & 0.6987 & 0.5618 \\
+ & iLISI        & 0.5551 & 0.6609 & 0.5261 & 0.2215 & -0.0290 \\
+ & kBET         & 0.5153 & 0.5049 & 0.4440 & 0.1961 & -0.0713 \\
+ & BRAS         & 0.8604 & 0.8387 & 0.8450 & 0.8502 & -0.0154 \\
+ & graph conn.  & 0.9768 & 0.9747 & 0.9800 & 0.9796 & +0.0032 \\
+ & batch ASW    & 0.9268 & 0.9147 & 0.9152 & 0.9196 & -0.0116 \\
+ & batch\_v2    & 0.7269 & 0.7448 & 0.6987 & 0.5618 & -0.0282 \\
 \midrule
 \multirow{6}{*}{Conservation}
- & NMI          & 0.6411 & 0.6412 & 0.6780 & 0.6739 \\
- & ARI          & 0.6442 & 0.6461 & 0.6828 & 0.6924 \\
- & ASW          & 0.5924 & 0.5852 & 0.5826 & 0.5904 \\
- & cLISI        & 0.9837 & 0.9891 & 0.9935 & 0.9939 \\
- & iso.\ labels & 0.5950 & 0.5896 & 0.5884 & 0.5951 \\
- & bio\_v2      & 0.6913 & 0.6902 & 0.7050 & 0.7091 \\
+ & NMI          & 0.6411 & 0.6412 & 0.6780 & 0.6739 & +0.0369 \\
+ & ARI          & 0.6442 & 0.6461 & 0.6828 & 0.6924 & +0.0386 \\
+ & ASW          & 0.5924 & 0.5852 & 0.5826 & 0.5904 & -0.0098 \\
+ & cLISI        & 0.9837 & 0.9891 & 0.9935 & 0.9939 & +0.0098 \\
+ & iso.\ labels & 0.5950 & 0.5896 & 0.5884 & 0.5951 & -0.0066 \\
+ & bio\_v2      & 0.6913 & 0.6902 & 0.7050 & 0.7091 & +0.0137 \\
 \midrule
-Total & total\_v2 & 0.7055 & 0.7120 & 0.7025 & 0.6502 \\
+Total & total\_v2 & 0.7055 & 0.7120 & 0.7025 & 0.6502 & -0.0030 \\
 \midrule
 \multirow{4}{*}{Tasks}
- & xfer\_main   & 0.7052 & 0.6965 & 0.7090 & 0.7091 \\
- & xfer\_all    & 0.4336 & 0.4405 & 0.4715 & 0.4663 \\
- & rare\_purity & 0.2610 & 0.2803 & 0.2990 & 0.2909 \\
- & knn\_xen     & 0.4119 & 0.4036 & 0.4456 & 0.4200 \\
+ & xfer\_main   & 0.7052 & 0.6965 & 0.7090 & 0.7091 & +0.0038 \\
+ & xfer\_all    & 0.4336 & 0.4405 & 0.4715 & 0.4663 & +0.0379 \\
+ & rare\_purity & 0.2610 & 0.2803 & 0.2990 & 0.2909 & +0.0380 \\
+ & knn\_xen     & 0.4119 & 0.4036 & 0.4456 & 0.4200 & +0.0337 \\
 \bottomrule
 \end{tabular}
 \end{table}

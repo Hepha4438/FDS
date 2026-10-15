@@ -1,3 +1,5 @@
+# Chạy: cd fig_code && python3 fig3.py   (cần matplotlib, numpy, scipy; KHÔNG dùng python3 -I)
+# Dữ liệu: data.json md5 33c26b15e01a157762f4cb111b208c0b
 """HÌNH 3 — khoảng cách từ mỗi baseline tới FROST, kiểm định Wilcoxon signed-rank.
 
   đường xanh = mức của FROST (mốc chung, đứng yên ở mọi ô)
