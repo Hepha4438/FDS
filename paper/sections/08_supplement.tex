@@ -134,11 +134,29 @@ EM time per iteration (s) & 18.3 & 15.4 & 15.5 \\
 Building one exact structure matrix scales quadratically with the number of cells: 0.42, 1.61 and 7.61\,s at
 $n=1{,}000$, 2{,}000 and 4{,}300 (the sketch size).
 
-\paragraph{Cross-section registration.} We also tested registering source and reference sections in physical
-coordinates. Only two of the four COAD pairs could be registered (CosMx: 2\textdegree, 43\um; Visium HD FFPE:
-2\textdegree, 90\um); Visium HD FF (14\textdegree, 165\um) and Stereo-seq (174\textdegree) could not. On CosMx the
-registered coordinates changed total\_v2 by $+0.0012$ (default structure) and $+0.0019$ (with microenvironment),
-below the pre-set threshold of $+0.020$. \todo{remaining rows of report \S7.1}
+\paragraph{Cross-section registration.} We also tested adding registered physical coordinates of the two sections to
+$\mathbf{M}_{\mathrm{aux}}$ with weight $\beta$. Only two of the four COAD pairs could be registered (CosMx:
+2\textdegree, 43\um; Visium HD FFPE: 2\textdegree, 90\um); Visium HD FF (14\textdegree, 165\um) and Stereo-seq
+(174\textdegree) could not. All changes in total\_v2 lie between $-0.003$ and $+0.002$, an order of magnitude below
+the pre-set threshold of $+0.020$ (Table~\ref{tab:registration}). \frost uses spatial coordinates only within each
+section, through $\Cs$ and $\Ct$, which needs no registration.
+
+\begin{table}[h]
+\centering
+\caption{Registered coordinates in the auxiliary cost: change in total\_v2 relative to the same configuration without
+them.}
+\label{tab:registration}
+\begin{tabular}{@{}llcc@{}}
+\toprule
+Pair & Structure & $\Delta$ total\_v2 & Threshold \\
+\midrule
+COAD CosMx 6K      & default            & $+0.0012$ & $+0.020$ \\
+COAD CosMx 6K      & with microenvironment & $+0.0019$ & $+0.020$ \\
+COAD Visium HD FFPE & default           & $-0.0004$ & $+0.020$ \\
+COAD Visium HD FFPE & with microenvironment & $-0.0029$ & $+0.020$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{table}[h]
 \centering
@@ -262,7 +280,8 @@ metrics to their left. $^{*}$Modifies the reference.}
 \centering
 \includegraphics[width=\linewidth]{figs/fig_converge.png}
 \caption{Convergence of the E-step: fraction of assignments that change between consecutive EM iterations, mean over
-the four COAD pairs (seed 0, 25 iterations). The first iteration (warm start with $\gamma=1$) is omitted. The USHER
+the four COAD pairs (seed 0, 25 iterations); values quoted in the text and in Table~\ref{tab:arms} are medians over
+pairs and the last three iterations, and the USHER value is the median at iteration 25. The first iteration (warm start with $\gamma=1$) is omitted. The USHER
 reference implementation was measured at five checkpoints.}
 \label{fig:converge}
 \end{figure}
@@ -301,4 +320,109 @@ scRNA-seq      & \textbf{0.943} & 0.875 & 0.901 \\
 the baseline at minus the median paired difference (\frost $-$ baseline), the quantity tested by the exact Wilcoxon
 signed-rank test. Bold: $p<0.05$. $^{*}$Modifies the reference.}
 \label{fig:gaps}
+\end{figure}
+
+\clearpage
+\subsection*{S6. UMAP of every pair}\label{sec:supp_umap}
+Each figure shows one pair: the top image is coloured by platform (grey: Xenium reference; red: mapped source), the
+bottom image by cell type; each panel is one method. The panel labels in these images are in Vietnamese, from the
+original report (diacritics omitted here): ``USHER-ST (san 200)'' is USHER-ST (floor 200), ``+ mo-men'' is USHER-CC,
+and ``DE XUAT (+niche+mo-men)'' is \frost; ``to theo cong nghe'' means coloured by platform and ``to theo loai te
+bao'' coloured by cell type; the legend reads Xenium (reference) and source (mapped). The cell-type images carry no
+colour legend. $^{*}$Modifies the reference.
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figs/umap_pairs/coad_cosmx6k_platform.png}\\[2pt]
+\includegraphics[width=\linewidth]{figs/umap_pairs/coad_cosmx6k_celltype.png}
+\caption{UMAP, COAD / CosMx 6K: coloured by platform (top) and by cell type (bottom). Label key in Section~\ref{sec:supp_umap}.}
+\label{fig:umap_coad_cosmx6k}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figs/umap_pairs/coad_stereoseq_platform.png}\\[2pt]
+\includegraphics[width=\linewidth]{figs/umap_pairs/coad_stereoseq_celltype.png}
+\caption{UMAP, COAD / Stereo-seq: coloured by platform (top) and by cell type (bottom). Label key in Section~\ref{sec:supp_umap}.}
+\label{fig:umap_coad_stereoseq}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figs/umap_pairs/coad_visiumhd_ff_platform.png}\\[2pt]
+\includegraphics[width=\linewidth]{figs/umap_pairs/coad_visiumhd_ff_celltype.png}
+\caption{UMAP, COAD / Visium HD FF: coloured by platform (top) and by cell type (bottom). Label key in Section~\ref{sec:supp_umap}.}
+\label{fig:umap_coad_visiumhd_ff}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figs/umap_pairs/coad_visiumhd_ffpe_platform.png}\\[2pt]
+\includegraphics[width=\linewidth]{figs/umap_pairs/coad_visiumhd_ffpe_celltype.png}
+\caption{UMAP, COAD / Visium HD FFPE: coloured by platform (top) and by cell type (bottom). Label key in Section~\ref{sec:supp_umap}.}
+\label{fig:umap_coad_visiumhd_ffpe}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figs/umap_pairs/ov_cosmx6k_platform.png}\\[2pt]
+\includegraphics[width=\linewidth]{figs/umap_pairs/ov_cosmx6k_celltype.png}
+\caption{UMAP, OV / CosMx 6K: coloured by platform (top) and by cell type (bottom). Label key in Section~\ref{sec:supp_umap}.}
+\label{fig:umap_ov_cosmx6k}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figs/umap_pairs/ov_stereoseq_platform.png}\\[2pt]
+\includegraphics[width=\linewidth]{figs/umap_pairs/ov_stereoseq_celltype.png}
+\caption{UMAP, OV / Stereo-seq: coloured by platform (top) and by cell type (bottom). Label key in Section~\ref{sec:supp_umap}.}
+\label{fig:umap_ov_stereoseq}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figs/umap_pairs/ov_visiumhd_ff_platform.png}\\[2pt]
+\includegraphics[width=\linewidth]{figs/umap_pairs/ov_visiumhd_ff_celltype.png}
+\caption{UMAP, OV / Visium HD FF: coloured by platform (top) and by cell type (bottom). Label key in Section~\ref{sec:supp_umap}.}
+\label{fig:umap_ov_visiumhd_ff}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figs/umap_pairs/ov_visiumhd_ffpe_platform.png}\\[2pt]
+\includegraphics[width=\linewidth]{figs/umap_pairs/ov_visiumhd_ffpe_celltype.png}
+\caption{UMAP, OV / Visium HD FFPE: coloured by platform (top) and by cell type (bottom). Label key in Section~\ref{sec:supp_umap}.}
+\label{fig:umap_ov_visiumhd_ffpe}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figs/umap_pairs/hcc_cosmx6k_platform.png}\\[2pt]
+\includegraphics[width=\linewidth]{figs/umap_pairs/hcc_cosmx6k_celltype.png}
+\caption{UMAP, HCC / CosMx 6K: coloured by platform (top) and by cell type (bottom). Label key in Section~\ref{sec:supp_umap}.}
+\label{fig:umap_hcc_cosmx6k}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figs/umap_pairs/hcc_stereoseq_platform.png}\\[2pt]
+\includegraphics[width=\linewidth]{figs/umap_pairs/hcc_stereoseq_celltype.png}
+\caption{UMAP, HCC / Stereo-seq: coloured by platform (top) and by cell type (bottom). Label key in Section~\ref{sec:supp_umap}.}
+\label{fig:umap_hcc_stereoseq}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figs/umap_pairs/hcc_visiumhd_ff_platform.png}\\[2pt]
+\includegraphics[width=\linewidth]{figs/umap_pairs/hcc_visiumhd_ff_celltype.png}
+\caption{UMAP, HCC / Visium HD FF: coloured by platform (top) and by cell type (bottom). Label key in Section~\ref{sec:supp_umap}.}
+\label{fig:umap_hcc_visiumhd_ff}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figs/umap_pairs/hcc_visiumhd_ffpe_platform.png}\\[2pt]
+\includegraphics[width=\linewidth]{figs/umap_pairs/hcc_visiumhd_ffpe_celltype.png}
+\caption{UMAP, HCC / Visium HD FFPE: coloured by platform (top) and by cell type (bottom). Label key in Section~\ref{sec:supp_umap}.}
+\label{fig:umap_hcc_visiumhd_ffpe}
 \end{figure}

@@ -101,7 +101,15 @@ Diamonds and $^{*}$: methods that modify the reference. Other task metrics: Supp
 Figure~\ref{fig:pareto_supp}.}\label{fig:pareto}\end{minipage}
 \end{figure}
 
-\subsection{Ablations and cost}\label{sec:res_ablation}
+\subsection{Comparison with USHER}\label{sec:res_usher}
+On the four COAD pairs, with one USHER seed, no paired test can reach significance (floor $p=0.125$), so we report
+differences descriptively (Supplementary Table~\ref{tab:usher}); the pipelines also differ in four components, and
+\frost runs 10 iterations against USHER's 25, a bias against \frost. Total scores are similar (0.7055 for USHER, 0.7025
+for \frost); USHER is numerically higher on batch mixing, \frost on conservation and on every task metric, most on
+xfer\_all, rare\_purity and knn\_xen ($+0.034$ to $+0.038$), with 8 instead of 200 structure computations per pair and
+about 7.5-fold less EM time (387.3 against 2{,}911\,s).
+
+\section{Ablation studies}\label{sec:res_ablation}
 \paragraph{Post-hoc moment matching.}\label{sec:res_coral}
 Comparing USHER-CC with USHER-ST isolates CORAL. It raises batch\_v2 ($+0.127$, $p=0.0010$), total\_v2 ($+0.053$,
 $p=0.0010$), rare\_purity ($+0.029$, $p=0.0015$) and xfer\_all ($+0.025$, $p=0.012$), with no significant change
@@ -149,7 +157,7 @@ no alignment                  & --    & 0.140 & 0.0945 & -- \\
 \end{tabular}
 \end{table}
 
-Stopping at 10 iterations costs little: all three arms still change 6--8\% of assignments per iteration at iteration
+Stopping at 10 iterations costs a small, measurable amount: all three arms still change 6--8\% of assignments per iteration at iteration
 10 (Supplementary Figure~\ref{fig:converge}), yet \frost scores total\_v2 0.7025 at 10 iterations (three seeds) and
 0.706 at 25 (one seed) on the same pairs, against a per-pair seed standard deviation of about 0.002. Arm (a) differs
 from the USHER implementation in the auxiliary cost, $\varepsilon$, the $\Cs$ approximation and the M-step, yet ends
@@ -161,10 +169,3 @@ with cached exact $\Cs$ and 18.3\,s with recomputed landmarks ($T=25$), and the 
 measurable (15.5\,s; Supplementary Table~\ref{tab:cost}). Structure builds fall from $B(T+1)$ to $2B$, which no
 longer depends on $T$: 5.5-fold fewer at $T=10$ and 13-fold fewer at $T=25$; wall-clock at $T=10$ was not measured.
 
-\subsection{Comparison with USHER}\label{sec:res_usher}
-On the four COAD pairs, with one USHER seed, no paired test can reach significance (floor $p=0.125$), so we report
-differences descriptively (Supplementary Table~\ref{tab:usher}); the pipelines also differ in four components, and
-\frost runs 10 iterations against USHER's 25, a bias against \frost. Total scores are similar (0.7055 for USHER, 0.7025
-for \frost); USHER is numerically higher on batch mixing, \frost on conservation and on every task metric, most on
-xfer\_all, rare\_purity and knn\_xen ($+0.034$ to $+0.038$), with 8 instead of 200 structure computations per pair and
-about 7.5-fold less EM time (387.3 against 2{,}911\,s).
