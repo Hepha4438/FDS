@@ -1,0 +1,88 @@
+\section{Experimental setup}\label{sec:setup}
+
+\subsection{Data}\label{sec:data}
+We use SPATCH~\todo{citation}, which profiles serial sections of the same tumours on several spatial platforms.
+We take three tissues---colon adenocarcinoma (COAD), ovarian cancer (OV) and hepatocellular carcinoma (HCC)---with
+one patient per tissue and one section per platform. Xenium 5K is the reference throughout. The sources are CosMx
+6K, Visium HD FFPE, Visium HD FF and Stereo-seq, giving 12 source--reference pairs. The pairs within a tissue share
+the patient and the reference section, so they are not independent observations
+(Section~\ref{sec:stats}).
+
+For each assay we keep high-quality cells and draw a label-stratified subsample (at most 50{,}000 cells, at least
+200 per label, seed 0), which leaves about 40{,}000--45{,}000 cells per assay. Each section is split by a 500\um
+checkerboard: alternate tiles form a training set (T), used for fitting and selection, and a held-out set (H), used
+for evaluation. Cells carry 16 cell-type groups shared across assays. When a pair recovers fewer than three shared
+groups, as for OV Stereo-seq and OV Visium HD FF, label metrics fall back to six coarse groups. HCC Stereo-seq
+recovers no group except hepatocytes, so we do not interpret label-based metrics for that pair. Values are compared
+between methods within a pair, never in absolute terms across tissues.
+
+\subsection{Representations}\label{sec:reps}
+Each pair is embedded either by PCA of log-normalised expression or by scGPT-spatial~\citep{wang2025scgptspatial}.
+The representation is fixed per pair before any alignment, by within-assay label recoverability, and every
+method receives the same input. Five pairs use PCA and seven use scGPT-spatial
+(Supplementary Table~\todo{S1}). PCA is strongest for imaging-based assays and scGPT-spatial for sequencing-based
+ones. When loading the public scGPT-spatial checkpoint on GPUs without FlashAttention, the attention weights are
+silently not loaded because the parameter names are not remapped. We remapped them and verified every tensor.
+Embeddings were extracted in half precision. For assays in which more than 5\% of cells exceed the model's
+1{,}200-gene input, where the code samples genes at random, we average five extraction seeds.
+
+\subsection{Baselines}\label{sec:baselines}
+\paragraph{Reference-preserving.} These methods leave $\mathbf{X}^{t}$ unchanged and are directly comparable to
+\frost: no alignment (raw); per-assay mean centring (center); CORAL~\citep{sun2016coral}; mutual nearest
+neighbours applied to the source only (MNN-ref)~\citep{haghverdi2018mnn}; and a label-informed ridge baseline
+(ridge). Ridge pairs each source cell with reference cells that share its auxiliary label---the same labels
+\frost uses in $\mathbf{M}_{\mathrm{aux}}$---fits a ridge regression with cross-validated penalty
+($10^{0}$--$10^{4}$) to the displacements, and then applies the moment matching of Eq.~\eqref{eq:coral}, which puts
+it on the same footing as \frost. USHER as published includes no label-informed baseline.
+
+\paragraph{Reference-modifying.} Harmony~\citep{korsunsky2019harmony}, Scanorama~\citep{hie2019scanorama} and
+Symphony~\citep{kang2021symphony} return a new reference embedding. Symphony does not use the foundation-model
+embeddings at all: it builds its own space from counts (2{,}000 highly variable genes, PCA, Harmony). Its scores
+therefore partly reflect that representation rather than the algorithm. Harmony and Scanorama are fitted on the
+held-out tiles as well (transductively), whereas \frost is fitted on training tiles only. This favours those
+baselines.
+
+\paragraph{Spatially aware.} GraphST~\citep{long2023graphst} is run with its published default parameters,
+jointly on the source and reference sections. GraphST builds a dense spatial adjacency (about 1.6\,GB at 10{,}000
+cells per side) and was killed for exceeding memory at 90{,}000 cells, so all methods in this comparison are scored
+on a common subsample of 10{,}000 source and 10{,}000 reference cells (seed 0). STAligner~\citep{zhou2023staligner}
+could not be installed: no \texttt{torch\_sparse} build was available for the PyTorch version of that environment.
+
+\subsection{Metrics}\label{sec:metrics}
+\paragraph{Main benchmark.} Integration is scored with \texttt{scib-metrics}~\citep{luecken2022scib}, without
+min--max scaling across methods. \emph{Batch mixing} (batch\_v2) is the mean of iLISI, kBET, BRAS and graph
+connectivity. \emph{Biological conservation} (bio\_v2) is the mean of NMI, ARI, label ASW, cLISI and isolated-label
+score. The total is $0.4\,\text{batch\_v2}+0.6\,\text{bio\_v2}$. Because mixing scores can reward over-correction,
+we add four task metrics computed on held-out tiles. \emph{Label transfer} (xfer\_main) is the balanced accuracy of a
+15-NN vote of reference labels, after centring on the reference mean and unit normalisation, over shared recoverable
+groups. xfer\_all is the same over all groups with at least 20 cells on both sides, including rare ones.
+rare\_purity is the fraction of same-label reference neighbours among the 15-NN of cells from groups below 2\% of
+the held-out tiles. knn\_xen is the balanced accuracy of predicting a cell's microenvironment class (eight $k$-means
+classes of spatial-neighbour label composition) from its 15 reference neighbours. Together with batch ASW, these
+give 17 metrics. The figures show 16 of them, with cLISI and isolated labels in the Supplement.
+
+\paragraph{Spatial-baseline comparison.} GraphST re-embeds both sides, so the metrics above cannot be computed in a
+shared space. We therefore use two self-contained measures on the common subsample. \emph{Mixing} is
+$1-\max(f_{\mathrm{same}}-0.5,0)/0.5$, where $f_{\mathrm{same}}$ is the fraction of each cell's 15 nearest
+neighbours, in the pooled unit-normalised embedding, that come from its own platform. \emph{Transfer} is the
+balanced accuracy of a 15-NN reference-label vote, without centring, over shared classes. \emph{Reference drift} is
+$1-J$, where $J$ is the mean Jaccard overlap of each reference cell's 15 nearest neighbours before and after
+integration. Drift is invariant to translation and rotation and is exactly zero for any method that leaves the
+reference untouched. These values are not comparable with those of the main benchmark.
+
+\subsection{Statistics}\label{sec:stats}
+Methods are compared through per-pair paired differences. We report the mean difference, the number of pairs with a
+positive difference and a two-sided exact Wilcoxon signed-rank test. With 12 pairs the smallest attainable $p$ is
+$2/2^{12}\approx4.9\times10^{-4}$, which is reached only when all 12 differences share a sign. Such a $p$ therefore
+restates the sign count, and the mean difference conveys the magnitude. Because pairs within a tissue share a
+reference and a patient, these tests describe consistency across pairs rather than across independent samples.
+Stochastic methods in the main benchmark are run with three seeds and reported as mean (SD). The spatial-baseline
+comparison uses one seed.
+
+\subsection{Computing environment}\label{sec:env}
+All experiments ran on Kaggle (2$\times$NVIDIA T4, 16\,GB each; about 29\,GB RAM; 4 vCPUs). The two groups of
+experiments ran at different times on different software stacks, which we report separately. The main benchmark
+used PyTorch 2.10.0+cu128, NumPy 2.0.2, SciPy 1.16.3, AnnData 0.11.4, POT 0.9.6.post1, scib-metrics 0.6.1 and
+tangram-sc 1.0.4. The spatial-baseline comparison used PyTorch 2.11.0+cu128, Scanpy 1.12.4 and AnnData 0.11.4.
+Versions of GraphST, harmonypy, Scanorama and symphonypy were not recorded~\todo{version or ``resolved by pip at
+run time''}. Peak memory was not instrumented and is not reported.

@@ -1,0 +1,36 @@
+% FROST manuscript -- template-agnostic shell. Content lives in sections/*.tex.
+\documentclass[11pt]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{booktabs,multirow,array}
+\usepackage{graphicx}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xspace}
+
+\newcommand{\frost}{FROST\xspace}
+\newcommand{\um}{\,\ensuremath{\mu}m\xspace}
+\newcommand{\Cs}{\ensuremath{\mathbf{C}^{s}}\xspace}
+\newcommand{\Ct}{\ensuremath{\mathbf{C}^{t}}\xspace}
+\newcommand{\todo}[1]{\textbf{[TODO: #1]}}
+
+\title{FROST: Reference-preserving post-hoc alignment of cross-platform spatial transcriptomics with fused Gromov--Wasserstein transport}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\input{sections/00_abstract}
+\input{sections/01_introduction}
+\input{sections/02_related}
+\input{sections/03_methods}
+\input{sections/04_setup}
+\input{sections/05_results}
+\input{sections/06_limitations}
+\input{sections/07_conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+\end{document}
