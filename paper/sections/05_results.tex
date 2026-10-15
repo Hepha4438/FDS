@@ -1,1 +1,232 @@
-% TODO: chưa viết
+\section{Results}\label{sec:results}
+
+\subsection{A spatially aware baseline fails in the reference-preserving setting}\label{sec:res_spatial}
+Table~\ref{tab:graphst} compares \frost with GraphST on a common subsample of 10{,}000 source and 10{,}000
+reference cells per pair. \frost transfers labels more accurately than GraphST in all 12 pairs (mean transfer
+0.7223 vs 0.3731; mean paired difference $+0.349$, range $+0.210$ to $+0.458$; exact Wilcoxon
+$p=4.9\times10^{-4}$, the smallest value attainable with 12 pairs). It also mixes the platforms better in 10 of
+12 pairs, so GraphST's deficit in transfer is not the price of better mixing.
+
+GraphST is also worse than performing no alignment at all. Its transfer is below that of the unaligned embeddings
+in 11 of 12 pairs (mean difference $-0.243$, $p=0.0015$). Its only gain over no alignment is in mixing
+($+0.377$, 12 of 12 pairs), which is the signature of over-correction: the two platforms become indistinguishable
+because cell-type structure has been destroyed.
+
+The reference itself moves. GraphST re-embeds both sections, and the 15-NN neighbourhoods of reference cells
+overlap little with those before integration (drift 0.966--0.989 across pairs, mean 0.979). Any classifier,
+annotation or index built on the reference would have to be rebuilt. For \frost and every other reference-preserving
+method, drift is exactly zero. This is a property of the architecture, not of tuning.
+
+Scale differs as well. GraphST had to be run on 10{,}000 cells per side because its dense spatial adjacency
+exhausted memory at 90{,}000 cells, whereas \frost runs on the full 40{,}000--45{,}000 cells per side.
+GraphST was run once, at its published defaults; Section~\ref{sec:limitations} discusses what this comparison does
+and does not establish. Wall-clock time for GraphST was not extracted~\todo{GraphST wall-clock from log 42}.
+
+\begin{table}[t]
+\centering
+\caption{Comparison with a spatially aware baseline on a common subsample (10{,}000 + 10{,}000 cells per pair,
+12 pairs, seed 0). Means over pairs. Metrics are defined in Section~\ref{sec:metrics} and are not comparable with
+those of Table~\ref{tab:main}. ``Wins'' counts the pairs in which a method has the highest transfer.}
+\label{tab:graphst}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Method & Transfer $\uparrow$ & Mixing $\uparrow$ & Reference drift $\downarrow$ & Wins (transfer) \\
+\midrule
+GraphST            & 0.3731 & 0.3982 & 0.979 & 0 \\
+No alignment (raw) & 0.6162 & 0.0208 & 0.000 & 1 \\
+USHER-ST           & 0.7133 & 0.3206 & 0.000 & 1 \\
+\frost w/o CORAL   & 0.7142 & 0.3218 & 0.000 & 2 \\
+USHER-CC           & 0.7219 & 0.5117 & 0.000 & 2 \\
+\frost             & \textbf{0.7223} & \textbf{0.5158} & 0.000 & \textbf{6} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Benchmark against reference-preserving and reference-modifying baselines}\label{sec:res_bench}
+Table~\ref{tab:main} summarises the 12-pair benchmark; Figures~\ref{fig:grid} and~\ref{fig:gaps} show the
+per-technology breakdown and the paired tests. Ranked by mean over pairs, \frost is among the top three of 11
+methods on 15 of 17 metrics. The two exceptions are graph connectivity (sixth) and NMI (fourth). It has the highest
+mean on BRAS and xfer\_all, but its margin over ridge on these two is within noise: \frost is ahead in 6 and 5 of 12
+pairs, respectively.
+
+Ridge is the informative comparison, because it uses the same auxiliary labels and the same moment matching as
+\frost and differs mainly in how source cells are paired with reference cells. \frost exceeds ridge in all 12 pairs
+on batch mixing (0.6593 vs 0.5447) and on the total score (0.6724 vs 0.6303). The two are level on label transfer
+(xfer\_main 0.6891 vs 0.6867; \frost ahead in 7 of 12 pairs). Ridge is better on biological conservation (bio\_v2
+0.6874 vs 0.6811; ridge ahead in 9 of 12 pairs). This is the only aggregate on which a linear baseline beats
+\frost, so \frost's advantage over ridge lies in mixing and in the total score, not in conserving biology. Because
+the total weights mixing at 0.4 and moment matching recovers much of it, the total should be read together with its
+two components. Against Symphony, the published reference-mapping method, \frost is ahead in all 12 pairs on
+xfer\_main, xfer\_all, bio\_v2, batch\_v2 and total\_v2. Part of this gap may reflect Symphony's own count-based
+representation (Section~\ref{sec:baselines}).
+
+\begin{table}[t]
+\centering
+\caption{Main benchmark: means over 12 pairs (three seeds for stochastic methods). Methods marked $^{*}$ modify the
+reference embedding. Best per column in bold.}
+\label{tab:main}
+\small
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+Method & batch\_v2 & bio\_v2 & total\_v2 & xfer\_main & xfer\_all & rare\_purity & knn\_xen \\
+\midrule
+raw        & 0.3448 & 0.5956 & 0.4953 & 0.5972 & 0.3256 & 0.1547 & 0.3061 \\
+center     & 0.4419 & 0.6240 & 0.5511 & 0.6778 & 0.4066 & 0.2290 & 0.3308 \\
+CORAL      & 0.5939 & 0.6605 & 0.6339 & 0.6397 & 0.4027 & 0.2527 & 0.3088 \\
+MNN-ref    & 0.4258 & 0.6197 & 0.5421 & 0.6383 & 0.3619 & 0.1814 & 0.3182 \\
+ridge      & 0.5447 & \textbf{0.6874} & 0.6303 & 0.6867 & 0.4266 & 0.2623 & 0.3101 \\
+Harmony$^{*}$   & 0.4499 & 0.6204 & 0.5522 & 0.6512 & 0.3716 & 0.2012 & 0.3210 \\
+Scanorama$^{*}$ & 0.3843 & 0.6110 & 0.5203 & 0.6050 & 0.3422 & 0.1702 & 0.3089 \\
+Symphony$^{*}$  & 0.4861 & 0.6099 & 0.5604 & 0.4949 & 0.2990 & 0.1841 & 0.2470 \\
+USHER-ST   & 0.5479 & 0.6763 & 0.6249 & \textbf{0.6913} & 0.4074 & 0.2267 & \textbf{0.3372} \\
+USHER-CC   & \textbf{0.6600} & 0.6813 & \textbf{0.6728} & 0.6896 & 0.4288 & \textbf{0.2652} & 0.3322 \\
+\frost     & 0.6593 & 0.6811 & 0.6724 & 0.6891 & \textbf{0.4291} & 0.2642 & 0.3330 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\fbox{\parbox{0.9\linewidth}{\centering\todo{Figure: per-technology means (fig\_grid.py), imputation column removed}}}
+\caption{Per-technology means of 16 metrics for all methods.}
+\label{fig:grid}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\fbox{\parbox{0.9\linewidth}{\centering\todo{Figure: median paired difference to \frost with Wilcoxon (fig3.py)}}}
+\caption{Paired differences between each baseline and \frost over 12 pairs (median of differences, exact Wilcoxon).}
+\label{fig:gaps}
+\end{figure}
+
+\subsection{Ablations}\label{sec:res_ablation}
+
+\paragraph{Post-hoc moment matching.}\label{sec:res_coral}
+Adding CORAL to USHER-ST (giving USHER-CC) raises mixing on the common subsample by $+0.191$ ($p=0.0015$) but
+transfer by only $+0.0086$ (Table~\ref{tab:graphst}). In the main benchmark it raises batch\_v2 from 0.5479 to
+0.6600, while xfer\_main is unchanged (0.6913 vs 0.6896). The step is therefore mainly a mixing correction. Its cost
+in local density fidelity is reported in Section~\ref{sec:limitations}.
+
+\paragraph{Reference floor.}\label{sec:res_floor}
+Table~\ref{tab:floor} varies the per-class floor in the USHER-ST configuration on the four COAD pairs. The floor
+was selected beforehand on a validation split of the training tiles (T2): the largest rare-type purity among floors
+that lost no more than 0.02 in xfer\_main or total score. That rule chose 200. On held-out tiles, larger floors
+continue to improve xfer\_main, xfer\_all and rare-type purity slightly, so 200 is a conservative choice rather than
+one tuned on evaluation data.
+
+\begin{table}[t]
+\centering
+\caption{Per-class reference floor, USHER-ST configuration, four COAD pairs $\times$ three seeds, held-out tiles.}
+\label{tab:floor}
+\small
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Floor & xfer\_main & xfer\_all & rare\_purity & batch\_v2 & bio\_v2 & total\_v2 \\
+\midrule
+0    & 0.7210 & 0.4284 & 0.2201 & 0.6052 & 0.7020 & 0.6633 \\
+200  & 0.7229 & 0.4420 & 0.2405 & 0.6114 & 0.7049 & 0.6675 \\
+500  & 0.7291 & 0.4485 & 0.2547 & 0.6106 & 0.7048 & 0.6671 \\
+1000 & 0.7289 & 0.4551 & 0.2626 & 0.6109 & 0.7058 & 0.6678 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Computational cost of the structure matrices.}\label{sec:res_cost}
+Table~\ref{tab:cost} times three structure configurations on the four COAD pairs (seed 0, 25 EM iterations): the
+adaptive landmark $\Cs$ of USHER-ST, a frozen exact $\Cs$ on the embeddings alone, and \frost's frozen exact $\Cs$
+on augmented features. Freezing $\Cs$ cuts the number of $\Cs$ builds from 100 to 4, a 25-fold reduction equal
+to the number of EM iterations. Each exact build is more expensive than a landmark one, but total $\Cs$ time still falls 2.7-fold,
+and EM wall-clock time falls from 457.7\,s to 386.1\,s per pair. Adding the microenvironment block costs
+nothing measurable (387.3\,s, with the same 8 builds). These diagnostic runs use 25 iterations, whereas the
+benchmark maps use 10. The number of builds for the frozen configurations does not depend on the number of
+iterations.
+
+\begin{table}[t]
+\centering
+\caption{EM cost on the four COAD pairs (seed 0, 25 iterations). Wall-clock is real time. $\Cs$ time is thread
+time summed over four worker threads; it is not real time and must not be added to wall-clock.}
+\label{tab:cost}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & landmark $\Cs$, recomputed & exact $\Cs$, frozen & \frost \\
+\midrule
+EM wall-clock, CosMx 6K (s)      & 431.7 & 355.4 & 361.7 \\
+EM wall-clock, Visium HD FF (s)  & 462.0 & 404.5 & 385.8 \\
+EM wall-clock, Visium HD FFPE (s)& 437.5 & 361.5 & 366.8 \\
+EM wall-clock, Stereo-seq (s)    & 499.7 & 422.9 & 435.0 \\
+EM wall-clock, mean (s)          & 457.7 & 386.1 & 387.3 \\
+$\Cs$ builds                     & 100   & 4     & 4 \\
+Total structure builds           & 104   & 8     & 8 \\
+$\Cs$ thread time (s)            & 333.9 & 122.2 & 122.9 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Structure matrices and the microenvironment term.}\label{sec:res_niche}
+The difference $\Delta=$ \frost $-$ USHER-CC measures the joint effect of three simultaneous changes to $\Cs$: adding
+the microenvironment, replacing landmark distances with exact geodesics, and replacing per-iteration recomputation
+on $f_\theta(\mathbf{X}^{s})$ with a single computation on the unmapped source. On the PCA pairs a fourth difference
+is added: the 64-dimensional low-rank projection applies to the augmented features but not to the 50-dimensional
+embeddings. We cannot separate the contribution of the microenvironment with the data at hand.
+
+On the main benchmark $\Delta$ is indistinguishable from zero. Across the 17 metrics it is positive in 8 and
+negative in 9, and exceeds the seed standard deviation in 6. On the five aggregates the mean difference lies between
+$-0.0007$ and $+0.0003$, with 5--8 of 12 pairs positive. Two metrics reach $p<0.05$ (label ASW $+0.0005$, cLISI
+$+0.0003$), with differences in the fourth decimal place. On the common subsample $\Delta$ is $+0.0009$ for transfer
+and $+0.0011$ for mixing (both $p=0.53$). We therefore do not claim that the microenvironment improves cell-level
+integration. We keep it in \frost because it is free and because of the one setting in which it changes a gene-level
+outcome.
+
+That setting is gene-expression imputation from the coarsest-sampled source. Under a leakage-controlled protocol
+(Section~\ref{sec:limitations}), $\Delta$ is $+0.0442$ for COAD Stereo-seq, with disjoint bootstrap confidence
+intervals. It is $+0.0019$ and $-0.0062$ for HCC and OV Stereo-seq. For the nine non-Stereo-seq pairs only the
+original protocol was archived, and there $\Delta$ averages $+0.0003$. Even for COAD Stereo-seq, no alignment does better (0.1850, against 0.1409 for the best
+USHER-family variant). The microenvironment thus repairs part of the gene-level damage that alignment itself causes,
+in one pair; it is not a source of spatial information. The microenvironment-only variant is larger still on all
+three Stereo-seq pairs, but it is $0.0301$ below the mixed form on HCC Visium HD FFPE (disjoint intervals), and it
+was run with one seed. The mixed form in
+\frost keeps most of the Stereo-seq effect without that failure.
+
+\subsection{Comparison with USHER}\label{sec:res_usher}
+Table~\ref{tab:usher} compares \frost with the unmodified USHER reference implementation on the four COAD pairs. The
+two pipelines differ in four components at once (Table~\ref{tab:usher_vs_frost}), so this is a pipeline-level
+comparison, not an ablation. USHER was run with one seed.
+
+USHER mixes the platforms better (batch\_v2 0.7269 vs 0.6987; \frost ahead in 1 of 4 pairs). \frost conserves
+biology better (bio\_v2 0.7050 vs 0.6913; 4 of 4 pairs). The total scores are level (0.7055 vs 0.7025). On label
+transfer the two are level (xfer\_main $+0.0038$). On the three metrics that probe rare types and local geometry,
+\frost is ahead in every pair: xfer\_all $+0.038$, rare-type purity $+0.038$ and knn\_xen $+0.034$. These are
+exactly the metrics outside USHER's own benchmark. Adding CORAL to USHER raises its mixing further (0.7448) without
+changing this pattern.
+
+\frost does not therefore surpass its base algorithm in aggregate quality; it trades some mixing for rare-type and
+local-geometry fidelity. It does so at a fraction of the cost. USHER recomputes exact structure matrices 200 times
+per pair against 8 for \frost (25-fold fewer, as $2BT$ against $2B$ with $T=25$). USHER's EM took 2{,}570--3{,}219\,s
+per pair, with 54--67\% spent building structure matrices. \frost took 361.7--435.0\,s at the same number of
+iterations. Both ran on the same hardware type, but the comparison also includes the other three differences.
+
+\begin{table}[t]
+\centering
+\caption{USHER reference implementation versus \frost, four COAD pairs. USHER: one seed, 25 iterations. \frost and
+ridge: three seeds, means. Pipelines differ in four components (Table~\ref{tab:usher_vs_frost}).}
+\label{tab:usher}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Metric & USHER & USHER + CORAL & \frost & ridge \\
+\midrule
+iLISI        & 0.5551 & 0.6609 & 0.5261 & 0.2215 \\
+kBET         & 0.5153 & 0.5049 & 0.4440 & 0.1961 \\
+BRAS         & 0.8604 & 0.8387 & 0.8450 & 0.8502 \\
+batch\_v2    & 0.7269 & 0.7448 & 0.6987 & 0.5618 \\
+bio\_v2      & 0.6913 & 0.6902 & 0.7050 & 0.7091 \\
+total\_v2    & 0.7055 & 0.7120 & 0.7025 & 0.6502 \\
+xfer\_main   & 0.7052 & 0.6965 & 0.7090 & 0.7091 \\
+xfer\_all    & 0.4336 & 0.4405 & 0.4715 & 0.4663 \\
+rare\_purity & 0.2610 & 0.2803 & 0.2990 & 0.2909 \\
+knn\_xen     & 0.4119 & 0.4036 & 0.4456 & 0.4200 \\
+\bottomrule
+\end{tabular}
+\end{table}

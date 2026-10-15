@@ -8,8 +8,8 @@ $\mathbf{X}^{s}\in\mathbb{R}^{n_s\times d}$ be embeddings of cells from the same
 reference coordinate system, under one hard constraint: $\mathbf{X}^{t}$ is never modified. Every downstream object
 built on the reference---a nearest-neighbour index, a classifier, an annotated atlas---therefore remains valid
 after integration, and reference drift is zero by construction rather than by tuning. Source annotations are
-never used for fitting; they serve only for evaluation. Spatial coordinates are not used by the default
-configuration; they enter only through the optional term of Section~\ref{sec:niche}.
+never used for fitting; they serve only for evaluation. Spatial coordinates are used only within each section, to
+describe a cell's microenvironment (Section~\ref{sec:frost}); no coordinate is ever compared across sections.
 
 \subsection{Base algorithm: USHER}\label{sec:usher}
 \frost is built on USHER~\citep{pratapa2025usher}, which alternates between estimating cross-domain
@@ -37,9 +37,10 @@ where $\mathcal{R}_{\mathrm{id}}$ penalises departure from the identity map. Emb
 reference statistics before the E- and M-steps and de-standardised afterwards.
 
 \subsection{FROST}\label{sec:frost}
-\frost keeps the EM skeleton of USHER and changes five components. Table~\ref{tab:usher_vs_frost} lists every
-difference between \frost and the USHER reference implementation as it was run in this study; a numerical
-comparison is given in Section~\ref{sec:res_ablation}.
+\frost keeps the EM skeleton of USHER and changes five components: (i)--(v) below.
+Table~\ref{tab:usher_vs_frost} lists every difference from the USHER reference implementation as it was run in
+this study, together with the two intermediate variants used in the ablations; a numerical comparison with USHER
+is given in Section~\ref{sec:res_usher}.
 
 \paragraph{(i) Auxiliary cost from the reference labels.}
 For each source cell we first align first moments (subtracting the source mean and adding the reference mean),
@@ -49,27 +50,29 @@ $M_{\mathrm{aux}}(i,j)=\|\mathbf{p}^{s}_{i}-\mathbf{e}_{y_j}\|_{2}$, divided by 
 trained on source gene expression, so the auxiliary signal depends only on the embeddings and the reference
 annotation.
 
-\paragraph{(ii) Structure matrices for a frozen reference.}
-$\Ct$ is the exact hop-count geodesic on the symmetrised $k$-NN graph ($k=30$, cosine, unit edge weights) of the
-reference embeddings, normalised by its maximum. Because the reference never moves, $\Ct$ is computed once per
-batch and cached across EM iterations. $\Cs$, in contrast, is defined on $f_\theta(\mathbf{X}^{s})$ and changes
-every iteration. We approximate it with $L=512$ landmarks, chosen as the candidates closest to the centroids of a
-$k$-means fit on $10L$ randomly drawn cells. With $D_{il}$ the hop distance from cell $i$ to landmark $l$,
-\begin{equation}\label{eq:landmark}
-  C^{s}_{ik}=-\frac{1}{\beta}\log\sum_{l=1}^{L}\exp\bigl(-\beta\,(D_{il}+D_{kl})\bigr),\qquad \beta=2,
-\end{equation}
-a soft minimum over paths routed through a landmark, followed by zeroing the diagonal and normalising by the
-maximum. This replaces $O(n^{2})$ shortest-path computations with $O(nL)$. For comparison, the USHER
-reference implementation recomputes both matrices exactly in every batch and iteration, at 8.4--9.1\,s per matrix
-in our runs.
+\paragraph{(ii) Structure matrices built once, on frozen inputs.}
+For every cell we sum the counts of its 15 nearest spatial neighbours within its own section, over the genes shared
+by the pair, and reduce them to 50 principal components, $\mathbf{N}_i$. Structure is computed on the augmented
+features $[\mathbf{x}_i,\;s\,\mathbf{N}_i]$, with $s=\overline{\|\mathbf{x}^{t}\|}/\overline{\|\mathbf{N}^{t}\|}$
+so that the two blocks have comparable norms. $\Cs$ and $\Ct$ are exact hop-count geodesics on the symmetrised
+$k$-NN graphs ($k=30$, cosine, unit edge weights) of these features, after projection onto their top 64 principal
+axes when the dimension exceeds 64. Each is normalised by its maximum. Both are computed from the \emph{unmapped}
+source and from the reference, once per batch, and cached across EM iterations. With $B$ batches and $T$
+iterations, \frost therefore builds $2B$ structure matrices, whereas USHER recomputes both in every batch and
+iteration ($2BT$). Freezing $\Cs$ is a departure from USHER, in which $\Cs$ is defined on the current estimate
+$f_\theta(\mathbf{X}^{s})$. In \frost FGW compares the source's own neighbourhood structure with the reference's,
+and the cost of building it is paid once. The microenvironment block adds no measurable cost
+(Section~\ref{sec:res_cost}), and its contribution to accuracy cannot be separated from that of freezing
+(Section~\ref{sec:res_niche}). The physical radius spanned by 15 neighbours differs between platforms (median
+16.7--33.9\um).
 
 \paragraph{(iii) Reference sampling with a per-class floor.}
 FGW is solved on a reference subset of 20{,}000 cells. Its class composition follows the source composition
 estimated from the auxiliary labels of (i), but every reference class receives at least $\min(200,n_c)$ cells,
 where $n_c$ is the number of available cells; if the total exceeds the budget, only the allocation above the floor
 is scaled down. Because balanced FGW must transport all source mass, a purely proportional subset leaves too few
-reference cells of rare types for their source counterparts to be matched to. The choice of floor is examined in
-Section~\ref{sec:res_ablation}.
+reference cells of rare types for their source counterparts to be matched to. The floor was selected on a
+validation split (Section~\ref{sec:res_floor}).
 
 \paragraph{(iv) Linear M-step with identity regularisation.}
 $f_\theta(\mathbf{x})=\mathbf{W}\mathbf{x}+\mathbf{b}$ in standardised coordinates, with
@@ -87,35 +90,36 @@ $0.01\,\mathrm{tr}(\bm{\Sigma})/d$ added to both covariances. The step uses no l
 does not touch the reference. It buys distribution-level agreement at a measurable cost in local density fidelity;
 we quantify this trade-off in Section~\ref{sec:limitations}.
 
-\paragraph{Optional microenvironment term (off by default).}\label{sec:niche}
-For each cell, we sum the counts of its 15 nearest spatial neighbours within its own section over the genes shared
-by the pair and reduce them to 50 principal components, $\mathbf{N}_i$. The augmented features
-$[\mathbf{x}_i,\;s\,\mathbf{N}_i]$, with $s=\overline{\|\mathbf{x}^{t}\|}/\overline{\|\mathbf{N}^{t}\|}$, give the
-two blocks comparable norms. When the term is enabled (\frost{}+niche), $\Cs$ and $\Ct$ are exact geodesics
-computed on the augmented features of the \emph{unmapped} source and of the reference, and are therefore fixed
-across iterations. Enabling the term thus changes two things at once: it adds microenvironment information, and it
-replaces the adaptive landmark $\Cs$ of (ii) with a frozen exact one. The ablation in
-Section~\ref{sec:res_ablation} measures their joint effect. A variant using $\mathbf{N}$ alone
-(\frost{}+niche-only) was run with a single seed. The physical radius spanned by 15 neighbours differs between
-platforms (median 16.7--33.9\um), so the term compares neighbourhoods at different physical scales.
+\subsection{Variants used in the ablations}\label{sec:variants}
+\textbf{USHER-ST} shares (i), (iii) and (iv) with \frost but builds structure as in our earlier pipeline. $\Ct$ is
+the exact geodesic on the reference embeddings alone, cached. $\Cs$ is recomputed in every iteration on
+$f_\theta(\mathbf{X}^{s})$, using $L=512$ landmarks chosen as the candidates closest to the centroids of a $k$-means
+fit on $10L$ randomly drawn cells. With $D_{il}$ the hop distance from cell $i$ to landmark $l$,
+\begin{equation}\label{eq:landmark}
+  C^{s}_{ik}=-\frac{1}{\beta}\log\sum_{l=1}^{L}\exp\bigl(-\beta\,(D_{il}+D_{kl})\bigr),\qquad \beta=2,
+\end{equation}
+a soft minimum over paths routed through a landmark, followed by zeroing the diagonal and normalising by the
+maximum. \textbf{USHER-CC} is USHER-ST followed by (v). \textbf{\frost w/o CORAL} omits (v). A
+microenvironment-only variant, which builds structure on $\mathbf{N}$ alone, was run with a single seed.
 
 \begin{table}[t]
 \centering
-\caption{Differences between the USHER reference implementation, as run in this study, and \frost.}
+\caption{Configurations compared in this study. USHER is the reference implementation run unmodified.}
 \label{tab:usher_vs_frost}
 \small
-\begin{tabular}{@{}lll@{}}
+\begin{tabular}{@{}llll@{}}
 \toprule
-Component & USHER (as run here) & \frost \\
+Component & USHER (as run here) & USHER-ST / USHER-CC & \frost \\
 \midrule
-Auxiliary cost $\mathbf{M}_{\mathrm{aux}}$ & logistic regression on shared genes & 15-NN label vote in embedding space \\
-Entropic regularisation $\varepsilon$ & 0.05 & 0.1 \\
-$\Ct$ & exact, recomputed every iteration & exact, cached (frozen reference) \\
-$\Cs$ & exact, recomputed every iteration & 512-landmark soft-min, recomputed \\
-M-step & two layers (hidden 512), $\lambda_{\mathrm{id}}=0$\textsuperscript{a} & linear, $\lambda_{\mathrm{id}}=0.3$ \\
-EM iterations & 25 & 10 \\
-Per-class reference floor & 200\textsuperscript{b} & 200 \\
-Post-hoc CORAL & reported with and without & yes \\
+$\mathbf{M}_{\mathrm{aux}}$ & logistic regression, shared genes & 15-NN label vote & 15-NN label vote \\
+$\varepsilon$ & 0.05 & 0.1 & 0.1 \\
+$\Ct$ & exact, every iteration & exact, cached & exact on $[\mathbf{x},s\mathbf{N}]$, cached \\
+$\Cs$ & exact on $f_\theta(\mathbf{x})$, every iteration & landmark on $f_\theta(\mathbf{x})$, every iteration & exact on $[\mathbf{x},s\mathbf{N}]$, cached \\
+Structure builds & $2BT$ & $B(T+1)$ & $2B$ \\
+M-step & two layers (hidden 512), $\lambda_{\mathrm{id}}=0$\textsuperscript{a} & linear, $\lambda_{\mathrm{id}}=0.3$ & linear, $\lambda_{\mathrm{id}}=0.3$ \\
+EM iterations & 25 & 10 & 10 \\
+Per-class floor & 200\textsuperscript{b} & 200 & 200 \\
+Post-hoc CORAL & with and without & no / yes & yes \\
 \bottomrule
 \end{tabular}
 

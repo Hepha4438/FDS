@@ -1,1 +1,45 @@
-% TODO: chưa viết
+\section{Limitations}\label{sec:limitations}
+
+\paragraph{Gene-level tasks.}
+Alignment does not help tasks that operate on genes, and we do not claim that it does. For imputation, the original
+protocol predicted held-out genes of source cells from their reference neighbours. In that protocol the source
+embedding is computed from all genes, including the one being predicted, so the leaked signal sits inside the
+embedding that the map moves, and its effect differs between methods. We therefore reversed the protocol: query
+reference cells and predict from mapped source neighbours. The leak then sits in the frozen reference embedding,
+identical for all methods. Under the reversed protocol, standard baselines (no alignment, MNN, Harmony, Scanorama)
+exceed every USHER-family variant, including \frost, in 11 of 12 pairs. On Stereo-seq the gap is large: 0.1850
+for no alignment and 0.2089 for Scanorama against at most 0.1409 for the USHER family on COAD; 0.1248 for MNN
+against 0.0882 on OV; and 0.2892 for no alignment against 0.1107 on HCC. Per-pair values for the nine
+non-Stereo-seq pairs under this protocol were not archived. A gene-masking protocol run earlier on three COAD pairs
+gave the same ordering.
+
+\paragraph{Cell-type deconvolution.}
+We did not position \frost as a deconvolution method, and the boundary is architectural rather than empirical:
+reference-based deconvolution consumes counts against a gene-by-cell-type signature matrix and rests on the
+additivity of mRNA ($\mathbf{y}\approx\mathbf{S}\mathbf{w}$), whereas \frost emits embeddings with no gene axis,
+no preserved expression scale and no additivity. We nonetheless asked the narrower question of whether alignment
+helps a \emph{neighbour-based} proportion estimator, using pseudo-spots of $k=4$ and $k=8$ nearest cells. Their
+median enclosing diameters are 49--65\um and 91--124\um, bracketing the 55\um Visium spot. We tested 11 technology
+pairs at both spot sizes (22 settings). Alignment does not help. Simple centring is the only method never worse
+than the prior-composition floor (mean JSD 0.0855 against 0.1242 for \frost, which wins 0 of 22 settings;
+$p=0.001$). Post-hoc CORAL degrades 16 of 22 settings on both JSD and Pearson correlation. We therefore report only
+the narrow claim, and note that count-based models such as RCTD and cell2location were not evaluated. The CORAL
+result matters in its own right, because it quantifies a trade-off of our best-performing configuration: CORAL buys
+$+0.191$ in batch mixing ($p=0.0015$) for $+0.0086$ in label transfer, at a measurable cost in local density
+fidelity.
+
+\paragraph{The microenvironment term.}
+Its contribution cannot be separated from that of freezing exact structure matrices
+(Section~\ref{sec:res_niche}). Its only measurable effect is confined to one pair. The microenvironment-only variant
+was run with a single seed. The 15-neighbour radius ranges from 16.7\um (Visium HD FF) to 33.9\um (CosMx), so the
+two structure matrices compare neighbourhoods at different physical scales. HCC Stereo-seq retains only 236--237
+genes for imputation, too few for a conclusion.
+
+\paragraph{Scope of the evaluation.}
+SPATCH provides three patients per tissue; we used one, so the 12 pairs come from three patients and share a
+reference within each tissue. Paired tests describe consistency across these pairs, not generalisation across
+patients. The most informative extension would be the Stereo-seq pairs of the remaining patients. Only one spatially
+aware baseline was run, at its published defaults, with one seed and on a subsample; STAligner could not be
+installed. Harmony and Scanorama were fitted transductively on held-out tiles, which favours them. The USHER
+reference implementation was run with one seed on four pairs. Timings come from diagnostic runs at 25 iterations;
+peak memory was not measured.

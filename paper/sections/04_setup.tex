@@ -18,8 +18,11 @@ between methods within a pair, never in absolute terms across tissues.
 
 \subsection{Representations}\label{sec:reps}
 Each pair is embedded either by PCA of log-normalised expression or by scGPT-spatial~\citep{wang2025scgptspatial}.
-The representation is fixed per pair before any alignment, by within-assay label recoverability, and every
-method receives the same input. Five pairs use PCA and seven use scGPT-spatial
+The representation is fixed per pair before any alignment, by within-assay label recoverability on held-out
+tiles: label accuracy over the 16 groups for pairs with at least three shared groups, and over the coarse groups
+otherwise. Because this selection uses held-out tiles, it is not fully independent of evaluation. It is, however,
+made once per pair and every reference-preserving method receives the same input, so it cannot favour one of them
+over another. Five pairs use PCA and seven use scGPT-spatial
 (Supplementary Table~\todo{S1}). PCA is strongest for imaging-based assays and scGPT-spatial for sequencing-based
 ones. When loading the public scGPT-spatial checkpoint on GPUs without FlashAttention, the attention weights are
 silently not loaded because the parameter names are not remapped. We remapped them and verified every tensor.
