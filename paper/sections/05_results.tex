@@ -31,7 +31,8 @@ No alignment (raw) & 0.6162 & 0.0208 & 0.000 \\
 
 \subsection{Benchmark}\label{sec:res_bench}
 Because batch\_v2 and bio\_v2 average other metrics, we summarise with the compact set of Table~\ref{tab:main}
-(all 15 metrics in Supplementary Figure~\ref{fig:grid}). On all seven cell-level metrics \frost ranks among the top three of 11 methods: first on
+(all 15 metrics in Supplementary Figure~\ref{fig:grid}). On all seven cell-level metrics \frost ranks among the top three of 11 methods, counting its two internal variants (Supplementary
+Table~\ref{tab:main_variants}): first on
 xfer\_all; second on batch\_v2, total\_v2, rare\_purity and knn\_xen; third on bio\_v2 and xfer\_main. The only baseline
 that leads a column is ridge on bio\_v2. The imputation column
 favours \frost only under a protocol that leaks the predicted gene, and the ranking reverses once the leak is removed
@@ -51,10 +52,12 @@ seven metrics ($n=12$, $p$ from 0.0005 to 0.034); against centring and Harmony i
 
 \begin{table}[t]
 \centering
-\caption{Compact benchmark, means over 12 pairs (three seeds for stochastic methods). batch, bio, total: batch\_v2,
-bio\_v2, total\_v2; x-main, x-all: xfer\_main, xfer\_all; rare: rare\_purity; knn: knn\_xen. $^{*}$Modifies the
-reference. $^{\dagger}$Imputation under the original protocol, which leaks the predicted gene; the ranking reverses
-under leakage control (Section~\ref{sec:limitations}). Symphony is not scored on imputation. Best per column in bold.}
+\caption{\frost against external baselines, means over 12 pairs (three seeds for stochastic methods); bold: best among
+the methods shown. The internal variants, which lead every column except xfer\_all and bio\_v2, are in
+Section~\ref{sec:res_ablation} and Supplementary Table~\ref{tab:main_variants}. batch, bio, total: batch\_v2, bio\_v2,
+total\_v2; x-main, x-all: xfer\_main, xfer\_all; rare: rare\_purity; knn: knn\_xen. $^{*}$Modifies the reference.
+$^{\dagger}$Original imputation protocol, which leaks the predicted gene; the ranking reverses under leakage control
+(Section~\ref{sec:limitations}). Symphony is not scored on imputation.}
 \label{tab:main}
 \begin{tabular}{@{}lcccccccc@{}}
 \toprule
@@ -68,9 +71,7 @@ ridge           & 0.5447 & \textbf{0.6874} & 0.6303 & 0.6867 & 0.4266 & 0.2623 &
 Harmony$^{*}$   & 0.4499 & 0.6204 & 0.5522 & 0.6512 & 0.3716 & 0.2012 & 0.3210 & 0.1068 \\
 Scanorama$^{*}$ & 0.3843 & 0.6110 & 0.5203 & 0.6050 & 0.3422 & 0.1702 & 0.3089 & 0.0956 \\
 Symphony$^{*}$  & 0.4861 & 0.6099 & 0.5604 & 0.4949 & 0.2990 & 0.1841 & 0.2470 & -- \\
-USHER-ST        & 0.5479 & 0.6763 & 0.6249 & \textbf{0.6913} & 0.4074 & 0.2267 & \textbf{0.3372} & \textbf{0.1150} \\
-USHER-CC        & \textbf{0.6600} & 0.6813 & \textbf{0.6728} & 0.6896 & 0.4288 & \textbf{0.2652} & 0.3322 & 0.1096 \\
-\frost          & 0.6593 & 0.6811 & 0.6724 & 0.6891 & \textbf{0.4291} & 0.2642 & 0.3330 & 0.1145 \\
+\frost          & \textbf{0.6593} & 0.6811 & \textbf{0.6724} & \textbf{0.6891} & \textbf{0.4291} & \textbf{0.2642} & \textbf{0.3330} & \textbf{0.1145} \\
 \bottomrule
 \end{tabular}
 \end{table}

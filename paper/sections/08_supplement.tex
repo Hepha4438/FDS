@@ -1,7 +1,4 @@
 \section*{Supplementary material}
-\setcounter{table}{0}\setcounter{figure}{0}
-\renewcommand{\thetable}{S\arabic{table}}
-\renewcommand{\thefigure}{S\arabic{figure}}
 
 \subsection*{S1. Configurations}
 \begin{table}[h]
@@ -195,6 +192,22 @@ Pair & M-step & batch & bio & total & x-main & rare & knn \\
 \multirow{3}{*}{Visium HD FF} & MLP, floor 0      & 0.6683 & 0.7610 & 0.7239 & 0.6709 & 0.1586 & 0.4544 \\
  & linear, floor 0   & 0.6300 & 0.7897 & 0.7259 & 0.6817 & 0.1543 & 0.4816 \\
  & linear, floor 200 & 0.6548 & 0.7877 & 0.7346 & 0.6868 & 0.1844 & 0.4847 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Compact benchmark for \frost and its internal variants, means over 12 pairs (three seeds); columns as in
+Table~\ref{tab:main}. Bold: best among the three. Best external baseline per column in Table~\ref{tab:main}.}
+\label{tab:main_variants}
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+Method & batch & bio & total & x-main & x-all & rare & knn & imp.$^{\dagger}$ \\
+\midrule
+USHER-ST & 0.5479 & 0.6763 & 0.6249 & \textbf{0.6913} & 0.4074 & 0.2267 & \textbf{0.3372} & \textbf{0.1150} \\
+USHER-CC & \textbf{0.6600} & \textbf{0.6813} & \textbf{0.6728} & 0.6896 & 0.4288 & \textbf{0.2652} & 0.3322 & 0.1096 \\
+\frost   & 0.6593 & 0.6811 & 0.6724 & 0.6891 & \textbf{0.4291} & 0.2642 & 0.3330 & 0.1145 \\
 \bottomrule
 \end{tabular}
 \end{table}
