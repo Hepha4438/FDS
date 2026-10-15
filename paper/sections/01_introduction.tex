@@ -18,7 +18,7 @@ moment matching recovers cheaply and over-correction can inflate, so we read res
 and conservation of biological structure.
 
 Our contributions are:
-(i) \frost, a post-hoc, reference-preserving FGW method that builds the structure matrices once from frozen inputs
+(i) \frost, a post-hoc, reference-preserving FGW method that builds the structure matrices once per batch and caches them
 ($2B$ instead of $2BT$ computations for $B$ batches and $T$ iterations) and ends with closed-form moment matching;
 (ii) a benchmark of 12 source--reference pairs from three tumour types and four source platforms, against ten
 baselines, including a measure of reference drift;

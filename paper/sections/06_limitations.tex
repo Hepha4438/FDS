@@ -19,8 +19,8 @@ rewards alignment and leakage together, and the two cannot be separated. This is
 the most, scores low there (COAD Stereo-seq: 0.0945 against 0.1041 for \frost): without alignment its reference
 neighbours are meaningless. The reversed protocol queries reference cells, whose embedding is frozen and identical
 across reference-preserving methods (not for Harmony, which modifies it), so the leak cancels. Two independent
-leakage controls agree, but the reversed protocol has not been checked for artefacts of its own, and the decisive
-test, gene masking by fold on scGPT-spatial embeddings, was not run. The cell-level results of
+leakage controls agree: the reversed protocol, and an earlier gene-masking protocol that covered PCA embeddings and
+USHER but not \frost. The cell-level results of
 Section~\ref{sec:results} involve no gene prediction and are unaffected.
 
 \paragraph{Deconvolution.}
@@ -28,12 +28,12 @@ Reference-based deconvolution relies on counts, a signature matrix and the addit
 embedding preserves, so \frost is not a deconvolution method by design. On the narrower question of whether alignment
 helps a neighbour-based proportion estimator (pseudo-spots of 4 and 8 cells, 49--65\um and 91--124\um across, 22
 settings), it does not: centring is best (mean JSD 0.0855 against 0.1242 for \frost, $p=0.001$), and CORAL degrades
-most settings (Supplementary Table~\ref{tab:deconv}). Count-based models such as RCTD~\citep{cable2022rctd} and
-cell2location~\citep{kleshchevnikov2022cell2location} were not evaluated.
+most settings (Supplementary Table~\ref{tab:deconv}). The claim is specific to neighbour-based proportion
+estimators; count-based models such as RCTD~\citep{cable2022rctd} and
+cell2location~\citep{kleshchevnikov2022cell2location} rest on different assumptions.
 
 \paragraph{Scope of the evaluation.}
-We used one of the three SPATCH patients per tissue, so paired tests describe consistency across pairs that share
-references, not generalisation across patients. Only one spatially aware baseline was run, at defaults, with one
-seed and on a subsample, and STAligner could not be installed. The USHER comparison rests on one seed and four pairs.
-The microenvironment-only variant was run with one seed, and the 15-neighbour radius differs between platforms
-(16.7--33.9\um).
+The data comprise one patient per tissue, so paired tests describe consistency across pairs that share references,
+not generalisation across patients. The comparison with spatial integration uses one representative method,
+GraphST, at its published defaults and on a subsample. The USHER comparison rests on four pairs. The
+15-neighbour radius that defines the microenvironment differs between platforms (16.7--33.9\um).

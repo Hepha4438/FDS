@@ -12,7 +12,7 @@ GraphST also moves the reference: the 15-NN neighbourhoods of reference cells ba
 0.966--0.989, mean 0.979), so anything built on the reference must be rebuilt. For \frost and every other
 reference-preserving method drift is exactly zero, by architecture rather than tuning. Finally, GraphST had to be
 subsampled because its dense spatial graph exhausted memory at 90{,}000 cells, whereas \frost runs on all
-40{,}000--45{,}000 cells per side.
+40{,}000--45{,}000 cells per side (GraphST wall-clock on the subsample: \todo{from log 42}).
 
 \begin{table}[t]
 \centering
@@ -40,7 +40,8 @@ Figure~\ref{fig:grid}). On all seven cell-level metrics \frost ranks among the t
 xfer\_all; second on batch\_v2, total\_v2, rare\_purity and knn\_xen; third on bio\_v2 and xfer\_main. The leader is
 usually one of its own ablations; the one baseline that leads a column is ridge on bio\_v2. The imputation column
 favours \frost only under a protocol that leaks the predicted gene, and the ranking reverses once the leak is removed
-(Section~\ref{sec:limitations}).
+(Section~\ref{sec:limitations}). Figure~\ref{fig:umap} shows the hardest pair, COAD Stereo-seq.
+\todo{one sentence describing the UMAP once rendered}
 
 Ridge is the informative comparison (Figure~\ref{fig:gaps}): it uses the same auxiliary labels and moment matching as
 \frost and differs mainly in how cells are paired. \frost exceeds ridge on batch\_v2 ($n=12$, $p=0.0005$), total\_v2
@@ -82,6 +83,14 @@ USHER-CC        & \textbf{0.6600} & 0.6813 & \textbf{0.6728} & 0.6896 & 0.4288 &
 
 \begin{figure}[t]
 \centering
+\IfFileExists{figs/fig_umap_coad_stereoseq.png}{\includegraphics[width=\linewidth]{figs/fig_umap_coad_stereoseq.png}}{\fbox{\parbox[c][0.5\linewidth][c]{0.95\linewidth}{\centering\todo{UMAP figure: run notebook 44, then fig\_code/fig\_umap.py}}}}
+\caption{UMAP of 3{,}000 reference and 3{,}000 source cells for COAD Stereo-seq, the hardest pair. Top row: colour by
+platform; bottom row: colour by cell type. The same cells appear in every panel. $^{*}$Modifies the reference.}
+\label{fig:umap}
+\end{figure}
+
+\begin{figure}[t]
+\centering
 \includegraphics[width=\linewidth]{figs/fig_gaps.png}
 \caption{Paired comparison of each baseline with \frost (12 pairs). The blue line marks \frost; the black tick marks
 the baseline at minus the median paired difference (\frost $-$ baseline), the quantity tested by the exact Wilcoxon
@@ -99,13 +108,15 @@ its cost appears at the gene level (Section~\ref{sec:limitations}). The per-clas
 advance on a validation split (Supplementary Table~\ref{tab:floor}).
 
 \paragraph{Structure matrices and microenvironment.}\label{sec:res_niche}
-\frost and USHER-CC are indistinguishable from each other on every metric (all $p\ge0.067$, largest median difference
-0.0008). Because the difference bundles several changes to $\Cs$, the contribution of the microenvironment cannot be
-isolated (Supplementary Section~\ref{sec:supp_niche}). What the frozen construction does change is cost
-(Table~\ref{tab:cost}). On the four COAD pairs at 25 iterations, freezing $\Cs$ cuts its builds from 100 to 4 and its
-total thread time 2.7-fold, and EM wall-clock falls from 457.7 to 386.1\,s per pair. The microenvironment block adds
-nothing measurable (387.3\,s, same 8 builds). The benchmark maps use 10 iterations; build counts for the frozen
-configurations do not depend on the number of iterations.
+\frost and USHER-CC do not differ significantly on any metric (all $p\ge0.067$, largest median difference 0.0008).
+Because the difference bundles several changes to $\Cs$, the contribution of the microenvironment itself is not
+identified (Supplementary Section~\ref{sec:supp_niche}). What the cached construction changes is cost, which is the
+reason we propose it (Table~\ref{tab:cost}). Comparing the two ways of building structure at the same 25 EM
+iterations on the four COAD pairs, caching $\Cs$ reduces structure builds from 104 to 8 (13-fold) and EM wall-clock
+from 457.7 to 386.1\,s per pair (about 15\%). Adding the microenvironment block to the cached construction changes
+neither (8 builds, 387.3\,s). The saving grows with the number of iterations, $B(T+1)$ against $2B$: 13-fold at
+$T=25$ and 5.5-fold at the $T=10$ used in the benchmark. The cached configuration without the microenvironment was
+timed but not scored, so the claim for the block is cost-neutrality, not accuracy.
 
 \begin{table}[t]
 \centering
@@ -114,7 +125,7 @@ over four workers and must not be added to wall-clock.}
 \label{tab:cost}
 \begin{tabular}{@{}lccc@{}}
 \toprule
- & landmark $\Cs$, recomputed & exact $\Cs$, frozen & \frost \\
+ & landmark $\Cs$, every iteration & exact $\Cs$, cached & \frost \\
 \midrule
 EM wall-clock, mean (s) & 457.7 & 386.1 & 387.3 \\
 EM wall-clock, range (s) & 431.7--499.7 & 355.4--422.9 & 361.7--435.0 \\

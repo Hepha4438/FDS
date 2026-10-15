@@ -34,7 +34,15 @@ implementation, which we left unmodified. \textsuperscript{b}Not part of USHER; 
 \centering
 \caption{Representation used for each pair.}
 \label{tab:reps}
-\todo{PCA / scGPT-spatial per pair (methods.md \S4)}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Tissue & CosMx 6K & Visium HD FF & Visium HD FFPE & Stereo-seq \\
+\midrule
+COAD & PCA & scGPT-spatial & PCA & scGPT-spatial \\
+OV   & PCA & scGPT-spatial & scGPT-spatial & scGPT-spatial \\
+HCC  & PCA & PCA & scGPT-spatial & scGPT-spatial \\
+\bottomrule
+\end{tabular}
 \end{table}
 
 \paragraph{Representations.} When the public scGPT-spatial checkpoint is loaded on GPUs without FlashAttention, the
@@ -65,7 +73,8 @@ The difference between \frost and USHER-CC measures the joint effect of three si
 the microenvironment, replacing landmark distances with exact geodesics, and replacing per-iteration recomputation on
 $f_\theta(\mathbf{X}^{s})$ with a single computation on the unmapped source. On the PCA pairs a fourth difference is
 added: the 64-dimensional low-rank projection applies to the augmented features but not to the 50-dimensional
-embeddings. We cannot separate the contribution of the microenvironment with the data at hand. Under the reversed
+embeddings. We cannot separate the contribution of the microenvironment with the data at hand. A microenvironment-only variant (structure on $\mathbf{N}$ alone) was run with a single seed
+and is reported only in Table~\ref{tab:imp_rev}. Under the reversed
 imputation protocol it recovers part of the gene-level loss on COAD Stereo-seq (Table~\ref{tab:imp_rev}), still
 below no alignment.
 

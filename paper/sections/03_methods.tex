@@ -43,7 +43,11 @@ section and reduce them to 50 principal components, $\mathbf{N}_i$. $\Cs$ and $\
 symmetrised $k$-NN graphs ($k=30$, cosine) of $[\mathbf{x}_i,\,s\mathbf{N}_i]$, with
 $s=\overline{\|\mathbf{x}^{t}\|}/\overline{\|\mathbf{N}^{t}\|}$, projected to 64 dimensions when larger.
 Both are computed from the \emph{unmapped} source and from the reference, once per batch, and cached. With $B$
-batches and $T$ iterations, \frost builds $2B$ structure matrices; USHER builds $2BT$.
+batches and $T$ iterations, \frost builds $2B$ structure matrices; USHER builds $2BT$, and recomputing only $\Cs$
+(the USHER-ST variant below) builds $B(T+1)$. This caching is the reason for the configuration: it removes the
+dominant cost of the EM loop, and once $\Cs$ is computed a single time, augmenting it with the microenvironment block
+costs nothing further. We include the block for that reason, not because it is expected to raise cell-level scores
+(Section~\ref{sec:res_niche}).
 
 \paragraph{(iii) Reference floor.} FGW is solved on 20{,}000 reference cells whose class composition follows the
 source composition estimated in (i), with at least $\min(200,n_c)$ cells per class. Because balanced FGW must
