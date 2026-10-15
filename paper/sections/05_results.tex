@@ -28,9 +28,6 @@ Method & Transfer $\uparrow$ & Mixing $\uparrow$ & Reference drift $\downarrow$ 
 \midrule
 GraphST            & 0.3731 & 0.3982 & 0.979 \\
 No alignment (raw) & 0.6162 & 0.0208 & 0.000 \\
-USHER-ST           & 0.7133 & 0.3206 & 0.000 \\
-\frost w/o CORAL   & 0.7142 & 0.3218 & 0.000 \\
-USHER-CC           & 0.7219 & 0.5117 & 0.000 \\
 \frost             & \textbf{0.7223} & \textbf{0.5158} & 0.000 \\
 \bottomrule
 \end{tabular}
@@ -53,8 +50,8 @@ Ridge is the informative comparison (Figure~\ref{fig:gaps}): it uses the same au
 $-0.006$, $n=12$, $p=0.06$; ridge slightly higher), xfer\_main ($n=12$, $p=0.29$), xfer\_all ($n=11$, $p=0.64$) or
 rare\_purity ($n=12$, $p=0.68$). total\_v2 is not independent evidence: batch\_v2 spans 0.34--0.66 across methods
 and bio\_v2 only 0.60--0.69, so total\_v2 follows mixing. The knn\_xen advantage is specific to ridge; against
-centring and Harmony it is not significant. Read as a Pareto trade-off, \frost gains mixing over ridge with no
-significant loss in conservation or transfer. \frost exceeds Symphony, the published reference-mapping method, on all
+centring and Harmony it is not significant. Read as a Pareto trade-off (Figure~\ref{fig:pareto}), \frost gains mixing over ridge
+with no significant loss in conservation or transfer. \frost exceeds Symphony, the published reference-mapping method, on all
 seven metrics ($n=12$, $p$ from 0.0005 to 0.034), although part of that gap may reflect Symphony's own count-based
 representation. Against centring and Harmony, \frost is significantly better on most metrics but not on xfer\_main
 versus centring or knn\_xen versus either (Supplementary Table~\ref{tab:center_harmony}).
@@ -106,6 +103,16 @@ signed-rank test. Bold: $p<0.05$. $^{*}$Modifies the reference.}
 \label{fig:gaps}
 \end{figure}
 
+\begin{figure}[t]
+\centering
+\begin{minipage}[c]{0.5\linewidth}\includegraphics[width=\linewidth]{figs/fig_pareto_main.png}\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\caption{Batch mixing against label transfer, means over 12 pairs. The dashed line
+joins the Pareto-optimal methods (no other method is higher on both axes). \frost and USHER-CC coincide within
+noise (no significant difference on any metric); USHER-ST, without moment matching, trades mixing for transfer.
+Diamonds and $^{*}$: methods that modify the reference. Other task metrics: Supplementary
+Figure~\ref{fig:pareto_supp}.}\label{fig:pareto}\end{minipage}
+\end{figure}
+
 \subsection{Ablations and cost}\label{sec:res_ablation}
 \paragraph{Post-hoc moment matching.}\label{sec:res_coral}
 Comparing USHER-CC with USHER-ST isolates CORAL. It raises batch\_v2 ($+0.127$, $p=0.0010$), total\_v2 ($+0.053$,
@@ -117,17 +124,23 @@ advance on a validation split (Supplementary Table~\ref{tab:floor}).
 
 \paragraph{Structure matrices and microenvironment.}\label{sec:res_niche}
 \frost and USHER-CC do not differ significantly on any metric (all $p\ge0.067$, largest median difference 0.0008).
-Because the difference bundles several changes to $\Cs$, the contribution of the microenvironment itself is not
-identified (Supplementary Section~\ref{sec:supp_niche}). What the cached construction changes is cost, which is the
-reason we propose it (Supplementary Table~\ref{tab:cost}). Comparing the two ways of building structure at the same 25 EM
-iterations on the four COAD pairs, caching $\Cs$ reduces structure builds from 104 to 8 (13-fold) and EM wall-clock
-from 457.7 to 386.1\,s per pair (about 15\%). Adding the microenvironment block to the cached construction changes
-neither (8 builds, 387.3\,s). The reduction in builds grows with the number of iterations, $B(T+1)$ against $2B$: 5.5-fold at the $T=10$ used in
-the benchmark and 13-fold at $T=25$. The wall-clock figures are for $T=25$; the saving at $T=10$ is smaller and was
-not measured. The cached configuration without the microenvironment was
-timed but not scored, so the claim for the block is cost-neutrality, not accuracy.
+Three diagnostic arms on the four COAD pairs (seed 0, 25 iterations) separate the changes this difference bundles:
+(a) landmark $\Cs$ recomputed every iteration, as in USHER-ST; (b) exact $\Cs$, cached; (c) \frost.
+\todo{quality columns of the three-arm table (report 12-10, \S6.2.2)}
+Caching changes convergence as well as cost (Supplementary Figure~\ref{fig:converge}). Over the last three iterations
+the fraction of assignments that change falls from 0.046 in (a) to 0.0082 in (b) (median over pairs and iterations),
+a 5.65-fold deeper convergence; adding the microenvironment leaves it essentially unchanged (0.0076 in (c)), except on
+Stereo-seq, where (c) converges 2.4-fold more slowly than (b) (0.053 against 0.022). Arm (a) differs from the USHER
+reference implementation in the auxiliary cost, $\varepsilon$, the $\Cs$ approximation and the M-step, yet ends close
+to where USHER stops at iteration 25 (0.046 against a mean of 0.055), which suggests that recomputing $\Cs$ every
+iteration, the one feature they share, matters more for convergence than those four components. At the 10 iterations
+used in the benchmark, all three arms still change 6--8\% of assignments per iteration.
 
-
+Caching is also the source of the saving in cost, and the landmark approximation is not: the cached exact construction
+takes 15.4\,s per EM iteration against 18.3\,s for recomputed landmarks, about 16\% less at $T=25$, and adding the
+microenvironment block costs nothing measurable (15.5\,s, same 8 builds; Supplementary Table~\ref{tab:cost}).
+Structure builds fall from $B(T+1)$ to $2B$, a number that no longer depends on $T$: 5.5-fold fewer at the $T=10$ of
+the benchmark and 13-fold fewer at $T=25$. Wall-clock time at $T=10$ was not measured.
 
 \subsection{Comparison with USHER}\label{sec:res_usher}
 On the four COAD pairs with a single USHER seed, no paired test can reach significance (exact floor $p=0.125$), so we

@@ -98,7 +98,7 @@ The difference between \frost and USHER-CC measures the joint effect of three si
 the microenvironment, replacing landmark distances with exact geodesics, and replacing per-iteration recomputation on
 $f_\theta(\mathbf{X}^{s})$ with a single computation on the unmapped source. On the PCA pairs a fourth difference is
 added: the 64-dimensional low-rank projection applies to the augmented features but not to the 50-dimensional
-embeddings. We cannot separate the contribution of the microenvironment with the data at hand. A microenvironment-only variant (structure on $\mathbf{N}$ alone) was run with a single seed
+embeddings. \todo{replace with the three-arm comparison: (c) vs (b) is clean on the scGPT pairs; on the PCA pairs it also changes the projection} A microenvironment-only variant (structure on $\mathbf{N}$ alone) was run with a single seed
 and is reported only in Table~\ref{tab:imp_rev}. Under the reversed
 imputation protocol it recovers part of the gene-level loss on COAD Stereo-seq (Table~\ref{tab:imp_rev}), still
 below no alignment.
@@ -118,6 +118,7 @@ EM wall-clock, range (s) & 431.7--499.7 & 355.4--422.9 & 361.7--435.0 \\
 $\Cs$ builds & 100 & 4 & 4 \\
 Total structure builds & 104 & 8 & 8 \\
 $\Cs$ thread time (s) & 333.9 & 122.2 & 122.9 \\
+EM time per iteration (s) & 18.3 & 15.4 & 15.5 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -255,3 +256,39 @@ metrics to their left. $^{*}$Modifies the reference.}
 \caption{As Figure~\ref{fig:grid}, but each dot is the mean over four source technologies for one tissue.}
 \label{fig:grid_tissue}
 \end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figs/fig_converge.png}
+\caption{Convergence of the E-step: fraction of assignments that change between consecutive EM iterations, mean over
+the four COAD pairs (seed 0, 25 iterations). The first iteration (warm start with $\gamma=1$) is omitted. The USHER
+reference implementation was measured at five checkpoints.}
+\label{fig:converge}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figs/fig_pareto_supp.png}
+\caption{As Figure~\ref{fig:pareto}, for label transfer, transfer over all groups and rare-type purity.}
+\label{fig:pareto_supp}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\caption{Within-assay label recoverability (accuracy over the 16 groups, held-out tiles, COAD) for the candidate
+representations. Nicheformer uses assay-derived mean vectors; it is not better than PCA or scGPT-spatial on any assay
+and was not used further.}
+\label{tab:nicheformer}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Assay & PCA & scGPT-spatial & Nicheformer \\
+\midrule
+Xenium 5K      & \textbf{0.882} & 0.844 & 0.842 \\
+CosMx 6K       & \textbf{0.819} & 0.746 & 0.649 \\
+Visium HD FFPE & 0.769 & \textbf{0.781} & 0.722 \\
+Stereo-seq     & 0.819 & \textbf{0.922} & 0.907 \\
+Visium HD FF   & 0.611 & \textbf{0.691} & 0.635 \\
+\bottomrule
+\end{tabular}
+\end{table}
+

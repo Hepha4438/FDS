@@ -17,7 +17,10 @@ It predicts each gene of a mapped source cell from its 15 reference neighbours. 
 all genes, including the predicted one, so the map moves the very embedding that carries the leak; the protocol
 rewards alignment and leakage together, and the two cannot be separated. This is why no alignment, despite leaking
 the most, scores low there (COAD Stereo-seq: 0.0945 against 0.1041 for \frost): without alignment its reference
-neighbours are meaningless. The reversed protocol queries reference cells, whose embedding is frozen and identical
+neighbours are meaningless. Under the original protocol \frost exceeds the label-matched ridge ($p=0.0010$), CORAL ($p=0.0068$) and
+Scanorama ($p=0.034$), but does not differ significantly from centring ($p=0.30$), MNN-ref ($p=0.23$), Harmony
+($p=0.23$) or no alignment ($p=0.052$; $n=12$ throughout). That protocol therefore separates \frost from label-matched
+baselines; it does not show that \frost imputes better than published methods. The reversed protocol queries reference cells, whose embedding is frozen and identical
 across reference-preserving methods (not for Harmony, which modifies it), so the leak cancels. Two independent
 leakage controls agree: the reversed protocol, and an earlier gene-masking protocol that covered PCA embeddings and
 USHER but not \frost. The cell-level results of
@@ -35,7 +38,5 @@ cell2location~\citep{kleshchevnikov2022cell2location} rest on different assumpti
 \paragraph{Scope of the evaluation.}
 The data comprise one patient per tissue, so paired tests describe consistency across pairs that share references,
 not generalisation across patients. The comparison with spatial integration uses one representative method,
-GraphST, at its published defaults and on a subsample. The USHER comparison rests on four pairs. Isolating the accuracy contribution of the microenvironment term
-would require scoring the cached configuration without it, which lies outside this study; our claim for the term
-is cost-neutrality only. The
+GraphST, at its published defaults and on a subsample. The USHER comparison rests on four pairs. The
 15-neighbour radius that defines the microenvironment differs between platforms (16.7--33.9\um).
