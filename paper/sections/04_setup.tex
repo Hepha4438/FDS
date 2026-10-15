@@ -1,9 +1,11 @@
 \section{Experimental setup}\label{sec:setup}
 
 \paragraph{Data.}\label{sec:data}
-We use SPATCH~\todo{citation}: colon adenocarcinoma (COAD), ovarian cancer (OV) and hepatocellular carcinoma (HCC),
+We use SPATCH~\citep{ren2025spatch}: colon adenocarcinoma (COAD), ovarian cancer (OV) and hepatocellular carcinoma (HCC),
 one patient and one section per platform. Xenium 5K is the reference; CosMx 6K, Visium HD FFPE, Visium HD FF and
-Stereo-seq are the sources, giving 12 pairs. Pairs within a tissue share the patient and the reference, so they are
+Stereo-seq are the sources, giving 12 pairs. The Visium HD FF data come from the SPATCH portal and are
+described in the preprint~\citep{ren2024spatchpreprint} but not in the published benchmark; the preprint notes
+possible RNA degradation in those samples. Pairs within a tissue share the patient and the reference, so they are
 not independent. Each assay keeps about 40{,}000--45{,}000 high-quality cells (label-stratified subsample). A 500\um
 checkerboard splits every section into training tiles, used for fitting, and held-out tiles, used for evaluation.
 Labels comprise 16 shared groups, with six coarse groups for pairs that recover fewer than three. HCC Stereo-seq
@@ -20,7 +22,8 @@ Reference-preserving: no alignment (raw), mean centring (center), CORAL~\citep{s
 (MNN-ref)~\citep{haghverdi2018mnn}, and a label-informed ridge regression that pairs source and reference cells by
 the auxiliary labels of \frost and applies the same moment matching (ridge). Reference-modifying:
 Harmony~\citep{korsunsky2019harmony} and Scanorama~\citep{hie2019scanorama}, both fitted transductively on held-out
-tiles, which favours them, and Symphony~\citep{kang2021symphony}, which builds its own count-based space.
+tiles, which favours them (with its default matching threshold Scanorama returned the input unchanged on all
+three Stereo-seq pairs and on HCC Visium HD FFPE; we report the default), and Symphony~\citep{kang2021symphony}, which builds its own count-based space.
 Spatially aware: GraphST~\citep{long2023graphst} at published defaults. Its dense spatial graph exhausted memory at
 90{,}000 cells, so it is compared on a common subsample of 10{,}000 cells per side. We compare against GraphST as a
 representative spatial-integration method.

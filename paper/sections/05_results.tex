@@ -12,7 +12,10 @@ GraphST also moves the reference: the 15-NN neighbourhoods of reference cells ba
 0.966--0.989, mean 0.979), so anything built on the reference must be rebuilt. For \frost and every other
 reference-preserving method drift is exactly zero, by architecture rather than tuning. Finally, GraphST had to be
 subsampled because its dense spatial graph exhausted memory at 90{,}000 cells, whereas \frost runs on all
-40{,}000--45{,}000 cells per side (GraphST wall-clock on the subsample: \todo{from log 42}).
+40{,}000--45{,}000 cells per side. On the four COAD pairs, GraphST training on the subsample took 940.9--1{,}153.4\,s
+(mean 1{,}093.8\,s), whereas the \frost EM loop on all cells took 361.7--435.0\,s (mean 387.3\,s) at $T=25$; the
+benchmark maps use $T=10$, which was not timed. Neither figure includes input preparation (embedding extraction for
+\frost, preprocessing for GraphST).
 
 \begin{table}[t]
 \centering
@@ -40,8 +43,9 @@ Figure~\ref{fig:grid}). On all seven cell-level metrics \frost ranks among the t
 xfer\_all; second on batch\_v2, total\_v2, rare\_purity and knn\_xen; third on bio\_v2 and xfer\_main. The leader is
 usually one of its own ablations; the one baseline that leads a column is ridge on bio\_v2. The imputation column
 favours \frost only under a protocol that leaks the predicted gene, and the ranking reverses once the leak is removed
-(Section~\ref{sec:limitations}). Figure~\ref{fig:umap} shows the hardest pair, COAD Stereo-seq.
-\todo{one sentence describing the UMAP once rendered}
+(Section~\ref{sec:limitations}). Figure~\ref{fig:umap} shows the hardest pair, COAD Stereo-seq. Without alignment, and after Harmony, the two
+platforms occupy separate regions; USHER-ST brings them into contact but leaves them partly segregated; after
+\frost the platforms interleave throughout while the major cell types remain in distinct groups.
 
 Ridge is the informative comparison (Figure~\ref{fig:gaps}): it uses the same auxiliary labels and moment matching as
 \frost and differs mainly in how cells are paired. \frost exceeds ridge on batch\_v2 ($n=12$, $p=0.0005$), total\_v2
@@ -83,9 +87,11 @@ USHER-CC        & \textbf{0.6600} & 0.6813 & \textbf{0.6728} & 0.6896 & 0.4288 &
 
 \begin{figure}[t]
 \centering
-\IfFileExists{figs/fig_umap_coad_stereoseq.png}{\includegraphics[width=\linewidth]{figs/fig_umap_coad_stereoseq.png}}{\fbox{\parbox[c][0.5\linewidth][c]{0.95\linewidth}{\centering\todo{UMAP figure: run notebook 44, then fig\_code/fig\_umap.py}}}}
+\IfFileExists{figs/fig_umap_stereoseq_scgpt.png}{\includegraphics[width=\linewidth]{figs/fig_umap_stereoseq_scgpt.png}}{\fbox{\parbox[c][0.5\linewidth][c]{0.95\linewidth}{\centering\todo{UMAP figure: run notebook 44, then fig\_code/fig\_umap.py}}}}
 \caption{UMAP of 3{,}000 reference and 3{,}000 source cells for COAD Stereo-seq, the hardest pair. Top row: colour by
-platform; bottom row: colour by cell type. The same cells appear in every panel. $^{*}$Modifies the reference.}
+platform; bottom row: colour by each platform's own cell-type annotation. The same cells appear in every panel.
+With its default threshold Scanorama returned the input unchanged for this pair, so its panel equals the unaligned
+one. $^{*}$Modifies the reference.}
 \label{fig:umap}
 \end{figure}
 
@@ -111,30 +117,15 @@ advance on a validation split (Supplementary Table~\ref{tab:floor}).
 \frost and USHER-CC do not differ significantly on any metric (all $p\ge0.067$, largest median difference 0.0008).
 Because the difference bundles several changes to $\Cs$, the contribution of the microenvironment itself is not
 identified (Supplementary Section~\ref{sec:supp_niche}). What the cached construction changes is cost, which is the
-reason we propose it (Table~\ref{tab:cost}). Comparing the two ways of building structure at the same 25 EM
+reason we propose it (Supplementary Table~\ref{tab:cost}). Comparing the two ways of building structure at the same 25 EM
 iterations on the four COAD pairs, caching $\Cs$ reduces structure builds from 104 to 8 (13-fold) and EM wall-clock
 from 457.7 to 386.1\,s per pair (about 15\%). Adding the microenvironment block to the cached construction changes
-neither (8 builds, 387.3\,s). The saving grows with the number of iterations, $B(T+1)$ against $2B$: 13-fold at
-$T=25$ and 5.5-fold at the $T=10$ used in the benchmark. The cached configuration without the microenvironment was
+neither (8 builds, 387.3\,s). The reduction in builds grows with the number of iterations, $B(T+1)$ against $2B$: 5.5-fold at the $T=10$ used in
+the benchmark and 13-fold at $T=25$. The wall-clock figures are for $T=25$; the saving at $T=10$ is smaller and was
+not measured. The cached configuration without the microenvironment was
 timed but not scored, so the claim for the block is cost-neutrality, not accuracy.
 
-\begin{table}[t]
-\centering
-\caption{EM cost, four COAD pairs, seed 0, 25 iterations. Wall-clock is real time; $\Cs$ time is thread time summed
-over four workers and must not be added to wall-clock.}
-\label{tab:cost}
-\begin{tabular}{@{}lccc@{}}
-\toprule
- & landmark $\Cs$, every iteration & exact $\Cs$, cached & \frost \\
-\midrule
-EM wall-clock, mean (s) & 457.7 & 386.1 & 387.3 \\
-EM wall-clock, range (s) & 431.7--499.7 & 355.4--422.9 & 361.7--435.0 \\
-$\Cs$ builds & 100 & 4 & 4 \\
-Total structure builds & 104 & 8 & 8 \\
-$\Cs$ thread time (s) & 333.9 & 122.2 & 122.9 \\
-\bottomrule
-\end{tabular}
-\end{table}
+
 
 \subsection{Comparison with USHER}\label{sec:res_usher}
 On the four COAD pairs with a single USHER seed, no paired test can reach significance (exact floor $p=0.125$), so we

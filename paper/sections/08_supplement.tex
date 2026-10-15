@@ -63,10 +63,35 @@ $f_{\mathrm{same}}$ the fraction of same-platform cells among 15 neighbours in t
 transfer uses no centring.
 
 \subsection*{S3. Computing environment}
-Kaggle, 2$\times$NVIDIA T4 (16\,GB each), about 29\,GB RAM, 4 vCPUs. Main benchmark: PyTorch 2.10.0+cu128, NumPy
-2.0.2, SciPy 1.16.3, AnnData 0.11.4, POT 0.9.6.post1, scib-metrics 0.6.1, tangram-sc 1.0.4. GraphST comparison:
-PyTorch 2.11.0+cu128, Scanpy 1.12.4, AnnData 0.11.4. GraphST, harmonypy, Scanorama and symphonypy versions were not
-recorded~\todo{versions}. Peak memory was not measured.
+All experiments ran on Kaggle (2$\times$NVIDIA T4, 16\,GB each; about 29\,GB RAM; 4 vCPUs). The main benchmark and
+the GraphST comparison ran at different times on different PyTorch builds. Baseline packages were installed from PyPI
+at run time without pinning; Table~\ref{tab:software} lists the versions resolved.
+
+\begin{table}[h]
+\centering
+\caption{Software. ``Main'': main benchmark; ``Spatial'': GraphST comparison. GraphST does not expose version
+metadata; symphonypy was installed in a separate virtual environment, as its documentation recommends.}
+\label{tab:software}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Package & Version & Environment / installation \\
+\midrule
+PyTorch      & 2.10.0+cu128 & Main \\
+PyTorch      & 2.11.0+cu128 & Spatial \\
+NumPy        & 2.0.2        & Main \\
+SciPy        & 1.16.3       & Main \\
+Scanpy       & 1.12.4       & Spatial \\
+AnnData      & 0.11.4       & Main, Spatial \\
+POT          & 0.9.6.post1  & Main \\
+scib-metrics & 0.6.1        & Main \\
+tangram-sc   & 1.0.4        & Main \\
+harmonypy    & 2.1.0        & Main \\
+Scanorama    & 1.7.4        & Main \\
+GraphST      & --           & Spatial; \texttt{pip install GraphST} \\
+symphonypy   & --           & Main; \texttt{pip install symphonypy} in a separate venv \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection*{S4. Microenvironment term}\label{sec:supp_niche}
 The difference between \frost and USHER-CC measures the joint effect of three simultaneous changes to $\Cs$: adding
@@ -79,6 +104,24 @@ imputation protocol it recovers part of the gene-level loss on COAD Stereo-seq (
 below no alignment.
 
 \subsection*{S5. Additional results}
+\begin{table}[h]
+\centering
+\caption{EM cost, four COAD pairs, seed 0, 25 iterations. Wall-clock is real time; $\Cs$ time is thread time summed
+over four workers and must not be added to wall-clock.}
+\label{tab:cost}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & landmark $\Cs$, every iteration & exact $\Cs$, cached & \frost \\
+\midrule
+EM wall-clock, mean (s) & 457.7 & 386.1 & 387.3 \\
+EM wall-clock, range (s) & 431.7--499.7 & 355.4--422.9 & 361.7--435.0 \\
+$\Cs$ builds & 100 & 4 & 4 \\
+Total structure builds & 104 & 8 & 8 \\
+$\Cs$ thread time (s) & 333.9 & 122.2 & 122.9 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \begin{table}[h]
 \centering
 \caption{\frost against centring and Harmony on the compact metrics: median paired difference (\frost $-$ baseline)
