@@ -87,11 +87,13 @@ USHER-CC        & \textbf{0.6600} & 0.6813 & \textbf{0.6728} & 0.6896 & 0.4288 &
 
 \begin{figure}[t]
 \centering
-\IfFileExists{figs/fig_umap_stereoseq_scgpt.png}{\includegraphics[width=\linewidth]{figs/fig_umap_stereoseq_scgpt.png}}{\fbox{\parbox[c][0.5\linewidth][c]{0.95\linewidth}{\centering\todo{UMAP figure: run notebook 44, then fig\_code/fig\_umap.py}}}}
+\includegraphics[width=\linewidth]{figs/fig_umap_stereoseq_scgpt.png}
 \caption{UMAP of 3{,}000 reference and 3{,}000 source cells for COAD Stereo-seq, the hardest pair. Top row: colour by
 platform; bottom row: colour by each platform's own cell-type annotation. The same cells appear in every panel.
 With its default threshold Scanorama returned the input unchanged for this pair, so its panel equals the unaligned
-one. $^{*}$Modifies the reference.}
+one. Each panel is an independent UMAP fit on the same sampled cells; panels are not registered to a
+common frame. The raw, Harmony and Scanorama embeddings are those computed in the benchmark run; USHER-ST and
+FROST were embedded separately. $^{*}$Modifies the reference.}
 \label{fig:umap}
 \end{figure}
 
