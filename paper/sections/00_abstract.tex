@@ -1,1 +1,18 @@
-% TODO: chưa viết
+\begin{abstract}
+Spatial transcriptomics platforms differ in gene panel, resolution and chemistry, so serial sections of one tissue
+yield cell embeddings that do not agree across technologies. Most integration methods, including spatially aware
+ones, re-embed all datasets jointly. This moves the reference and invalidates every annotation, classifier and index
+built on it. We present \frost, a post-hoc method that maps cells from a source platform into a frozen reference
+embedding with fused Gromov--Wasserstein transport. Building on USHER, \frost computes the within-domain structure
+matrices once instead of in every EM iteration, fits a linear identity-regularised map, and finishes with
+closed-form moment matching. We used the SPATCH data with Xenium 5K as the reference and four source platforms
+(CosMx 6K, Visium HD FFPE, Visium HD FF and Stereo-seq) in three tumour types, giving 12 pairs. On seven summary
+metrics, \frost ranks among the top three of 11 methods. It transfers labels more accurately than the spatially
+aware GraphST in all 12 pairs (balanced accuracy 0.72 vs 0.37). GraphST is worse than no alignment in 11 pairs and
+displaces its own reference almost entirely (neighbourhood drift 0.98, against zero for \frost by construction). On
+four colon pairs, \frost and the USHER reference implementation reach the same total score from opposite sides of
+the trade-off: \frost gives up some batch mixing for better conservation of cell-type structure and rare types. It
+needs 25-fold fewer structure-matrix computations and about 7.5-fold less EM time. Alignment does not help
+gene-level tasks: in imputation and neighbour-based deconvolution, standard baselines match or outperform \frost. We
+report this as the boundary of embedding-level alignment.
+\end{abstract}

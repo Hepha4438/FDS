@@ -1,1 +1,10 @@
-% TODO: chưa viết
+\section{Conclusion}\label{sec:conclusion}
+Integrating spatial platforms into a fixed reference is a different problem from integrating them jointly, and it
+changes which methods work. A spatially aware joint method that is well suited to sections of one platform transfers
+labels worse than no alignment here, and it rebuilds the reference it was asked to serve. \frost keeps the reference
+fixed by construction and transfers labels at least as well as every baseline. It occupies a point on the
+mixing--conservation frontier that favours cell-type structure and rare types over mixing, at an order of magnitude
+lower cost than the algorithm it builds on. The limits are as clear as the gains: alignment in embedding space does
+not recover gene-level information, and the moment-matching step that gives \frost its mixing costs local density
+fidelity. Extending the evaluation to the remaining SPATCH patients, adding a second spatially aware baseline and
+testing count-based deconvolution would most sharpen these conclusions.

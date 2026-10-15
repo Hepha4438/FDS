@@ -1,1 +1,37 @@
-% TODO: chưa viết
+\section{Related work}\label{sec:related}
+
+\paragraph{Joint integration.}
+Harmony~\citep{korsunsky2019harmony}, Scanorama~\citep{hie2019scanorama} and correction by mutual nearest
+neighbours~\citep{haghverdi2018mnn} remove batch effects by producing a new, shared representation of all inputs.
+Benchmarks of these methods~\citep{luecken2022scib} separate batch mixing from conservation of biological variation,
+because the two pull in opposite directions and a method can score well on mixing by erasing structure.
+
+\paragraph{Spatially aware integration and alignment.}
+GraphST~\citep{long2023graphst} learns cell representations with a graph neural network over the spatial
+neighbourhood graph and contrastive self-supervision, and integrates sections by training on them jointly.
+STAligner~\citep{zhou2023staligner} trains a graph attention autoencoder across sections with triplets of mutual
+neighbours. Both produce a new embedding for all inputs, and both build spatial graphs whose memory grows with the
+number of cells. PASTE~\citep{zeira2022paste} uses FGW to align adjacent slices physically, with coordinates as the
+structure term. That solves a different problem: registering sections in space rather than placing one platform's
+cells in another platform's embedding.
+
+\paragraph{Reference mapping.}
+Symphony~\citep{kang2021symphony} compresses a Harmony-integrated reference so that queries can be mapped without
+changing it. scArches~\citep{lotfollahi2022scarches} fine-tunes adapter weights of a pretrained reference model on
+the query. Both keep the reference fixed, but the reference must be built in the method's own model; neither maps
+into an arbitrary existing embedding.
+
+\paragraph{Optimal transport in single-cell and spatial genomics.}
+SCOT~\citep{demetci2022scot} aligns modalities with Gromov--Wasserstein transport over $k$-NN geodesic distances.
+moscot~\citep{klein2025moscot} provides OT solvers for temporal and spatial mapping problems.
+Tangram~\citep{biancalani2021tangram} maps dissociated cells onto spatial data. USHER~\citep{pratapa2025usher}
+couples FGW correspondences with a low-capacity transform in an EM loop to move foundation-model embeddings of
+shifted data into a fixed target. It introduces entropic filtering of the coupling and regularisation towards the
+identity. \frost inherits this design and changes how and when the structure is computed
+(Section~\ref{sec:frost}).
+
+\paragraph{Foundation-model embeddings.}
+scGPT~\citep{cui2024scgpt}, scGPT-spatial~\citep{wang2025scgptspatial} and
+Nicheformer~\citep{tejadalapuerta2025nicheformer} provide cell embeddings across assays. We treat the embedding as
+given. In our data, PCA of expression is the stronger representation for imaging-based assays and scGPT-spatial for
+sequencing-based ones (Section~\ref{sec:reps}). \frost works on either.

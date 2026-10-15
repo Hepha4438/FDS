@@ -1,1 +1,45 @@
-% TODO: chưa viết
+\section{Introduction}\label{sec:intro}
+Spatial transcriptomics is now measured on platforms that differ in almost every respect. Imaging-based assays such
+as Xenium and CosMx resolve single cells against targeted panels of a few thousand genes. Sequencing-based assays
+such as Visium HD and Stereo-seq capture larger gene sets on grids of bins whose size and diffusion profile depend
+on the chemistry. Data sets that profile serial sections of the same tissue on several platforms~\todo{SPATCH
+citation} make the consequence visible: the same cell types land in different places of an embedding space
+depending on how they were measured. Foundation models trained on single-cell and spatial
+data~\citep{cui2024scgpt,wang2025scgptspatial,tejadalapuerta2025nicheformer} give every platform a common
+vocabulary, but not a common geometry.
+
+A common way to work across platforms is to annotate one high-quality reference and bring every other data set into
+it. Most integration methods do not support this. Harmony~\citep{korsunsky2019harmony} and
+Scanorama~\citep{hie2019scanorama} return a new embedding for all inputs. Spatially aware methods such as
+GraphST~\citep{long2023graphst} and STAligner~\citep{zhou2023staligner} train a new encoder on all sections. In
+both cases the reference moves, and every classifier, label transfer index or annotated atlas built on it must be
+rebuilt each time a new data set arrives. Reference-mapping methods such as Symphony~\citep{kang2021symphony} and
+scArches~\citep{lotfollahi2022scarches} keep the reference fixed, but they require a reference built in their own
+model space rather than the embedding the analyst already uses. USHER~\citep{pratapa2025usher} takes a third route:
+it keeps the target embedding fixed and learns a low-capacity map of the source into it, using fused
+Gromov--Wasserstein (FGW) transport to find correspondences. Its structure matrices, however, are recomputed in
+every EM iteration, and that cost dominates its run time.
+
+We ask what a reference-preserving method buys, and what it costs, when both sides are spatial and come from
+different platforms. Composite integration scores are a poor guide here. They are dominated by batch mixing, which
+second-order moment matching recovers almost for free, and mixing can reward over-correction. We therefore read
+results as a trade-off between mixing and conservation of biological structure, and we add task metrics that probe
+label transfer, rare cell types and local neighbourhoods.
+
+Our contributions are as follows.
+\begin{itemize}
+  \item \frost, a post-hoc, reference-preserving alignment method built on USHER. It computes the FGW structure
+  matrices once from frozen inputs ($2B$ instead of $2BT$ computations for $B$ batches and $T$ iterations), fits a
+  linear identity-regularised map with a label-vote auxiliary cost, and ends with closed-form moment matching
+  (Section~\ref{sec:methods}).
+  \item A benchmark of 12 source--reference pairs from SPATCH (three tumour types, four source platforms, Xenium 5K
+  reference) against ten baselines, with metrics for mixing, conservation, label transfer, rare types and
+  microenvironment, and a measure of reference drift (Sections~\ref{sec:setup}--\ref{sec:results}).
+  \item Evidence that a spatially aware integration method fails in this setting: GraphST transfers labels worse
+  than no alignment in 11 of 12 pairs while displacing its own reference (Section~\ref{sec:res_spatial}).
+  \item A pipeline-level comparison with the USHER reference implementation. The two methods reach the same total
+  score from opposite sides of the mixing--conservation trade-off, and \frost uses 25-fold fewer structure
+  computations (Section~\ref{sec:res_usher}).
+  \item An explicit boundary: embedding alignment does not improve gene-level tasks, and post-hoc moment matching
+  trades local density fidelity for distribution-level agreement (Section~\ref{sec:limitations}).
+\end{itemize}
