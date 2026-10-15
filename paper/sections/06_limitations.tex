@@ -4,27 +4,24 @@
 \frost fits one global map so that source cells match the reference in distribution and label neighbourhoods; nothing
 in that objective preserves each cell's gene-expression neighbourhood. Four measurements agree. Under
 leakage-controlled imputation, archived for the three Stereo-seq pairs, no alignment exceeds \frost 1.5-, 1.6- and
-4.9-fold (COAD, OV, HCC; Supplementary Table~\ref{tab:imp_rev}). An earlier gene-masking protocol on PCA embeddings
-ranked no alignment above centring above USHER. In neighbour-based deconvolution centring is best, and the
+4.9-fold (COAD, OV, HCC; Supplementary Table~\ref{tab:imp_rev}), and gene masking agrees (below). In neighbour-based deconvolution centring is best, and the
 proportions from USHER-family maps are too diffuse (below). The CORAL trade-off is the same phenomenon at a smaller
 scale. This does not hold for alignment in general. Local corrections keep gene-level neighbourhoods about as well as
 no alignment (COAD Stereo-seq: MNN-ref 0.2015, Harmony 0.1792, raw 0.1850), but they mix far less: mean iLISI over
 12 pairs is 0.0012 for raw, 0.024 for MNN-ref, 0.062 for Harmony and 0.486 for \frost. Global reference-preserving
-maps sit at the high-mixing end of this frontier. That is why we do not position \frost as a gene-level method.
+maps sit at the high-mixing end of this frontier, which is why \frost is not positioned as a gene-level method.
 
 \paragraph{Why the original imputation protocol favoured \frost.}
-It predicts each gene of a mapped source cell from its 15 reference neighbours. The source embedding is computed from
-all genes, including the predicted one, so the map moves the very embedding that carries the leak; the protocol
-rewards alignment and leakage together, and the two cannot be separated. This is why no alignment, despite leaking
-the most, scores low there (COAD Stereo-seq: 0.0945 against 0.1041 for \frost): without alignment its reference
-neighbours are meaningless. Under the original protocol \frost exceeds the label-matched ridge ($p=0.0010$), CORAL ($p=0.0068$) and
-Scanorama ($p=0.034$), but does not differ significantly from centring ($p=0.30$), MNN-ref ($p=0.23$), Harmony
-($p=0.23$) or no alignment ($p=0.052$; $n=12$ throughout). That protocol therefore separates \frost from label-matched
-baselines; it does not show that \frost imputes better than published methods. The reversed protocol queries reference cells, whose embedding is frozen and identical
-across reference-preserving methods (not for Harmony, which modifies it), so the leak cancels. Two independent
-leakage controls agree: the reversed protocol, and an earlier gene-masking protocol that covered PCA embeddings and
-USHER but not \frost. The cell-level results of
-Section~\ref{sec:results} involve no gene prediction and are unaffected.
+It predicts each gene of a mapped source cell from its reference neighbours, while the source embedding was computed
+from all genes, including the predicted one; the protocol therefore rewards alignment and leakage together. That is
+why no alignment, which leaks most, still scores low there (COAD Stereo-seq: 0.0945 against 0.1041 for \frost):
+without alignment its reference neighbours are meaningless. Under this protocol \frost exceeds the label-matched
+ridge ($p=0.0010$), CORAL ($p=0.0068$) and Scanorama ($p=0.034$), but does not differ significantly from centring
+($p=0.30$), MNN-ref ($p=0.23$), Harmony ($p=0.23$) or no alignment ($p=0.052$; $n=12$ throughout): it separates
+\frost from label-matched baselines, not from published methods. The reversed protocol queries frozen reference
+cells, identical across reference-preserving methods (not for Harmony, which modifies them), so the leak cancels;
+it agrees with an earlier gene-masking protocol that covered PCA embeddings and USHER but not \frost. The cell-level
+results of Section~\ref{sec:results} involve no gene prediction and are unaffected.
 
 \paragraph{Deconvolution.}
 Reference-based deconvolution relies on counts, a signature matrix and the additivity of mRNA, none of which an
@@ -38,5 +35,4 @@ cell2location~\citep{kleshchevnikov2022cell2location} rest on different assumpti
 \paragraph{Scope of the evaluation.}
 The data comprise one patient per tissue, so paired tests describe consistency across pairs that share references,
 not generalisation across patients. The comparison with spatial integration uses one representative method,
-GraphST, at its published defaults and on a subsample. The USHER comparison rests on four pairs. The
-15-neighbour radius that defines the microenvironment differs between platforms (16.7--33.9\um).
+GraphST, at its published defaults and on a subsample. The 15-neighbour radius that defines the microenvironment differs between platforms (16.7--33.9\um).

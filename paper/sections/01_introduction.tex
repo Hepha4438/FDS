@@ -1,9 +1,8 @@
 \section{Introduction}\label{sec:intro}
-Spatial transcriptomics is measured on platforms that differ in almost every respect. Imaging-based assays such as
-Xenium and CosMx resolve single cells against targeted panels. Sequencing-based assays such as Visium HD and
-Stereo-seq capture larger gene sets on grids whose resolution and diffusion depend on the chemistry. When serial
-sections of one tissue are profiled on several platforms~\citep{ren2025spatch}, the same cell types land in
-different regions of an embedding space depending on how they were measured. Foundation
+Spatial transcriptomics platforms differ in almost every respect: imaging-based assays such as Xenium and CosMx
+resolve single cells against targeted panels, while sequencing-based assays such as Visium HD and Stereo-seq capture
+larger gene sets on grids. When serial sections of one tissue are profiled on several
+platforms~\citep{ren2025spatch}, the same cell types land in different regions of an embedding space. Foundation
 models~\citep{cui2024scgpt,wang2025scgptspatial,tejadalapuerta2025nicheformer} give every platform a common
 vocabulary, but not a common geometry.
 
@@ -13,18 +12,13 @@ aware methods such as GraphST~\citep{long2023graphst} return a new embedding for
 every classifier, index or annotation built on it must be rebuilt. USHER~\citep{pratapa2025usher} instead keeps the
 target fixed and learns a low-capacity map of the source into it, using fused Gromov--Wasserstein (FGW) transport to
 find correspondences. Its structure matrices, however, are recomputed in every EM iteration, and this dominates its
-run time. Composite integration scores are a poor guide to such methods. They are dominated by batch mixing, which
-moment matching recovers cheaply and over-correction can inflate, so we read results as a trade-off between mixing
-and conservation of biological structure.
+run time. Because composite scores are dominated by batch mixing, which moment matching recovers cheaply, we read
+results as a trade-off between mixing and conservation.
 
-Our contributions are:
-(i) \frost, a post-hoc, reference-preserving FGW method that builds the structure matrices once per batch and caches them
-($2B$ instead of $2BT$ computations for $B$ batches and $T$ iterations) and ends with closed-form moment matching;
-(ii) a benchmark of 12 source--reference pairs from three tumour types and four source platforms, against ten
-baselines, including a measure of reference drift;
-(iii) evidence that a spatially aware integration method fails in this setting, transferring labels worse than no
-alignment while displacing its reference;
-(iv) a comparison with USHER showing that the two reach the same total score from opposite sides of the trade-off,
-with 25-fold fewer structure computations for \frost; and
-(v) a mechanistic account of why global embedding alignment blurs gene-level neighbourhoods, which sets the scope of
-the method.
+Our contributions are: (i) \frost, a post-hoc, reference-preserving FGW method whose structure matrices are built
+once per batch ($2B$ rather than $2BT$ computations for $B$ batches and $T$ iterations) and which ends with
+closed-form moment matching; (ii) a 12-pair benchmark across three tumour types and four source platforms against
+ten baselines, with a measure of reference drift; (iii) evidence that a spatially aware integration method fails in
+this setting; (iv) a comparison with USHER showing similar total scores from opposite sides of the trade-off at
+25-fold fewer structure computations; and (v) a mechanistic account of why global alignment blurs gene-level
+neighbourhoods, which sets the method's scope.

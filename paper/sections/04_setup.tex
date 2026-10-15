@@ -13,9 +13,8 @@ recovers only hepatocytes, so label metrics are not interpreted for that pair.
 
 \paragraph{Representations.}\label{sec:reps}
 Each pair uses PCA of log-normalised expression or scGPT-spatial~\citep{wang2025scgptspatial} (Supplementary
-Table~\ref{tab:reps}), chosen once per pair before alignment by within-assay label recoverability on held-out tiles.
-Because the choice uses held-out tiles it is not fully independent of evaluation, but every reference-preserving
-method receives the same input, so it cannot favour one of them.
+Table~\ref{tab:reps}), chosen once per pair before alignment by within-assay label recoverability on held-out tiles;
+this uses held-out tiles, but every reference-preserving method receives the same input.
 
 \paragraph{Baselines.}\label{sec:baselines}
 Reference-preserving: no alignment (raw), mean centring (center), CORAL~\citep{sun2016coral}, source-side MNN
@@ -33,10 +32,9 @@ The main benchmark uses \texttt{scib-metrics}~\citep{luecken2022scib} group scor
 biological conservation (bio\_v2), their weighted total (total\_v2), and four task metrics: label transfer over
 shared groups (xfer\_main) and over all groups (xfer\_all), purity of rare types (rare\_purity), and prediction of a
 cell's microenvironment class from reference neighbours (knn\_xen). Definitions are in Supplementary
-Section~\ref{sec:supp_metrics}. GraphST re-embeds both sides, so it is compared through three measures on the common
-subsample: \emph{transfer} (balanced accuracy of a 15-NN reference-label vote), \emph{mixing} (one minus the excess
-fraction of same-platform neighbours) and \emph{reference drift} ($1-J$, with $J$ the mean Jaccard overlap of each
-reference cell's 15 nearest neighbours before and after integration).
+Section~\ref{sec:supp_metrics}. GraphST re-embeds both sides, so it is compared on the common subsample through
+transfer, mixing and \emph{reference drift}, $1-J$ with $J$ the mean Jaccard overlap of each reference cell's 15
+nearest neighbours before and after integration.
 
 \paragraph{Statistics.}\label{sec:stats}
 For each comparison we report the median paired difference, the number of pairs $n$ and a two-sided exact Wilcoxon

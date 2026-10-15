@@ -3,15 +3,13 @@
 Harmony~\citep{korsunsky2019harmony}, Scanorama~\citep{hie2019scanorama} and mutual-nearest-neighbour
 correction~\citep{haghverdi2018mnn} produce a new representation of all inputs, as do the spatially aware
 GraphST~\citep{long2023graphst} and STAligner~\citep{zhou2023staligner}, which train graph encoders on all sections
-jointly. Any analysis built on the previous reference must then be redone. Benchmarks~\citep{luecken2022scib}
-separate mixing from biological conservation because a method can mix well by erasing structure.
+jointly, so analyses built on the previous reference must be redone.
 
 \paragraph{Mapping into a reference.}
 Symphony~\citep{kang2021symphony} and scArches~\citep{lotfollahi2022scarches} map queries without changing the
 reference, but the reference must be built in their own model rather than in an embedding the analyst already uses.
 
 \paragraph{Optimal transport.}
-SCOT~\citep{demetci2022scot} aligns modalities with Gromov--Wasserstein transport over $k$-NN geodesics, and
-PASTE~\citep{zeira2022paste} registers adjacent slices physically with FGW. USHER~\citep{pratapa2025usher} couples
+SCOT~\citep{demetci2022scot} aligns modalities with Gromov--Wasserstein transport over $k$-NN geodesics. USHER~\citep{pratapa2025usher} couples
 FGW correspondences with a low-capacity transform in an EM loop to move foundation-model embeddings into a fixed
 target. \frost inherits this design and changes how and when the structure is computed.

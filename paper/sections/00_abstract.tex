@@ -1,19 +1,17 @@
 \begin{abstract}
-Spatial transcriptomics platforms differ in gene panel, resolution and chemistry, so serial sections of one tissue
-yield cell embeddings that do not agree across technologies. Most integration methods, including spatially aware
-ones, re-embed all datasets jointly. This moves the reference and invalidates every annotation, classifier and index
-built on it. We present \frost, a post-hoc method that maps cells from a source platform into a frozen reference
-embedding with fused Gromov--Wasserstein transport. Building on USHER, \frost computes the within-domain structure
-matrices once instead of in every EM iteration, fits a linear identity-regularised map, and finishes with
-closed-form moment matching. We used the SPATCH data with Xenium 5K as the reference and four source platforms
-(CosMx 6K, Visium HD FFPE, Visium HD FF and Stereo-seq) in three tumour types, giving 12 pairs. On seven summary
-metrics, \frost ranks among the top three of 11 methods. It transfers labels more accurately than the spatially
-aware GraphST (balanced accuracy 0.72 vs 0.37; exact Wilcoxon $p=0.0005$, 12 pairs), with no significant difference in
-mixing. GraphST is significantly worse than no alignment and displaces its own reference almost entirely (neighbourhood drift 0.98, against zero for \frost by construction). On
-four colon pairs, \frost and the USHER reference implementation reach a similar total score from opposite sides of
-the trade-off: \frost gives up some batch mixing for better conservation of cell-type structure and rare types. It
-needs 25-fold fewer structure-matrix computations and about 7.5-fold less EM time. A global map fitted to
-distributions and labels does, however, blur gene-level neighbourhoods: once leakage is removed, imputation and
-neighbour-based deconvolution favour unaligned or locally corrected embeddings. We treat this as the scope of the
-method, not a task it addresses.
+Spatial transcriptomics platforms differ in panel, resolution and chemistry, so serial sections of one tissue yield
+cell embeddings that disagree across technologies. Most integration methods, including spatially aware ones,
+re-embed all data jointly, which moves the reference and invalidates everything built on it. We present \frost, a
+post-hoc method that maps cells from a source platform into a frozen reference embedding with fused
+Gromov--Wasserstein transport. Building on USHER, \frost computes the structure matrices once rather than in every EM
+iteration, fits a linear identity-regularised map and ends with closed-form moment matching. On SPATCH data (Xenium
+5K reference; CosMx 6K, Visium HD FFPE, Visium HD FF and Stereo-seq sources; three tumour types; 12 pairs), \frost
+ranks among the top three of 11 methods on seven summary metrics. It transfers labels more accurately than the
+spatially aware GraphST (balanced accuracy 0.72 vs 0.37; exact Wilcoxon $p=0.0005$) with no significant difference
+in mixing, whereas GraphST is worse than no alignment and displaces its own reference (neighbourhood drift 0.98;
+zero for \frost by construction). Against the USHER reference implementation, \frost reaches a similar total score
+from the other side of the mixing--conservation trade-off, with 25-fold fewer structure computations and about
+7.5-fold less EM time. A global map fitted to distributions and labels does blur gene-level neighbourhoods: once
+leakage is removed, imputation and neighbour-based deconvolution favour unaligned or locally corrected embeddings,
+which defines the scope of the method.
 \end{abstract}

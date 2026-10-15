@@ -4,10 +4,9 @@
 Let $\mathbf{X}^{t}\in\mathbb{R}^{n_t\times d}$ be embeddings of annotated cells from a \emph{reference} platform
 and $\mathbf{X}^{s}\in\mathbb{R}^{n_s\times d}$ embeddings of cells from the same tissue on a \emph{source}
 platform. We learn $f_\theta:\mathbb{R}^{d}\to\mathbb{R}^{d}$ that places source cells in the reference coordinate
-system, under one hard constraint: $\mathbf{X}^{t}$ is never modified. Everything built on the reference therefore
-stays valid, and reference drift is zero by construction. Source labels are used only for evaluation. Spatial
-coordinates are used only within a section, to describe a cell's microenvironment; no coordinate is compared across
-sections.
+system, under one hard constraint: $\mathbf{X}^{t}$ is never modified, so everything built on the reference stays
+valid and reference drift is zero by construction. Source labels are used only for evaluation; spatial coordinates
+only within a section, to describe a cell's microenvironment.
 
 \subsection{Base algorithm: USHER}\label{sec:usher}
 USHER~\citep{pratapa2025usher} alternates between correspondences and a transform. The E-step solves the FGW
@@ -44,10 +43,8 @@ symmetrised $k$-NN graphs ($k=30$, cosine) of $[\mathbf{x}_i,\,s\mathbf{N}_i]$, 
 $s=\overline{\|\mathbf{x}^{t}\|}/\overline{\|\mathbf{N}^{t}\|}$, projected to 64 dimensions when larger.
 Both are computed from the \emph{unmapped} source and from the reference, once per batch, and cached. With $B$
 batches and $T$ iterations, \frost builds $2B$ structure matrices; USHER builds $2BT$, and recomputing only $\Cs$
-(the USHER-ST variant below) builds $B(T+1)$. This caching is the reason for the configuration: it removes the
-dominant cost of the EM loop, and once $\Cs$ is computed a single time, augmenting it with the microenvironment block
-costs nothing further. We include the block for that reason, not because it is expected to raise cell-level scores
-(Section~\ref{sec:res_niche}).
+(the USHER-ST variant below) builds $B(T+1)$. Caching is the reason for the configuration; once $\Cs$ is computed
+once, the microenvironment block adds no cost (Section~\ref{sec:res_niche}).
 
 \paragraph{(iii) Reference floor.} FGW is solved on 20{,}000 reference cells whose class composition follows the
 source composition estimated in (i), with at least $\min(200,n_c)$ cells per class. Because balanced FGW must
@@ -74,7 +71,5 @@ landmarks,
 where $D_{il}$ is the hop distance to landmark $l$. It builds $B(T+1)$ matrices. \textbf{USHER-CC} adds (v) to
 USHER-ST.
 
-\paragraph{Hyperparameters.} One configuration for all pairs: $\alpha=0.3$ and $\gamma=0.4$ as recommended
-in~\citep{pratapa2025usher}, $\varepsilon=0.1$, sketches of 4{,}300 cells, 10 EM iterations of 100 Adam steps
-(learning rate $10^{-3}$), $\lambda_{\mathrm{cross}}=0.9$, $\lambda_{\mathrm{var}}=0.1$. Entropic filtering removes
-rows above the 90th percentile of entropy or below the 10th percentile of row maximum.
+\paragraph{Hyperparameters.} One configuration is used for all pairs; $\alpha$ and $\gamma$ follow~\citep{pratapa2025usher}
+(Supplementary Section~\ref{sec:supp_hp}).

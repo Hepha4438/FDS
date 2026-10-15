@@ -2,20 +2,17 @@
 
 \subsection{A spatially aware baseline fails in the reference-preserving setting}\label{sec:res_spatial}
 On a common subsample of 10{,}000 cells per side (Table~\ref{tab:graphst}), \frost transfers labels more accurately
-than GraphST (median paired difference $+0.376$, $n=12$, $p=0.0005$, the smallest value attainable with 12 pairs).
+than GraphST (median paired difference $+0.376$, $n=12$, $p=0.0005$).
 Mixing does not differ significantly ($+0.092$, $n=12$, $p=0.064$), so GraphST loses transfer without gaining mixing
 in exchange. GraphST is also worse than no alignment on transfer (mean difference $-0.243$, $n=12$, $p=0.0015$); its only
 gain over it is mixing (mean $+0.377$, $p=0.0005$), the signature of over-correction. \frost improves on no alignment in both
 transfer ($p=0.0010$) and mixing ($p=0.0005$).
 
-GraphST also moves the reference: the 15-NN neighbourhoods of reference cells barely survive integration (drift
-0.966--0.989, mean 0.979), so anything built on the reference must be rebuilt. For \frost and every other
-reference-preserving method drift is exactly zero, by architecture rather than tuning. Finally, GraphST had to be
-subsampled because its dense spatial graph exhausted memory at 90{,}000 cells, whereas \frost runs on all
-40{,}000--45{,}000 cells per side. On the four COAD pairs, GraphST training on the subsample took 940.9--1{,}153.4\,s
-(mean 1{,}093.8\,s), whereas the \frost EM loop on all cells took 361.7--435.0\,s (mean 387.3\,s) at $T=25$; the
-benchmark maps use $T=10$, which was not timed. Neither figure includes input preparation (embedding extraction for
-\frost, preprocessing for GraphST).
+GraphST also moves the reference (drift 0.966--0.989, mean 0.979), so anything built on it must be rebuilt; for
+every reference-preserving method drift is zero by construction. GraphST had to be subsampled (its dense spatial
+graph exhausted memory at 90{,}000 cells), whereas \frost runs on all 40{,}000--45{,}000 cells per side. On the four
+COAD pairs GraphST training took 1{,}093.8\,s on average on the subsample and the \frost EM loop 387.3\,s on all cells
+at $T=25$ ($T=10$, used in the benchmark, was not timed), both excluding input preparation.
 
 \begin{table}[t]
 \centering
@@ -34,17 +31,16 @@ No alignment (raw) & 0.6162 & 0.0208 & 0.000 \\
 \end{table}
 
 \subsection{Benchmark}\label{sec:res_bench}
-Because batch\_v2 and bio\_v2 average other metrics, ranking all 15 cell-level metrics would count the same information
-several times; we summarise with the compact set of Table~\ref{tab:main} (all 15 in Supplementary
-Figure~\ref{fig:grid}). On all seven cell-level metrics \frost ranks among the top three of 11 methods: first on
-xfer\_all; second on batch\_v2, total\_v2, rare\_purity and knn\_xen; third on bio\_v2 and xfer\_main. The leader is
-usually one of its own ablations; the one baseline that leads a column is ridge on bio\_v2. The imputation column
+Because batch\_v2 and bio\_v2 average other metrics, we summarise with the compact set of Table~\ref{tab:main}
+(all 15 metrics in Supplementary Figure~\ref{fig:grid}). On all seven cell-level metrics \frost ranks among the top three of 11 methods: first on
+xfer\_all; second on batch\_v2, total\_v2, rare\_purity and knn\_xen; third on bio\_v2 and xfer\_main. The only baseline
+that leads a column is ridge on bio\_v2. The imputation column
 favours \frost only under a protocol that leaks the predicted gene, and the ranking reverses once the leak is removed
 (Section~\ref{sec:limitations}). Figure~\ref{fig:umap} shows the hardest pair, COAD Stereo-seq. Without alignment, and after Harmony, the two
 platforms occupy separate regions; USHER-ST brings them into contact but leaves them partly segregated; after
 \frost the platforms interleave throughout while the major cell types remain in distinct groups.
 
-Ridge is the informative comparison (Figure~\ref{fig:gaps}): it uses the same auxiliary labels and moment matching as
+Ridge is the informative comparison (Supplementary Figure~\ref{fig:gaps}): it uses the same auxiliary labels and moment matching as
 \frost and differs mainly in how cells are paired. \frost exceeds ridge on batch\_v2 ($n=12$, $p=0.0005$), total\_v2
 ($n=12$, $p=0.0005$) and knn\_xen ($n=12$, $p=0.0015$), and does not differ significantly on bio\_v2 (median
 $-0.006$, $n=12$, $p=0.06$; ridge slightly higher), xfer\_main ($n=12$, $p=0.29$), xfer\_all ($n=11$, $p=0.64$) or
@@ -53,8 +49,7 @@ and bio\_v2 only 0.60--0.69, so total\_v2 follows mixing. The knn\_xen advantage
 centring and Harmony it is not significant. Read as a Pareto trade-off (Figure~\ref{fig:pareto}), \frost gains mixing over ridge
 with no significant loss in conservation or transfer. \frost exceeds Symphony, the published reference-mapping method, on all
 seven metrics ($n=12$, $p$ from 0.0005 to 0.034), although part of that gap may reflect Symphony's own count-based
-representation. Against centring and Harmony, \frost is significantly better on most metrics but not on xfer\_main
-versus centring or knn\_xen versus either (Supplementary Table~\ref{tab:center_harmony}).
+representation; against centring and Harmony it is better on most metrics (Supplementary Table~\ref{tab:center_harmony}).
 
 \begin{table}[t]
 \centering
@@ -94,14 +89,7 @@ FROST were embedded separately. $^{*}$Modifies the reference.}
 \label{fig:umap}
 \end{figure}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{figs/fig_gaps.png}
-\caption{Paired comparison of each baseline with \frost (12 pairs). The blue line marks \frost; the black tick marks
-the baseline at minus the median paired difference (\frost $-$ baseline), the quantity tested by the exact Wilcoxon
-signed-rank test. Bold: $p<0.05$. $^{*}$Modifies the reference.}
-\label{fig:gaps}
-\end{figure}
+
 
 \begin{figure}[t]
 \centering
@@ -119,33 +107,64 @@ Comparing USHER-CC with USHER-ST isolates CORAL. It raises batch\_v2 ($+0.127$, 
 $p=0.0010$), rare\_purity ($+0.029$, $p=0.0015$) and xfer\_all ($+0.025$, $p=0.012$), with no significant change
 in bio\_v2 ($p=0.23$), xfer\_main ($p=0.73$) or knn\_xen ($p=0.15$; $n=12$ throughout). On the GraphST subsample it
 raises mean mixing by $+0.191$ ($p=0.0015$) and mean transfer by only $+0.009$. CORAL is therefore justified at the cell level;
-its cost appears at the gene level (Section~\ref{sec:limitations}). The per-class reference floor was fixed in
-advance on a validation split (Supplementary Table~\ref{tab:floor}).
+its cost appears at the gene level (Section~\ref{sec:limitations}). The per-class reference floor was introduced to protect rare types: on the four COAD pairs (three seeds) it raises
+rare\_purity by 0.020, about nine times the seed standard deviation, while every other compact metric changes by at
+most 0.006. The floor of 200 is kept in the reported configuration.
 
 \paragraph{Structure matrices and microenvironment.}\label{sec:res_niche}
 \frost and USHER-CC do not differ significantly on any metric (all $p\ge0.067$, largest median difference 0.0008).
-Three diagnostic arms on the four COAD pairs (seed 0, 25 iterations) separate the changes this difference bundles:
-(a) landmark $\Cs$ recomputed every iteration, as in USHER-ST; (b) exact $\Cs$, cached; (c) \frost.
-\todo{quality columns of the three-arm table (report 12-10, \S6.2.2)}
-Caching changes convergence as well as cost (Supplementary Figure~\ref{fig:converge}). Over the last three iterations
-the fraction of assignments that change falls from 0.046 in (a) to 0.0082 in (b) (median over pairs and iterations),
-a 5.65-fold deeper convergence; adding the microenvironment leaves it essentially unchanged (0.0076 in (c)), except on
-Stereo-seq, where (c) converges 2.4-fold more slowly than (b) (0.053 against 0.022). Arm (a) differs from the USHER
-reference implementation in the auxiliary cost, $\varepsilon$, the $\Cs$ approximation and the M-step, yet ends close
-to where USHER stops at iteration 25 (0.046 against a mean of 0.055), which suggests that recomputing $\Cs$ every
-iteration, the one feature they share, matters more for convergence than those four components. At the 10 iterations
-used in the benchmark, all three arms still change 6--8\% of assignments per iteration.
+Three diagnostic arms on the four COAD pairs (seed 0, 25 iterations) take the difference apart (Table~\ref{tab:arms});
+they differ only in how $\Cs$ is built: (a) landmark distances recomputed every iteration, as in USHER-ST; (b) exact
+geodesics, cached; (c) \frost, which adds the microenvironment; the configuration differs from the main benchmark, so the
+tables are not directly comparable. Going from (a) to (b)
+changes two things---the landmark approximation and the per-iteration recomputation---and leaves quality unchanged
+(total\_v2 $-0.005$, imputation $+0.001$), while convergence over the last three iterations becomes 5.65-fold deeper
+(fraction of assignments changing: 0.046 to 0.008). Going from (b) to (c) adds only the microenvironment on the two
+scGPT-spatial pairs; on the two PCA pairs it also changes the dimensionality projection. Stereo-seq is one of the
+clean pairs, and it is where the effect appears: under the original imputation protocol, (c) raises Stereo-seq
+imputation from 0.048 to 0.113 (bootstrap intervals 0.045--0.052 and 0.107--0.118), above no alignment (0.0945),
+while convergence is unchanged on average (1.08-fold) but 2.44-fold slower on that pair. Under the leakage-controlled
+protocol the gain persists in the benchmark configuration (\frost $-$ USHER-CC $=+0.044$ on COAD Stereo-seq,
+disjoint intervals), but \frost stays below no alignment (0.1251 against 0.1850; Section~\ref{sec:limitations}).
+Averaged over the 12 pairs the term is neutral, so we do not claim that it improves the method. We keep it because it
+is the only component that carries spatial information, it costs nothing, and it is the only one that recovers
+gene-level signal on the source with the coarsest spatial sampling.
 
-Caching is also the source of the saving in cost, and the landmark approximation is not: the cached exact construction
-takes 15.4\,s per EM iteration against 18.3\,s for recomputed landmarks, about 16\% less at $T=25$, and adding the
-microenvironment block costs nothing measurable (15.5\,s, same 8 builds; Supplementary Table~\ref{tab:cost}).
-Structure builds fall from $B(T+1)$ to $2B$, a number that no longer depends on $T$: 5.5-fold fewer at the $T=10$ of
-the benchmark and 13-fold fewer at $T=25$. Wall-clock time at $T=10$ was not measured.
+\begin{table}[t]
+\centering
+\caption{Three ways of building $\Cs$, four COAD pairs, seed 0, 25 iterations; not comparable with
+Table~\ref{tab:main}. Imputation: median Spearman under the original protocol, which leaks the predicted gene and
+whose ranking reverses under leakage control (Section~\ref{sec:limitations}). Conv.: fraction of assignments changing
+over the last three iterations (median).}
+\label{tab:arms}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+$\Cs$ construction & total\_v2 & imput.\ (mean) & imput.\ (Stereo-seq) & conv. \\
+\midrule
+(a) landmark, recomputed      & 0.703 & 0.131 & 0.0445 & 0.046 \\
+(b) exact, cached             & 0.698 & 0.132 & 0.0483 & 0.008 \\
+(c) exact + microenv.\ (\frost) & 0.706 & 0.148 & 0.1130 & 0.008 \\
+no alignment                  & --    & 0.140 & 0.0945 & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Stopping at 10 iterations costs little: all three arms still change 6--8\% of assignments per iteration at iteration
+10 (Supplementary Figure~\ref{fig:converge}), yet \frost scores total\_v2 0.7025 at 10 iterations (three seeds) and
+0.706 at 25 (one seed) on the same pairs, against a per-pair seed standard deviation of about 0.002. Arm (a) differs
+from the USHER implementation in the auxiliary cost, $\varepsilon$, the $\Cs$ approximation and the M-step, yet ends
+close to where USHER stops (0.046 against 0.059, medians at the end), suggesting that recomputing $\Cs$ every
+iteration, which they share, matters more for convergence than those four components.
+
+Caching, not the landmark approximation, is also where the cost saving comes from: an EM iteration takes 15.4\,s
+with cached exact $\Cs$ and 18.3\,s with recomputed landmarks ($T=25$), and the microenvironment adds nothing
+measurable (15.5\,s; Supplementary Table~\ref{tab:cost}). Structure builds fall from $B(T+1)$ to $2B$, which no
+longer depends on $T$: 5.5-fold fewer at $T=10$ and 13-fold fewer at $T=25$; wall-clock at $T=10$ was not measured.
 
 \subsection{Comparison with USHER}\label{sec:res_usher}
-On the four COAD pairs with a single USHER seed, no paired test can reach significance (exact floor $p=0.125$), so we
-report differences descriptively (Supplementary Table~\ref{tab:usher}); the pipelines also differ in four components
-at once. Total scores are similar (0.7055 for USHER, 0.7025 for \frost). USHER is numerically higher on batch mixing;
-\frost is numerically higher on biological conservation and on every task metric, most on xfer\_all, rare\_purity and knn\_xen
-($+0.034$ to $+0.038$). \frost reaches this point of the frontier with 8 instead of 200 structure computations per pair
-and about 7.5-fold less EM time (mean 387.3\,s against 2{,}911\,s).
+On the four COAD pairs, with one USHER seed, no paired test can reach significance (floor $p=0.125$), so we report
+differences descriptively (Supplementary Table~\ref{tab:usher}); the pipelines also differ in four components, and
+\frost runs 10 iterations against USHER's 25, a bias against \frost. Total scores are similar (0.7055 for USHER, 0.7025
+for \frost); USHER is numerically higher on batch mixing, \frost on conservation and on every task metric, most on
+xfer\_all, rare\_purity and knn\_xen ($+0.034$ to $+0.038$), with 8 instead of 200 structure computations per pair and
+about 7.5-fold less EM time (387.3 against 2{,}911\,s).

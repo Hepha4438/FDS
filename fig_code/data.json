@@ -1,0 +1,10042 @@
+{
+ "ilisi": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.0,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0008,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4879,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.023,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.3102,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.2919,
+    "sd": 0.0018,
+    "seed0_nb36": 0.2905
+   },
+   "FROST_cc": {
+    "m": 0.5689,
+    "sd": 0.0004
+   },
+   "FROST": {
+    "m": 0.5701,
+    "sd": 0.0018
+   },
+   "Harmony": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0873,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4785,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.0,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.2819,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2013,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1097,
+    "sd": 0.0021,
+    "seed0_nb36": 0.1075
+   },
+   "FROST_cc": {
+    "m": 0.4641,
+    "sd": 0.0059
+   },
+   "FROST": {
+    "m": 0.4581,
+    "sd": 0.0031
+   },
+   "Harmony": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1702,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.0,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3356,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0153,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1709,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3734,
+    "sd": 0.0075,
+    "seed0_nb36": 0.3657
+   },
+   "FROST_cc": {
+    "m": 0.5342,
+    "sd": 0.0039
+   },
+   "FROST": {
+    "m": 0.5338,
+    "sd": 0.0017
+   },
+   "Harmony": {
+    "m": 0.0216,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0135,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2767,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.0145,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1238,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.488,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1993,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2037,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5648,
+    "sd": 0.0048,
+    "seed0_nb36": 0.5593
+   },
+   "FROST_cc": {
+    "m": 0.5415,
+    "sd": 0.002
+   },
+   "FROST": {
+    "m": 0.5422,
+    "sd": 0.0012
+   },
+   "Harmony": {
+    "m": 0.7157,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4881,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4154,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.0,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4554,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0142,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2985,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1341,
+    "sd": 0.0032
+   },
+   "FROST_cc": {
+    "m": 0.5118,
+    "sd": 0.0016
+   },
+   "FROST": {
+    "m": 0.5157,
+    "sd": 0.0023
+   },
+   "Harmony": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0409,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3973,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.0,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.285,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2126,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.0824,
+    "sd": 0.0009
+   },
+   "FROST_cc": {
+    "m": 0.434,
+    "sd": 0.0014
+   },
+   "FROST": {
+    "m": 0.4239,
+    "sd": 0.0049
+   },
+   "Harmony": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.0292,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.0,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.2791,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2721,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1533,
+    "sd": 0.0017
+   },
+   "FROST_cc": {
+    "m": 0.4581,
+    "sd": 0.0062
+   },
+   "FROST": {
+    "m": 0.4629,
+    "sd": 0.0013
+   },
+   "Harmony": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.0,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.0,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4368,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0019,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2437,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3194,
+    "sd": 0.0015
+   },
+   "FROST_cc": {
+    "m": 0.7193,
+    "sd": 0.0012
+   },
+   "FROST": {
+    "m": 0.7151,
+    "sd": 0.0014
+   },
+   "Harmony": {
+    "m": 0.0089,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2093,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.0,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3951,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.002,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1389,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1407,
+    "sd": 0.0032
+   },
+   "FROST_cc": {
+    "m": 0.4148,
+    "sd": 0.0029
+   },
+   "FROST": {
+    "m": 0.4147,
+    "sd": 0.0032
+   },
+   "Harmony": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0587,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2558,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.0,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.1629,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1461,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.002,
+    "sd": 0.0001
+   },
+   "FROST_cc": {
+    "m": 0.2625,
+    "sd": 0.0063
+   },
+   "FROST": {
+    "m": 0.2532,
+    "sd": 0.0077
+   },
+   "Harmony": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.0,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.0,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0897,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5205,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0305,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1514,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3392,
+    "sd": 0.0052
+   },
+   "FROST_cc": {
+    "m": 0.4671,
+    "sd": 0.0037
+   },
+   "FROST": {
+    "m": 0.4692,
+    "sd": 0.0015
+   },
+   "Harmony": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0388,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2426,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.0,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.33,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.292,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.0595,
+    "sd": 0.0011
+   },
+   "FROST_cc": {
+    "m": 0.477,
+    "sd": 0.0059
+   },
+   "FROST": {
+    "m": 0.4705,
+    "sd": 0.0055
+   },
+   "Harmony": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.0469,
+    "sd": null
+   }
+  }
+ },
+ "kbet": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.0003,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0595,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3861,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1716,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2284,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.226,
+    "sd": 0.005,
+    "seed0_nb36": 0.2225
+   },
+   "FROST_cc": {
+    "m": 0.5126,
+    "sd": 0.0057
+   },
+   "FROST": {
+    "m": 0.5155,
+    "sd": 0.0029
+   },
+   "Harmony": {
+    "m": 0.0219,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0399,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3484,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.0,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0006,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.2341,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0029,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1959,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1204,
+    "sd": 0.0043,
+    "seed0_nb36": 0.1253
+   },
+   "FROST_cc": {
+    "m": 0.3244,
+    "sd": 0.0089
+   },
+   "FROST": {
+    "m": 0.33,
+    "sd": 0.0065
+   },
+   "Harmony": {
+    "m": 0.0005,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1221,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.0223,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0277,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3463,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0474,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2536,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3996,
+    "sd": 0.0251,
+    "seed0_nb36": 0.399
+   },
+   "FROST_cc": {
+    "m": 0.5392,
+    "sd": 0.0434
+   },
+   "FROST": {
+    "m": 0.5398,
+    "sd": 0.0464
+   },
+   "Harmony": {
+    "m": 0.0768,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.05,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2579,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.0335,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1586,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3431,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1817,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1063,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3278,
+    "sd": 0.0065,
+    "seed0_nb36": 0.3352
+   },
+   "FROST_cc": {
+    "m": 0.3831,
+    "sd": 0.0072
+   },
+   "FROST": {
+    "m": 0.3905,
+    "sd": 0.0022
+   },
+   "Harmony": {
+    "m": 0.4891,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2608,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2483,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.0,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0327,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3281,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1196,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2097,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1303,
+    "sd": 0.0051
+   },
+   "FROST_cc": {
+    "m": 0.4416,
+    "sd": 0.0074
+   },
+   "FROST": {
+    "m": 0.4454,
+    "sd": 0.01
+   },
+   "Harmony": {
+    "m": 0.0124,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.1253,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2622,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.0056,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.19,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0014,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1548,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1164,
+    "sd": 0.0031
+   },
+   "FROST_cc": {
+    "m": 0.3361,
+    "sd": 0.0083
+   },
+   "FROST": {
+    "m": 0.325,
+    "sd": 0.0074
+   },
+   "Harmony": {
+    "m": 0.0032,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0056,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.0619,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.0008,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0012,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.1511,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0053,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1838,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1541,
+    "sd": 0.0012
+   },
+   "FROST_cc": {
+    "m": 0.2846,
+    "sd": 0.0071
+   },
+   "FROST": {
+    "m": 0.2814,
+    "sd": 0.0047
+   },
+   "Harmony": {
+    "m": 0.0071,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0087,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.0065,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.0041,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0011,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3199,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0212,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1998,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3682,
+    "sd": 0.004
+   },
+   "FROST_cc": {
+    "m": 0.5768,
+    "sd": 0.0022
+   },
+   "FROST": {
+    "m": 0.562,
+    "sd": 0.0016
+   },
+   "Harmony": {
+    "m": 0.0122,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0211,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.154,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.0007,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1224,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.2288,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0684,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1142,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.126,
+    "sd": 0.0067
+   },
+   "FROST_cc": {
+    "m": 0.2866,
+    "sd": 0.0065
+   },
+   "FROST": {
+    "m": 0.2873,
+    "sd": 0.0214
+   },
+   "Harmony": {
+    "m": 0.0024,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0885,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2393,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.0152,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0149,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.1635,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0001,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1113,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.05,
+    "sd": 0.0014
+   },
+   "FROST_cc": {
+    "m": 0.1787,
+    "sd": 0.0146
+   },
+   "FROST": {
+    "m": 0.1831,
+    "sd": 0.0099
+   },
+   "Harmony": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0152,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.035,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.0219,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1654,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3058,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0527,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.0852,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.2378,
+    "sd": 0.0105
+   },
+   "FROST_cc": {
+    "m": 0.3263,
+    "sd": 0.005
+   },
+   "FROST": {
+    "m": 0.32,
+    "sd": 0.0027
+   },
+   "Harmony": {
+    "m": 0.0847,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.1376,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1935,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.0,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0006,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.348,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0177,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.32,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1599,
+    "sd": 0.0084
+   },
+   "FROST_cc": {
+    "m": 0.3019,
+    "sd": 0.0108
+   },
+   "FROST": {
+    "m": 0.2835,
+    "sd": 0.0086
+   },
+   "Harmony": {
+    "m": 0.0216,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.0603,
+    "sd": null
+   }
+  }
+ },
+ "bras": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.5633,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7598,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.8211,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.7845,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.8919,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8701,
+    "sd": 0.0002,
+    "seed0_nb36": 0.8702
+   },
+   "FROST_cc": {
+    "m": 0.8667,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.8667,
+    "sd": 0.0002
+   },
+   "Harmony": {
+    "m": 0.6412,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6185,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.8785,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.4197,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7774,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7678,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6248,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.827,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8048,
+    "sd": 0.0028,
+    "seed0_nb36": 0.8016
+   },
+   "FROST_cc": {
+    "m": 0.8115,
+    "sd": 0.0031
+   },
+   "FROST": {
+    "m": 0.8275,
+    "sd": 0.0004
+   },
+   "Harmony": {
+    "m": 0.7721,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4197,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.7028,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.5432,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7319,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7892,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.61,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.8079,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.861,
+    "sd": 0.0016,
+    "seed0_nb36": 0.86
+   },
+   "FROST_cc": {
+    "m": 0.8298,
+    "sd": 0.0017
+   },
+   "FROST": {
+    "m": 0.8282,
+    "sd": 0.0016
+   },
+   "Harmony": {
+    "m": 0.7531,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6077,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6874,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.7252,
+    "sd": null
+   },
+   "center": {
+    "m": 0.8203,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.8296,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.7935,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.8739,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8883,
+    "sd": 0.0007,
+    "seed0_nb36": 0.8875
+   },
+   "FROST_cc": {
+    "m": 0.8577,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.8575,
+    "sd": 0.0004
+   },
+   "Harmony": {
+    "m": 0.9072,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7705,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.7914,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.5174,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7021,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7411,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.715,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.8202,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7761,
+    "sd": 0.0003
+   },
+   "FROST_cc": {
+    "m": 0.7856,
+    "sd": 0.0004
+   },
+   "FROST": {
+    "m": 0.7863,
+    "sd": 0.0005
+   },
+   "Harmony": {
+    "m": 0.5741,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6277,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.7917,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.3564,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6946,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6897,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5085,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.752,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7401,
+    "sd": 0.0012
+   },
+   "FROST_cc": {
+    "m": 0.7552,
+    "sd": 0.0006
+   },
+   "FROST": {
+    "m": 0.7586,
+    "sd": 0.0014
+   },
+   "Harmony": {
+    "m": 0.6795,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3564,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5648,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.4773,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6988,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6703,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6112,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6779,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7528,
+    "sd": 0.0008
+   },
+   "FROST_cc": {
+    "m": 0.7103,
+    "sd": 0.0006
+   },
+   "FROST": {
+    "m": 0.7113,
+    "sd": 0.0004
+   },
+   "Harmony": {
+    "m": 0.7174,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5974,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3474,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.5014,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7364,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7561,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6117,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.8797,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8802,
+    "sd": 0.0024
+   },
+   "FROST_cc": {
+    "m": 0.8712,
+    "sd": 0.0007
+   },
+   "FROST": {
+    "m": 0.8704,
+    "sd": 0.0013
+   },
+   "Harmony": {
+    "m": 0.8023,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5967,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6495,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.4727,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6713,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7484,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6803,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.8693,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7688,
+    "sd": 0.0001
+   },
+   "FROST_cc": {
+    "m": 0.8063,
+    "sd": 0.0003
+   },
+   "FROST": {
+    "m": 0.8069,
+    "sd": 0.0002
+   },
+   "Harmony": {
+    "m": 0.524,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6061,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.789,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.3339,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6713,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6747,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.489,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7139,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6975,
+    "sd": 0.0012
+   },
+   "FROST_cc": {
+    "m": 0.7418,
+    "sd": 0.001
+   },
+   "FROST": {
+    "m": 0.7415,
+    "sd": 0.0009
+   },
+   "Harmony": {
+    "m": 0.6627,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3339,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3718,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.5449,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7835,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.8665,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.686,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.8228,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8565,
+    "sd": 0.0015
+   },
+   "FROST_cc": {
+    "m": 0.8861,
+    "sd": 0.0006
+   },
+   "FROST": {
+    "m": 0.8866,
+    "sd": 0.001
+   },
+   "Harmony": {
+    "m": 0.6448,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6309,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.7007,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.4362,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6814,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7764,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5744,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7809,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6997,
+    "sd": 0.0028
+   },
+   "FROST_cc": {
+    "m": 0.7796,
+    "sd": 0.001
+   },
+   "FROST": {
+    "m": 0.7796,
+    "sd": 0.0013
+   },
+   "Harmony": {
+    "m": 0.7431,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4362,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5266,
+    "sd": null
+   }
+  }
+ },
+ "graph_conn": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.9922,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9883,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9725,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9893,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9798,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9853,
+    "sd": 0.0003,
+    "seed0_nb36": 0.9853
+   },
+   "FROST_cc": {
+    "m": 0.9736,
+    "sd": 0.0005
+   },
+   "FROST": {
+    "m": 0.9738,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.9922,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.9903,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9775,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.7456,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9952,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9697,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9946,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.97,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9891,
+    "sd": 0.0008,
+    "seed0_nb36": 0.9883
+   },
+   "FROST_cc": {
+    "m": 0.9816,
+    "sd": 0.0008
+   },
+   "FROST": {
+    "m": 0.9822,
+    "sd": 0.0017
+   },
+   "Harmony": {
+    "m": 0.9954,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7456,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9417,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.9926,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9905,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9823,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9884,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9794,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9852,
+    "sd": 0.0022,
+    "seed0_nb36": 0.9829
+   },
+   "FROST_cc": {
+    "m": 0.9823,
+    "sd": 0.0011
+   },
+   "FROST": {
+    "m": 0.9814,
+    "sd": 0.0009
+   },
+   "Harmony": {
+    "m": 0.9884,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.9884,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9677,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.9932,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9859,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.983,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9879,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9891,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9858,
+    "sd": 0.001,
+    "seed0_nb36": 0.9853
+   },
+   "FROST_cc": {
+    "m": 0.9821,
+    "sd": 0.0005
+   },
+   "FROST": {
+    "m": 0.9825,
+    "sd": 0.0005
+   },
+   "Harmony": {
+    "m": 0.9727,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.9859,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9741,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.9928,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9915,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9695,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9864,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9819,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9863,
+    "sd": 0.0005
+   },
+   "FROST_cc": {
+    "m": 0.9646,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.9645,
+    "sd": 0.0011
+   },
+   "Harmony": {
+    "m": 0.9931,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.951,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.974,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.4995,
+    "sd": null
+   },
+   "center": {
+    "m": 0.91,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9649,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9904,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9682,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9844,
+    "sd": 0.0047
+   },
+   "FROST_cc": {
+    "m": 0.9757,
+    "sd": 0.0011
+   },
+   "FROST": {
+    "m": 0.9735,
+    "sd": 0.0015
+   },
+   "Harmony": {
+    "m": 0.9103,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4995,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.942,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.9891,
+    "sd": null
+   },
+   "center": {
+    "m": 0.991,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9602,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9922,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9612,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9859,
+    "sd": 0.0003
+   },
+   "FROST_cc": {
+    "m": 0.9692,
+    "sd": 0.0016
+   },
+   "FROST": {
+    "m": 0.9676,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.9935,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.992,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.7928,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.9964,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9955,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9907,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.997,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9902,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9957,
+    "sd": 0.0006
+   },
+   "FROST_cc": {
+    "m": 0.9925,
+    "sd": 0.0003
+   },
+   "FROST": {
+    "m": 0.9923,
+    "sd": 0.0002
+   },
+   "Harmony": {
+    "m": 0.9958,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.997,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9795,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.9882,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9811,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9695,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9858,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9732,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9683,
+    "sd": 0.0014
+   },
+   "FROST_cc": {
+    "m": 0.9661,
+    "sd": 0.0006
+   },
+   "FROST": {
+    "m": 0.9667,
+    "sd": 0.0024
+   },
+   "Harmony": {
+    "m": 0.9878,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.8725,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9734,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.482,
+    "sd": null
+   },
+   "center": {
+    "m": 0.8908,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.8667,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.885,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.8775,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8913,
+    "sd": 0.0007
+   },
+   "FROST_cc": {
+    "m": 0.8868,
+    "sd": 0.0054
+   },
+   "FROST": {
+    "m": 0.8821,
+    "sd": 0.0085
+   },
+   "Harmony": {
+    "m": 0.8916,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.482,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6081,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.9919,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9864,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9799,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9924,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9923,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.985,
+    "sd": 0.0012
+   },
+   "FROST_cc": {
+    "m": 0.9881,
+    "sd": 0.0017
+   },
+   "FROST": {
+    "m": 0.9884,
+    "sd": 0.0007
+   },
+   "Harmony": {
+    "m": 0.9921,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.9848,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9861,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.874,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9786,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9657,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9851,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.963,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9734,
+    "sd": 0.0008
+   },
+   "FROST_cc": {
+    "m": 0.9701,
+    "sd": 0.0021
+   },
+   "FROST": {
+    "m": 0.9754,
+    "sd": 0.0059
+   },
+   "Harmony": {
+    "m": 0.9809,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.874,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9035,
+    "sd": null
+   }
+  }
+ },
+ "batch_v2": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.389,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4521,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6669,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4921,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6026,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5933,
+    "sd": 0.0016,
+    "seed0_nb36": 0.5921
+   },
+   "FROST_cc": {
+    "m": 0.7305,
+    "sd": 0.0013
+   },
+   "FROST": {
+    "m": 0.7315,
+    "sd": 0.0009
+   },
+   "Harmony": {
+    "m": 0.4138,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.434,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6707,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.2913,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4433,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5634,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4056,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5485,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.506,
+    "sd": 0.0004,
+    "seed0_nb36": 0.5057
+   },
+   "FROST_cc": {
+    "m": 0.6454,
+    "sd": 0.0037
+   },
+   "FROST": {
+    "m": 0.6494,
+    "sd": 0.0018
+   },
+   "Harmony": {
+    "m": 0.442,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2913,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4842,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.3895,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4375,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6134,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4153,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.553,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6548,
+    "sd": 0.0075,
+    "seed0_nb36": 0.6519
+   },
+   "FROST_cc": {
+    "m": 0.7214,
+    "sd": 0.0117
+   },
+   "FROST": {
+    "m": 0.7208,
+    "sd": 0.0116
+   },
+   "Harmony": {
+    "m": 0.46,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4149,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5474,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.4416,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5222,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6609,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5406,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5433,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6917,
+    "sd": 0.0004,
+    "seed0_nb36": 0.6918
+   },
+   "FROST_cc": {
+    "m": 0.6911,
+    "sd": 0.0023
+   },
+   "FROST": {
+    "m": 0.6932,
+    "sd": 0.0007
+   },
+   "Harmony": {
+    "m": 0.7712,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6263,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6073,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.3775,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4316,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6235,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4588,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5776,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5067,
+    "sd": 0.002
+   },
+   "FROST_cc": {
+    "m": 0.6759,
+    "sd": 0.0016
+   },
+   "FROST": {
+    "m": 0.678,
+    "sd": 0.002
+   },
+   "Harmony": {
+    "m": 0.3949,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4362,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6063,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.2154,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4012,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5324,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3751,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5219,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4808,
+    "sd": 0.0022
+   },
+   "FROST_cc": {
+    "m": 0.6252,
+    "sd": 0.0025
+   },
+   "FROST": {
+    "m": 0.6203,
+    "sd": 0.0027
+   },
+   "Harmony": {
+    "m": 0.3982,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2154,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3995,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.3668,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4227,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5152,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4022,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5237,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5115,
+    "sd": 0.0003
+   },
+   "FROST_cc": {
+    "m": 0.6055,
+    "sd": 0.0015
+   },
+   "FROST": {
+    "m": 0.6058,
+    "sd": 0.0013
+   },
+   "Harmony": {
+    "m": 0.4295,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3995,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2867,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.3755,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4333,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6259,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.408,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5783,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6409,
+    "sd": 0.0014
+   },
+   "FROST_cc": {
+    "m": 0.7899,
+    "sd": 0.0011
+   },
+   "FROST": {
+    "m": 0.7849,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.4548,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4037,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4981,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.3654,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4437,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5855,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4341,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5239,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.501,
+    "sd": 0.0027
+   },
+   "FROST_cc": {
+    "m": 0.6184,
+    "sd": 0.002
+   },
+   "FROST": {
+    "m": 0.6189,
+    "sd": 0.0059
+   },
+   "Harmony": {
+    "m": 0.3785,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4064,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5644,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.2078,
+    "sd": null
+   },
+   "center": {
+    "m": 0.3942,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4669,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3435,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.4622,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4102,
+    "sd": 0.0002
+   },
+   "FROST_cc": {
+    "m": 0.5174,
+    "sd": 0.0033
+   },
+   "FROST": {
+    "m": 0.515,
+    "sd": 0.0009
+   },
+   "Harmony": {
+    "m": 0.3886,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2078,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2537,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.3897,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5062,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6682,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4404,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5129,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6046,
+    "sd": 0.0024
+   },
+   "FROST_cc": {
+    "m": 0.6669,
+    "sd": 0.0026
+   },
+   "FROST": {
+    "m": 0.6661,
+    "sd": 0.0008
+   },
+   "Harmony": {
+    "m": 0.4304,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.448,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5307,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.3276,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4152,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.605,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3943,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.589,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4731,
+    "sd": 0.0026
+   },
+   "FROST_cc": {
+    "m": 0.6321,
+    "sd": 0.0041
+   },
+   "FROST": {
+    "m": 0.6273,
+    "sd": 0.0019
+   },
+   "Harmony": {
+    "m": 0.4364,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3276,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3843,
+    "sd": null
+   }
+  }
+ },
+ "batch_asw": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.7347,
+    "sd": null
+   },
+   "center": {
+    "m": 0.8614,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9034,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.8749,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9461,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9297,
+    "sd": 0.0001,
+    "seed0_nb36": 0.9297
+   },
+   "FROST_cc": {
+    "m": 0.9283,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.9283,
+    "sd": 0.0002
+   },
+   "Harmony": {
+    "m": 0.7854,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7709,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9343,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.615,
+    "sd": null
+   },
+   "center": {
+    "m": 0.8658,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.8704,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.7738,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9041,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.89,
+    "sd": 0.0015,
+    "seed0_nb36": 0.8883
+   },
+   "FROST_cc": {
+    "m": 0.897,
+    "sd": 0.0017
+   },
+   "FROST": {
+    "m": 0.9052,
+    "sd": 0.0002
+   },
+   "Harmony": {
+    "m": 0.8635,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.615,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.8282,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.7156,
+    "sd": null
+   },
+   "center": {
+    "m": 0.8374,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.881,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.7636,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.8969,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9177,
+    "sd": 0.0009,
+    "seed0_nb36": 0.9168
+   },
+   "FROST_cc": {
+    "m": 0.9074,
+    "sd": 0.0008
+   },
+   "FROST": {
+    "m": 0.9067,
+    "sd": 0.0008
+   },
+   "Harmony": {
+    "m": 0.8539,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7617,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.8235,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.8418,
+    "sd": null
+   },
+   "center": {
+    "m": 0.8975,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.906,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.8824,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9314,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9387,
+    "sd": 0.0004,
+    "seed0_nb36": 0.9382
+   },
+   "FROST_cc": {
+    "m": 0.9207,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.9206,
+    "sd": 0.0002
+   },
+   "Harmony": {
+    "m": 0.9522,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.8747,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.8893,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.7016,
+    "sd": null
+   },
+   "center": {
+    "m": 0.8218,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.8596,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.8314,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9127,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8761,
+    "sd": 0.0003
+   },
+   "FROST_cc": {
+    "m": 0.885,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.8854,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.7405,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7811,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.8872,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.5613,
+    "sd": null
+   },
+   "center": {
+    "m": 0.8089,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.8206,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6915,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.861,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.847,
+    "sd": 0.0008
+   },
+   "FROST_cc": {
+    "m": 0.8626,
+    "sd": 0.0005
+   },
+   "FROST": {
+    "m": 0.8646,
+    "sd": 0.0009
+   },
+   "Harmony": {
+    "m": 0.8012,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5613,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.7274,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.6704,
+    "sd": null
+   },
+   "center": {
+    "m": 0.8136,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.8076,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.7639,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.8161,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8619,
+    "sd": 0.0004
+   },
+   "FROST_cc": {
+    "m": 0.8355,
+    "sd": 0.0004
+   },
+   "FROST": {
+    "m": 0.836,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.8277,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7553,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5521,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.6864,
+    "sd": null
+   },
+   "center": {
+    "m": 0.8417,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.869,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.7676,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9368,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9348,
+    "sd": 0.0014
+   },
+   "FROST_cc": {
+    "m": 0.9336,
+    "sd": 0.0004
+   },
+   "FROST": {
+    "m": 0.9333,
+    "sd": 0.0006
+   },
+   "Harmony": {
+    "m": 0.8848,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7571,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.8001,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.6678,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7983,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.8641,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.8049,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9385,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8712,
+    "sd": 0.0
+   },
+   "FROST_cc": {
+    "m": 0.8969,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.8972,
+    "sd": 0.0002
+   },
+   "Harmony": {
+    "m": 0.7049,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7669,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.8826,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.5319,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7886,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.8101,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6686,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.8335,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8139,
+    "sd": 0.0008
+   },
+   "FROST_cc": {
+    "m": 0.8476,
+    "sd": 0.0003
+   },
+   "FROST": {
+    "m": 0.8472,
+    "sd": 0.0005
+   },
+   "Harmony": {
+    "m": 0.784,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5319,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5734,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.7237,
+    "sd": null
+   },
+   "center": {
+    "m": 0.8746,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9292,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.8172,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9032,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9193,
+    "sd": 0.0007
+   },
+   "FROST_cc": {
+    "m": 0.9371,
+    "sd": 0.0003
+   },
+   "FROST": {
+    "m": 0.9373,
+    "sd": 0.0005
+   },
+   "Harmony": {
+    "m": 0.7895,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.784,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.8321,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.6182,
+    "sd": null
+   },
+   "center": {
+    "m": 0.8009,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.8751,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.7291,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.8772,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8198,
+    "sd": 0.002
+   },
+   "FROST_cc": {
+    "m": 0.8754,
+    "sd": 0.0006
+   },
+   "FROST": {
+    "m": 0.8754,
+    "sd": 0.0009
+   },
+   "Harmony": {
+    "m": 0.8411,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6182,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.7075,
+    "sd": null
+   }
+  }
+ },
+ "nmi": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.5708,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6224,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6726,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.647,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7259,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7075,
+    "sd": 0.0053,
+    "seed0_nb36": 0.7054
+   },
+   "FROST_cc": {
+    "m": 0.719,
+    "sd": 0.0028
+   },
+   "FROST": {
+    "m": 0.7204,
+    "sd": 0.0023
+   },
+   "Harmony": {
+    "m": 0.5608,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5671,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5808,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.4647,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4576,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4576,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4674,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5195,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.515,
+    "sd": 0.0047,
+    "seed0_nb36": 0.5136
+   },
+   "FROST_cc": {
+    "m": 0.5149,
+    "sd": 0.0186
+   },
+   "FROST": {
+    "m": 0.5196,
+    "sd": 0.0091
+   },
+   "Harmony": {
+    "m": 0.4527,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4647,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4579,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.6636,
+    "sd": null
+   },
+   "center": {
+    "m": 0.65,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7282,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.7151,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7891,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8107,
+    "sd": 0.0118,
+    "seed0_nb36": 0.7972
+   },
+   "FROST_cc": {
+    "m": 0.8132,
+    "sd": 0.0119
+   },
+   "FROST": {
+    "m": 0.8152,
+    "sd": 0.025
+   },
+   "Harmony": {
+    "m": 0.8173,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7171,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6454,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.6125,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7039,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6392,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6484,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6612,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6849,
+    "sd": 0.0074,
+    "seed0_nb36": 0.6782
+   },
+   "FROST_cc": {
+    "m": 0.6608,
+    "sd": 0.0186
+   },
+   "FROST": {
+    "m": 0.6567,
+    "sd": 0.005
+   },
+   "Harmony": {
+    "m": 0.6569,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5935,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6525,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.5339,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5905,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6479,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6186,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.689,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6578,
+    "sd": 0.0016
+   },
+   "FROST_cc": {
+    "m": 0.6859,
+    "sd": 0.0033
+   },
+   "FROST": {
+    "m": 0.6888,
+    "sd": 0.0029
+   },
+   "Harmony": {
+    "m": 0.5549,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5254,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5437,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.4712,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4679,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4402,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4743,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5587,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5508,
+    "sd": 0.0024
+   },
+   "FROST_cc": {
+    "m": 0.5431,
+    "sd": 0.0026
+   },
+   "FROST": {
+    "m": 0.5469,
+    "sd": 0.0025
+   },
+   "Harmony": {
+    "m": 0.4685,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4712,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4377,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.4514,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4491,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4299,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4608,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5053,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.485,
+    "sd": 0.0166
+   },
+   "FROST_cc": {
+    "m": 0.501,
+    "sd": 0.0008
+   },
+   "FROST": {
+    "m": 0.5001,
+    "sd": 0.0015
+   },
+   "Harmony": {
+    "m": 0.4631,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4626,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4279,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.6571,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6553,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7311,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.652,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7597,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7684,
+    "sd": 0.001
+   },
+   "FROST_cc": {
+    "m": 0.7616,
+    "sd": 0.0102
+   },
+   "FROST": {
+    "m": 0.7636,
+    "sd": 0.0071
+   },
+   "Harmony": {
+    "m": 0.7539,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7601,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6345,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.4911,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5627,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6656,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5615,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6901,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.714,
+    "sd": 0.0038
+   },
+   "FROST_cc": {
+    "m": 0.7159,
+    "sd": 0.0078
+   },
+   "FROST": {
+    "m": 0.7132,
+    "sd": 0.009
+   },
+   "Harmony": {
+    "m": 0.5156,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5652,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5566,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.3822,
+    "sd": null
+   },
+   "center": {
+    "m": 0.3782,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3464,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3823,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.3731,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4015,
+    "sd": 0.0036
+   },
+   "FROST_cc": {
+    "m": 0.3636,
+    "sd": 0.0041
+   },
+   "FROST": {
+    "m": 0.3623,
+    "sd": 0.0069
+   },
+   "Harmony": {
+    "m": 0.378,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3822,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4078,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.4852,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6454,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6073,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5141,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6594,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6386,
+    "sd": 0.0211
+   },
+   "FROST_cc": {
+    "m": 0.6001,
+    "sd": 0.0275
+   },
+   "FROST": {
+    "m": 0.5984,
+    "sd": 0.0261
+   },
+   "Harmony": {
+    "m": 0.5012,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4584,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5183,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.5039,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5098,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5709,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5403,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6273,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5806,
+    "sd": 0.0225
+   },
+   "FROST_cc": {
+    "m": 0.599,
+    "sd": 0.0053
+   },
+   "FROST": {
+    "m": 0.5799,
+    "sd": 0.0033
+   },
+   "Harmony": {
+    "m": 0.5273,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5039,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4318,
+    "sd": null
+   }
+  }
+ },
+ "ari": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.3811,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5502,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6793,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5396,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7392,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6802,
+    "sd": 0.0134,
+    "seed0_nb36": 0.7001
+   },
+   "FROST_cc": {
+    "m": 0.7299,
+    "sd": 0.0022
+   },
+   "FROST": {
+    "m": 0.7297,
+    "sd": 0.0013
+   },
+   "Harmony": {
+    "m": 0.3753,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3924,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5468,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.3005,
+    "sd": null
+   },
+   "center": {
+    "m": 0.2956,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4588,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3013,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5188,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4727,
+    "sd": 0.0082,
+    "seed0_nb36": 0.4678
+   },
+   "FROST_cc": {
+    "m": 0.4761,
+    "sd": 0.0068
+   },
+   "FROST": {
+    "m": 0.488,
+    "sd": 0.0424
+   },
+   "Harmony": {
+    "m": 0.2871,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3005,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.31,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.5827,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4986,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7859,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.7205,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.8516,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8814,
+    "sd": 0.0128,
+    "seed0_nb36": 0.8666
+   },
+   "FROST_cc": {
+    "m": 0.8803,
+    "sd": 0.0072
+   },
+   "FROST": {
+    "m": 0.8723,
+    "sd": 0.0326
+   },
+   "Harmony": {
+    "m": 0.8754,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7205,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6299,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.4506,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7034,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6216,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6025,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6599,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6692,
+    "sd": 0.0157,
+    "seed0_nb36": 0.6542
+   },
+   "FROST_cc": {
+    "m": 0.6399,
+    "sd": 0.0184
+   },
+   "FROST": {
+    "m": 0.6411,
+    "sd": 0.0074
+   },
+   "Harmony": {
+    "m": 0.6652,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5609,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6246,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.3518,
+    "sd": null
+   },
+   "center": {
+    "m": 0.507,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6688,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5337,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7101,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6664,
+    "sd": 0.0017
+   },
+   "FROST_cc": {
+    "m": 0.7137,
+    "sd": 0.0174
+   },
+   "FROST": {
+    "m": 0.7202,
+    "sd": 0.0121
+   },
+   "Harmony": {
+    "m": 0.3904,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3494,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5485,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.3336,
+    "sd": null
+   },
+   "center": {
+    "m": 0.329,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4603,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3327,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5961,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5539,
+    "sd": 0.0284
+   },
+   "FROST_cc": {
+    "m": 0.5792,
+    "sd": 0.0035
+   },
+   "FROST": {
+    "m": 0.5859,
+    "sd": 0.0024
+   },
+   "Harmony": {
+    "m": 0.3295,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3336,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.276,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.2849,
+    "sd": null
+   },
+   "center": {
+    "m": 0.267,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4178,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.2819,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.4739,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4525,
+    "sd": 0.0194
+   },
+   "FROST_cc": {
+    "m": 0.4716,
+    "sd": 0.0015
+   },
+   "FROST": {
+    "m": 0.4717,
+    "sd": 0.0011
+   },
+   "Harmony": {
+    "m": 0.2948,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2979,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1585,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.4928,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4925,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7389,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4867,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7637,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7586,
+    "sd": 0.0013
+   },
+   "FROST_cc": {
+    "m": 0.7651,
+    "sd": 0.0254
+   },
+   "FROST": {
+    "m": 0.7751,
+    "sd": 0.0146
+   },
+   "Harmony": {
+    "m": 0.7445,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7485,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5791,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.2888,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5322,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6967,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4762,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6964,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7331,
+    "sd": 0.0048
+   },
+   "FROST_cc": {
+    "m": 0.7346,
+    "sd": 0.0026
+   },
+   "FROST": {
+    "m": 0.7308,
+    "sd": 0.0031
+   },
+   "Harmony": {
+    "m": 0.3634,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4353,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5598,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.225,
+    "sd": null
+   },
+   "center": {
+    "m": 0.2139,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3342,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.2176,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.3583,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.2575,
+    "sd": 0.0184
+   },
+   "FROST_cc": {
+    "m": 0.3106,
+    "sd": 0.006
+   },
+   "FROST": {
+    "m": 0.2959,
+    "sd": 0.0061
+   },
+   "Harmony": {
+    "m": 0.2411,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.225,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1621,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.3475,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7302,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6896,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4213,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.737,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7256,
+    "sd": 0.0223
+   },
+   "FROST_cc": {
+    "m": 0.6828,
+    "sd": 0.0262
+   },
+   "FROST": {
+    "m": 0.6811,
+    "sd": 0.026
+   },
+   "Harmony": {
+    "m": 0.4085,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3814,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5795,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.3928,
+    "sd": null
+   },
+   "center": {
+    "m": 0.3782,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6164,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3805,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6579,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5049,
+    "sd": 0.1202
+   },
+   "FROST_cc": {
+    "m": 0.6374,
+    "sd": 0.0084
+   },
+   "FROST": {
+    "m": 0.6182,
+    "sd": 0.0058
+   },
+   "Harmony": {
+    "m": 0.3992,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3928,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2956,
+    "sd": null
+   }
+  }
+ },
+ "asw": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.5466,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5565,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5733,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5549,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5915,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5754,
+    "sd": 0.0001,
+    "seed0_nb36": 0.5754
+   },
+   "FROST_cc": {
+    "m": 0.5815,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.5814,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.5465,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5507,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5618,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.5423,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5528,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5485,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5516,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5626,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5658,
+    "sd": 0.0007,
+    "seed0_nb36": 0.5651
+   },
+   "FROST_cc": {
+    "m": 0.5603,
+    "sd": 0.0006
+   },
+   "FROST": {
+    "m": 0.5631,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.5532,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5423,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5388,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.6018,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6133,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5867,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6086,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6211,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6257,
+    "sd": 0.0006,
+    "seed0_nb36": 0.6256
+   },
+   "FROST_cc": {
+    "m": 0.6096,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.6098,
+    "sd": 0.0002
+   },
+   "Harmony": {
+    "m": 0.618,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6083,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5931,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.5673,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5674,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5715,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5701,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5866,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5843,
+    "sd": 0.0001,
+    "seed0_nb36": 0.5843
+   },
+   "FROST_cc": {
+    "m": 0.5761,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.5762,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.5735,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.574,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5745,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.5471,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5563,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5787,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5561,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5967,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5761,
+    "sd": 0.0002
+   },
+   "FROST_cc": {
+    "m": 0.5858,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.5859,
+    "sd": 0.0002
+   },
+   "Harmony": {
+    "m": 0.5459,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5375,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5611,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.5329,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5472,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.545,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5398,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.563,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5672,
+    "sd": 0.0003
+   },
+   "FROST_cc": {
+    "m": 0.5623,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.5632,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.5451,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5329,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5395,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.5354,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5416,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5426,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5383,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5536,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5535,
+    "sd": 0.0001
+   },
+   "FROST_cc": {
+    "m": 0.5546,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.555,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.5416,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.538,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5272,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.5727,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5886,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5876,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5804,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6113,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.612,
+    "sd": 0.0002
+   },
+   "FROST_cc": {
+    "m": 0.6063,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.6065,
+    "sd": 0.0
+   },
+   "Harmony": {
+    "m": 0.5912,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5794,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5799,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.5379,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5476,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5732,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5433,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5902,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5674,
+    "sd": 0.0003
+   },
+   "FROST_cc": {
+    "m": 0.5787,
+    "sd": 0.0
+   },
+   "FROST": {
+    "m": 0.5787,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.5368,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5256,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5488,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.5199,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5221,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5294,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5196,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5301,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5287,
+    "sd": 0.0
+   },
+   "FROST_cc": {
+    "m": 0.5331,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.5332,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.521,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5199,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5138,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.5718,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5634,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5905,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5796,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6072,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5946,
+    "sd": 0.0012
+   },
+   "FROST_cc": {
+    "m": 0.5934,
+    "sd": 0.0003
+   },
+   "FROST": {
+    "m": 0.5933,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.5693,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5847,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6108,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.557,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5656,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5769,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5714,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.593,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.591,
+    "sd": 0.0008
+   },
+   "FROST_cc": {
+    "m": 0.5926,
+    "sd": 0.0008
+   },
+   "FROST": {
+    "m": 0.5935,
+    "sd": 0.0009
+   },
+   "Harmony": {
+    "m": 0.5704,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.557,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.567,
+    "sd": null
+   }
+  }
+ },
+ "clisi": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.9897,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9955,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9974,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9954,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9974,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9975,
+    "sd": 0.0,
+    "seed0_nb36": 0.9975
+   },
+   "FROST_cc": {
+    "m": 0.9985,
+    "sd": 0.0
+   },
+   "FROST": {
+    "m": 0.9985,
+    "sd": 0.0
+   },
+   "Harmony": {
+    "m": 0.9907,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.9884,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9963,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.9677,
+    "sd": null
+   },
+   "center": {
+    "m": 0.97,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9763,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9701,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9832,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9719,
+    "sd": 0.0002,
+    "seed0_nb36": 0.9718
+   },
+   "FROST_cc": {
+    "m": 0.9778,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.9785,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.9702,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.9677,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9704,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 1.0,
+    "sd": null
+   },
+   "center": {
+    "m": 1.0,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 1.0,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 1.0,
+    "sd": null
+   },
+   "ridge": {
+    "m": 1.0,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 1.0,
+    "sd": 0.0,
+    "seed0_nb36": 1.0
+   },
+   "FROST_cc": {
+    "m": 1.0,
+    "sd": 0.0
+   },
+   "FROST": {
+    "m": 1.0,
+    "sd": 0.0
+   },
+   "Harmony": {
+    "m": 1.0,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 1.0,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9996,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.9957,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9977,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9962,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.997,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9951,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9959,
+    "sd": 0.0001,
+    "seed0_nb36": 0.9958
+   },
+   "FROST_cc": {
+    "m": 0.9969,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.9969,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.9951,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.9895,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9954,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.9903,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9955,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9983,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9957,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9977,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9977,
+    "sd": 0.0001
+   },
+   "FROST_cc": {
+    "m": 0.999,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.9991,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.9908,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.989,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9957,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.9801,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9837,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9834,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.982,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9915,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9808,
+    "sd": 0.0003
+   },
+   "FROST_cc": {
+    "m": 0.9879,
+    "sd": 0.0003
+   },
+   "FROST": {
+    "m": 0.9899,
+    "sd": 0.0002
+   },
+   "Harmony": {
+    "m": 0.9831,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.9801,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9696,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.9513,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9617,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9698,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9524,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9704,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9522,
+    "sd": 0.001
+   },
+   "FROST_cc": {
+    "m": 0.9642,
+    "sd": 0.0011
+   },
+   "FROST": {
+    "m": 0.965,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.9615,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.9527,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.8985,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.999,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9992,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9987,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9991,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9994,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9982,
+    "sd": 0.0001
+   },
+   "FROST_cc": {
+    "m": 0.9988,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.9989,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.9992,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.9991,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9953,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.9595,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9776,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9908,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9674,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9899,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9905,
+    "sd": 0.0001
+   },
+   "FROST_cc": {
+    "m": 0.9954,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.9955,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.9602,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.9609,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9879,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.9037,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9034,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9602,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9065,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9555,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9184,
+    "sd": 0.0014
+   },
+   "FROST_cc": {
+    "m": 0.9537,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.9536,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.9032,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.9037,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.8089,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.997,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9983,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9971,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9979,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.998,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9989,
+    "sd": 0.0
+   },
+   "FROST_cc": {
+    "m": 0.9988,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.9988,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.9968,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.995,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9984,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.9929,
+    "sd": null
+   },
+   "center": {
+    "m": 0.9919,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.9932,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.9934,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.9895,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.9872,
+    "sd": 0.0005
+   },
+   "FROST_cc": {
+    "m": 0.986,
+    "sd": 0.0004
+   },
+   "FROST": {
+    "m": 0.9861,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.9926,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.9929,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.9824,
+    "sd": null
+   }
+  }
+ },
+ "iso_labels": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.5485,
+    "sd": null
+   },
+   "center": {
+    "m": 0.558,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5777,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.557,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.595,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.578,
+    "sd": 0.0001,
+    "seed0_nb36": 0.578
+   },
+   "FROST_cc": {
+    "m": 0.5851,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.5851,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.5485,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5529,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5679,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.5396,
+    "sd": null
+   },
+   "center": {
+    "m": 0.55,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5475,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5478,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5607,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5622,
+    "sd": 0.0007,
+    "seed0_nb36": 0.5615
+   },
+   "FROST_cc": {
+    "m": 0.5591,
+    "sd": 0.0006
+   },
+   "FROST": {
+    "m": 0.5616,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.55,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5396,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5428,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.594,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6054,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5948,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5997,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6219,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6208,
+    "sd": 0.0007,
+    "seed0_nb36": 0.6202
+   },
+   "FROST_cc": {
+    "m": 0.6149,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.615,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.6082,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5997,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.598,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.5779,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5803,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5875,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5813,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6027,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5982,
+    "sd": 0.0001,
+    "seed0_nb36": 0.5983
+   },
+   "FROST_cc": {
+    "m": 0.592,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.592,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.5882,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5886,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5915,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.5524,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5613,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5847,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5618,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6012,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5816,
+    "sd": 0.0003
+   },
+   "FROST_cc": {
+    "m": 0.5913,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.5914,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.5518,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5422,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5714,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.5365,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5471,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5508,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5415,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5676,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.563,
+    "sd": 0.0001
+   },
+   "FROST_cc": {
+    "m": 0.5674,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.5686,
+    "sd": 0.0002
+   },
+   "Harmony": {
+    "m": 0.546,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5365,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5438,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.5409,
+    "sd": null
+   },
+   "center": {
+    "m": 0.545,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.547,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5438,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5564,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5591,
+    "sd": 0.0002
+   },
+   "FROST_cc": {
+    "m": 0.5594,
+    "sd": 0.0003
+   },
+   "FROST": {
+    "m": 0.5597,
+    "sd": 0.0002
+   },
+   "Harmony": {
+    "m": 0.5456,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5439,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5314,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.5754,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5908,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5905,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5832,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6139,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6156,
+    "sd": 0.0002
+   },
+   "FROST_cc": {
+    "m": 0.6092,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.6093,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.5937,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5825,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5872,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.5326,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5403,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5594,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5369,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5737,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.556,
+    "sd": 0.0002
+   },
+   "FROST_cc": {
+    "m": 0.5649,
+    "sd": 0.0
+   },
+   "FROST": {
+    "m": 0.5649,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.5319,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5228,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5427,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.5266,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5296,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5334,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5281,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5357,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5378,
+    "sd": 0.0001
+   },
+   "FROST_cc": {
+    "m": 0.5411,
+    "sd": 0.0003
+   },
+   "FROST": {
+    "m": 0.5408,
+    "sd": 0.0001
+   },
+   "Harmony": {
+    "m": 0.5295,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5266,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5032,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.5704,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5709,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.603,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5777,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6223,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6027,
+    "sd": 0.0007
+   },
+   "FROST_cc": {
+    "m": 0.6058,
+    "sd": 0.0003
+   },
+   "FROST": {
+    "m": 0.6057,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.5717,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5837,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5939,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.5618,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5715,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5819,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5744,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5941,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6013,
+    "sd": 0.0004
+   },
+   "FROST_cc": {
+    "m": 0.5979,
+    "sd": 0.0005
+   },
+   "FROST": {
+    "m": 0.5983,
+    "sd": 0.0008
+   },
+   "Harmony": {
+    "m": 0.5764,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5618,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5409,
+    "sd": null
+   }
+  }
+ },
+ "bio_v2": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.6073,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6565,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7001,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6588,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7298,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7077,
+    "sd": 0.002,
+    "seed0_nb36": 0.7113
+   },
+   "FROST_cc": {
+    "m": 0.7228,
+    "sd": 0.001
+   },
+   "FROST": {
+    "m": 0.723,
+    "sd": 0.0006
+   },
+   "Harmony": {
+    "m": 0.6044,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6103,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6507,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.563,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5652,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5977,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5676,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.629,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6175,
+    "sd": 0.0027,
+    "seed0_nb36": 0.616
+   },
+   "FROST_cc": {
+    "m": 0.6177,
+    "sd": 0.0052
+   },
+   "FROST": {
+    "m": 0.6222,
+    "sd": 0.0073
+   },
+   "Harmony": {
+    "m": 0.5626,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.563,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.564,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.6884,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6735,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7391,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.7288,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7767,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7877,
+    "sd": 0.0051,
+    "seed0_nb36": 0.7819
+   },
+   "FROST_cc": {
+    "m": 0.7836,
+    "sd": 0.0039
+   },
+   "FROST": {
+    "m": 0.7824,
+    "sd": 0.0115
+   },
+   "Harmony": {
+    "m": 0.7838,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7291,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6932,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.6408,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7105,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6832,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6799,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7011,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7065,
+    "sd": 0.0046,
+    "seed0_nb36": 0.7022
+   },
+   "FROST_cc": {
+    "m": 0.6932,
+    "sd": 0.0072
+   },
+   "FROST": {
+    "m": 0.6926,
+    "sd": 0.0024
+   },
+   "Harmony": {
+    "m": 0.6958,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6613,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6877,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.5951,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6421,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6957,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6532,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7189,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6959,
+    "sd": 0.0006
+   },
+   "FROST_cc": {
+    "m": 0.7152,
+    "sd": 0.004
+   },
+   "FROST": {
+    "m": 0.7171,
+    "sd": 0.0029
+   },
+   "Harmony": {
+    "m": 0.6068,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5887,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6441,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.5709,
+    "sd": null
+   },
+   "center": {
+    "m": 0.575,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5959,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5741,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6554,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6432,
+    "sd": 0.0062
+   },
+   "FROST_cc": {
+    "m": 0.648,
+    "sd": 0.0013
+   },
+   "FROST": {
+    "m": 0.6509,
+    "sd": 0.0009
+   },
+   "Harmony": {
+    "m": 0.5744,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5709,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5533,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.5528,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5529,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5814,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5554,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6119,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6005,
+    "sd": 0.0072
+   },
+   "FROST_cc": {
+    "m": 0.6101,
+    "sd": 0.0003
+   },
+   "FROST": {
+    "m": 0.6103,
+    "sd": 0.0004
+   },
+   "Harmony": {
+    "m": 0.5613,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.559,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5087,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.6594,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6653,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7294,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6603,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7496,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7506,
+    "sd": 0.0004
+   },
+   "FROST_cc": {
+    "m": 0.7482,
+    "sd": 0.0069
+   },
+   "FROST": {
+    "m": 0.7507,
+    "sd": 0.0043
+   },
+   "Harmony": {
+    "m": 0.7365,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7339,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6752,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.562,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6321,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6971,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6171,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7081,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7122,
+    "sd": 0.0016
+   },
+   "FROST_cc": {
+    "m": 0.7179,
+    "sd": 0.0014
+   },
+   "FROST": {
+    "m": 0.7167,
+    "sd": 0.0022
+   },
+   "Harmony": {
+    "m": 0.5816,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.602,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6392,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.5115,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5094,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5407,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5108,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5505,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5288,
+    "sd": 0.0042
+   },
+   "FROST_cc": {
+    "m": 0.5404,
+    "sd": 0.002
+   },
+   "FROST": {
+    "m": 0.5372,
+    "sd": 0.0024
+   },
+   "Harmony": {
+    "m": 0.5146,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5115,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4792,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.5944,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7016,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6975,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6181,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7248,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7121,
+    "sd": 0.0083
+   },
+   "FROST_cc": {
+    "m": 0.6961,
+    "sd": 0.0106
+   },
+   "FROST": {
+    "m": 0.6954,
+    "sd": 0.0103
+   },
+   "Harmony": {
+    "m": 0.6095,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6006,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6602,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.6017,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6034,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6679,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.612,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6924,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.653,
+    "sd": 0.0287
+   },
+   "FROST_cc": {
+    "m": 0.6826,
+    "sd": 0.003
+   },
+   "FROST": {
+    "m": 0.6752,
+    "sd": 0.0021
+   },
+   "Harmony": {
+    "m": 0.6132,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6017,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5635,
+    "sd": null
+   }
+  }
+ },
+ "total_v2": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.52,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5747,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6868,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5921,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6789,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.662,
+    "sd": 0.0006,
+    "seed0_nb36": 0.6636
+   },
+   "FROST_cc": {
+    "m": 0.7259,
+    "sd": 0.0007
+   },
+   "FROST": {
+    "m": 0.7264,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.5282,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5398,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6587,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.4543,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5164,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.584,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5028,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5968,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5729,
+    "sd": 0.0016,
+    "seed0_nb36": 0.5719
+   },
+   "FROST_cc": {
+    "m": 0.6288,
+    "sd": 0.0031
+   },
+   "FROST": {
+    "m": 0.6331,
+    "sd": 0.004
+   },
+   "Harmony": {
+    "m": 0.5144,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4543,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5321,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.5688,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5791,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6888,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6034,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6872,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7346,
+    "sd": 0.0052,
+    "seed0_nb36": 0.7299
+   },
+   "FROST_cc": {
+    "m": 0.7587,
+    "sd": 0.0043
+   },
+   "FROST": {
+    "m": 0.7578,
+    "sd": 0.0029
+   },
+   "Harmony": {
+    "m": 0.6543,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6034,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6349,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.5611,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6352,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6743,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6242,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.638,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7006,
+    "sd": 0.0027,
+    "seed0_nb36": 0.698
+   },
+   "FROST_cc": {
+    "m": 0.6924,
+    "sd": 0.0035
+   },
+   "FROST": {
+    "m": 0.6928,
+    "sd": 0.0017
+   },
+   "Harmony": {
+    "m": 0.726,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6473,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6555,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.5081,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5579,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6668,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5754,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6624,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6202,
+    "sd": 0.001
+   },
+   "FROST_cc": {
+    "m": 0.6994,
+    "sd": 0.0025
+   },
+   "FROST": {
+    "m": 0.7014,
+    "sd": 0.0025
+   },
+   "Harmony": {
+    "m": 0.522,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5277,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.629,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.4287,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5055,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5705,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4945,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.602,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5782,
+    "sd": 0.0032
+   },
+   "FROST_cc": {
+    "m": 0.6389,
+    "sd": 0.0018
+   },
+   "FROST": {
+    "m": 0.6386,
+    "sd": 0.0015
+   },
+   "Harmony": {
+    "m": 0.5039,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4287,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4918,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.4784,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5008,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5549,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4941,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5766,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5649,
+    "sd": 0.0045
+   },
+   "FROST_cc": {
+    "m": 0.6083,
+    "sd": 0.0005
+   },
+   "FROST": {
+    "m": 0.6085,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.5086,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4952,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4199,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.5458,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5725,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.688,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5594,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6811,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7067,
+    "sd": 0.0003
+   },
+   "FROST_cc": {
+    "m": 0.7649,
+    "sd": 0.0037
+   },
+   "FROST": {
+    "m": 0.7644,
+    "sd": 0.0026
+   },
+   "Harmony": {
+    "m": 0.6238,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6018,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6044,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.4834,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5567,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6525,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5439,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6344,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6278,
+    "sd": 0.0014
+   },
+   "FROST_cc": {
+    "m": 0.6781,
+    "sd": 0.0014
+   },
+   "FROST": {
+    "m": 0.6775,
+    "sd": 0.0016
+   },
+   "Harmony": {
+    "m": 0.5004,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5238,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6093,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.39,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4633,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5112,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4439,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5152,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4813,
+    "sd": 0.0025
+   },
+   "FROST_cc": {
+    "m": 0.5312,
+    "sd": 0.0015
+   },
+   "FROST": {
+    "m": 0.5283,
+    "sd": 0.0017
+   },
+   "Harmony": {
+    "m": 0.4642,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.39,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.389,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.5125,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6234,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6858,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.547,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.64,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6691,
+    "sd": 0.0049
+   },
+   "FROST_cc": {
+    "m": 0.6844,
+    "sd": 0.0063
+   },
+   "FROST": {
+    "m": 0.6837,
+    "sd": 0.0062
+   },
+   "Harmony": {
+    "m": 0.5379,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5396,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6084,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.4921,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5281,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6427,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5249,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.651,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.581,
+    "sd": 0.0169
+   },
+   "FROST_cc": {
+    "m": 0.6624,
+    "sd": 0.0033
+   },
+   "FROST": {
+    "m": 0.6561,
+    "sd": 0.0013
+   },
+   "Harmony": {
+    "m": 0.5425,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4921,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4918,
+    "sd": null
+   }
+  }
+ },
+ "xfer_main": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.6541,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7661,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7474,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.7654,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7845,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8034,
+    "sd": 0.0027,
+    "seed0_nb36": 0.802
+   },
+   "FROST_cc": {
+    "m": 0.79,
+    "sd": 0.0008
+   },
+   "FROST": {
+    "m": 0.7896,
+    "sd": 0.0018
+   },
+   "Harmony": {
+    "m": 0.6777,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6482,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6543,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.4991,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5908,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5553,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5329,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6211,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6172,
+    "sd": 0.0004,
+    "seed0_nb36": 0.6167
+   },
+   "FROST_cc": {
+    "m": 0.6263,
+    "sd": 0.0026
+   },
+   "FROST": {
+    "m": 0.618,
+    "sd": 0.0009
+   },
+   "Harmony": {
+    "m": 0.5772,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4991,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4624,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.6604,
+    "sd": null
+   },
+   "center": {
+    "m": 0.6762,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.6074,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6631,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.6964,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.6868,
+    "sd": 0.0175,
+    "seed0_nb36": 0.6667
+   },
+   "FROST_cc": {
+    "m": 0.6921,
+    "sd": 0.0016
+   },
+   "FROST": {
+    "m": 0.6933,
+    "sd": 0.0008
+   },
+   "Harmony": {
+    "m": 0.6799,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6693,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5996,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.7417,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7882,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7089,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.7663,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7346,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7844,
+    "sd": 0.0028,
+    "seed0_nb36": 0.7822
+   },
+   "FROST_cc": {
+    "m": 0.737,
+    "sd": 0.0004
+   },
+   "FROST": {
+    "m": 0.7352,
+    "sd": 0.0015
+   },
+   "Harmony": {
+    "m": 0.7723,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7289,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.7204,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.6466,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7168,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7292,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.7166,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7714,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7473,
+    "sd": 0.0013
+   },
+   "FROST_cc": {
+    "m": 0.7699,
+    "sd": 0.002
+   },
+   "FROST": {
+    "m": 0.7713,
+    "sd": 0.0014
+   },
+   "Harmony": {
+    "m": 0.6429,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.7504,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5911,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.4287,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5396,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4841,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4569,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5856,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5618,
+    "sd": 0.0034
+   },
+   "FROST_cc": {
+    "m": 0.5645,
+    "sd": 0.0016
+   },
+   "FROST": {
+    "m": 0.5714,
+    "sd": 0.0012
+   },
+   "Harmony": {
+    "m": 0.5454,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4287,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3315,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.434,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4991,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4595,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4546,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.515,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5198,
+    "sd": 0.0009
+   },
+   "FROST_cc": {
+    "m": 0.5253,
+    "sd": 0.0015
+   },
+   "FROST": {
+    "m": 0.5266,
+    "sd": 0.0004
+   },
+   "Harmony": {
+    "m": 0.493,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4584,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1855,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.8486,
+    "sd": null
+   },
+   "center": {
+    "m": 0.8557,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.8003,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.8527,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.849,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.8534,
+    "sd": 0.0001
+   },
+   "FROST_cc": {
+    "m": 0.8461,
+    "sd": 0.0022
+   },
+   "FROST": {
+    "m": 0.8477,
+    "sd": 0.001
+   },
+   "Harmony": {
+    "m": 0.8556,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.8521,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6027,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.6416,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7024,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.691,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.6989,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.706,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7044,
+    "sd": 0.0023
+   },
+   "FROST_cc": {
+    "m": 0.7183,
+    "sd": 0.0026
+   },
+   "FROST": {
+    "m": 0.7185,
+    "sd": 0.0026
+   },
+   "Harmony": {
+    "m": 0.6649,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5834,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6003,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.2783,
+    "sd": null
+   },
+   "center": {
+    "m": 0.3887,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3959,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3573,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.4254,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4133,
+    "sd": 0.0034
+   },
+   "FROST_cc": {
+    "m": 0.4335,
+    "sd": 0.0016
+   },
+   "FROST": {
+    "m": 0.4362,
+    "sd": 0.001
+   },
+   "Harmony": {
+    "m": 0.3878,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2783,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1778,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.6645,
+    "sd": null
+   },
+   "center": {
+    "m": 0.8571,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7801,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.74,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7968,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.844,
+    "sd": 0.0027
+   },
+   "FROST_cc": {
+    "m": 0.802,
+    "sd": 0.0013
+   },
+   "FROST": {
+    "m": 0.8013,
+    "sd": 0.0019
+   },
+   "Harmony": {
+    "m": 0.778,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6949,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.6579,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.6685,
+    "sd": null
+   },
+   "center": {
+    "m": 0.7534,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.7178,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.655,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.7548,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.7604,
+    "sd": 0.0005
+   },
+   "FROST_cc": {
+    "m": 0.7698,
+    "sd": 0.0013
+   },
+   "FROST": {
+    "m": 0.7604,
+    "sd": 0.0059
+   },
+   "Harmony": {
+    "m": 0.7395,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.6685,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3558,
+    "sd": null
+   }
+  }
+ },
+ "xfer_all": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.3473,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4618,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4477,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4613,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.4543,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4572,
+    "sd": 0.001,
+    "seed0_nb36": 0.4567
+   },
+   "FROST_cc": {
+    "m": 0.4764,
+    "sd": 0.0007
+   },
+   "FROST": {
+    "m": 0.4758,
+    "sd": 0.0005
+   },
+   "Harmony": {
+    "m": 0.3652,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3491,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4594,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.2353,
+    "sd": null
+   },
+   "center": {
+    "m": 0.3233,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.349,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.2624,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.3848,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.339,
+    "sd": 0.0026,
+    "seed0_nb36": 0.3362
+   },
+   "FROST_cc": {
+    "m": 0.3937,
+    "sd": 0.0022
+   },
+   "FROST": {
+    "m": 0.3847,
+    "sd": 0.0017
+   },
+   "Harmony": {
+    "m": 0.3103,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2353,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2952,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.3632,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4164,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4196,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3732,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.4562,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4233,
+    "sd": 0.005,
+    "seed0_nb36": 0.4178
+   },
+   "FROST_cc": {
+    "m": 0.4515,
+    "sd": 0.0003
+   },
+   "FROST": {
+    "m": 0.4516,
+    "sd": 0.0009
+   },
+   "Harmony": {
+    "m": 0.41,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3724,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2934,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.518,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5793,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.56,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5429,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5701,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5483,
+    "sd": 0.0027,
+    "seed0_nb36": 0.5514
+   },
+   "FROST_cc": {
+    "m": 0.5749,
+    "sd": 0.0011
+   },
+   "FROST": {
+    "m": 0.5738,
+    "sd": 0.0004
+   },
+   "Harmony": {
+    "m": 0.5574,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5279,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.5057,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.3662,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4057,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4127,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4098,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.4386,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4151,
+    "sd": 0.0026
+   },
+   "FROST_cc": {
+    "m": 0.4451,
+    "sd": 0.0009
+   },
+   "FROST": {
+    "m": 0.4469,
+    "sd": 0.0023
+   },
+   "Harmony": {
+    "m": 0.3506,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4131,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4152,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.2075,
+    "sd": null
+   },
+   "center": {
+    "m": 0.2766,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.2724,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.2253,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.3218,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.2915,
+    "sd": 0.002
+   },
+   "FROST_cc": {
+    "m": 0.3088,
+    "sd": 0.0014
+   },
+   "FROST": {
+    "m": 0.3126,
+    "sd": 0.0017
+   },
+   "Harmony": {
+    "m": 0.2743,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2075,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1711,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.2515,
+    "sd": null
+   },
+   "center": {
+    "m": 0.2886,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.2671,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.2616,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2963,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.302,
+    "sd": 0.0006
+   },
+   "FROST_cc": {
+    "m": 0.3037,
+    "sd": 0.0024
+   },
+   "FROST": {
+    "m": 0.303,
+    "sd": 0.0013
+   },
+   "Harmony": {
+    "m": 0.2858,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2632,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.0908,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.4923,
+    "sd": null
+   },
+   "center": {
+    "m": 0.5544,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5637,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.5064,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5801,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5528,
+    "sd": 0.0062
+   },
+   "FROST_cc": {
+    "m": 0.5947,
+    "sd": 0.0019
+   },
+   "FROST": {
+    "m": 0.5954,
+    "sd": 0.0024
+   },
+   "Harmony": {
+    "m": 0.5414,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.5107,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3325,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.2849,
+    "sd": null
+   },
+   "center": {
+    "m": 0.3498,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3462,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3515,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.3646,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3361,
+    "sd": 0.0007
+   },
+   "FROST_cc": {
+    "m": 0.3626,
+    "sd": 0.0015
+   },
+   "FROST": {
+    "m": 0.3646,
+    "sd": 0.0017
+   },
+   "Harmony": {
+    "m": 0.2892,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3442,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3553,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.1325,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1861,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.2142,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1743,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2295,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.2001,
+    "sd": 0.0024
+   },
+   "FROST_cc": {
+    "m": 0.2227,
+    "sd": 0.0043
+   },
+   "FROST": {
+    "m": 0.2271,
+    "sd": 0.0027
+   },
+   "Harmony": {
+    "m": 0.1923,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.1325,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.082,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.3397,
+    "sd": null
+   },
+   "center": {
+    "m": 0.55,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.5031,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4072,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5112,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5328,
+    "sd": 0.004
+   },
+   "FROST_cc": {
+    "m": 0.5054,
+    "sd": 0.0017
+   },
+   "FROST": {
+    "m": 0.5065,
+    "sd": 0.0022
+   },
+   "Harmony": {
+    "m": 0.4354,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3815,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3528,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.3689,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4868,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4773,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3671,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5119,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4902,
+    "sd": 0.008
+   },
+   "FROST_cc": {
+    "m": 0.506,
+    "sd": 0.0052
+   },
+   "FROST": {
+    "m": 0.5068,
+    "sd": 0.0153
+   },
+   "Harmony": {
+    "m": 0.4472,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3689,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2342,
+    "sd": null
+   }
+  }
+ },
+ "rare_purity": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.1598,
+    "sd": null
+   },
+   "center": {
+    "m": 0.2316,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.2108,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.2349,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1944,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1984,
+    "sd": 0.0008,
+    "seed0_nb36": 0.1983
+   },
+   "FROST_cc": {
+    "m": 0.2214,
+    "sd": 0.0012
+   },
+   "FROST": {
+    "m": 0.222,
+    "sd": 0.0008
+   },
+   "Harmony": {
+    "m": 0.1702,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.1679,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3279,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.0898,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1849,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.2639,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1193,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2892,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.207,
+    "sd": 0.0025,
+    "seed0_nb36": 0.2042
+   },
+   "FROST_cc": {
+    "m": 0.2917,
+    "sd": 0.0006
+   },
+   "FROST": {
+    "m": 0.2821,
+    "sd": 0.0005
+   },
+   "Harmony": {
+    "m": 0.166,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0898,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2134,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.1221,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1881,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.2476,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1313,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2485,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1844,
+    "sd": 0.0043,
+    "seed0_nb36": 0.1795
+   },
+   "FROST_cc": {
+    "m": 0.2544,
+    "sd": 0.0022
+   },
+   "FROST": {
+    "m": 0.2531,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.173,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.1328,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1565,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.3462,
+    "sd": null
+   },
+   "center": {
+    "m": 0.421,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4353,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3707,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.4315,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3721,
+    "sd": 0.0016,
+    "seed0_nb36": 0.3738
+   },
+   "FROST_cc": {
+    "m": 0.4403,
+    "sd": 0.0013
+   },
+   "FROST": {
+    "m": 0.439,
+    "sd": 0.0015
+   },
+   "Harmony": {
+    "m": 0.4185,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3767,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3666,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.1875,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1927,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.2045,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.2009,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2154,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.198,
+    "sd": 0.0009
+   },
+   "FROST_cc": {
+    "m": 0.2254,
+    "sd": 0.0009
+   },
+   "FROST": {
+    "m": 0.2274,
+    "sd": 0.0013
+   },
+   "Harmony": {
+    "m": 0.1738,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.1772,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3116,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.0521,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0853,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.1317,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0539,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1411,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.0762,
+    "sd": 0.0015
+   },
+   "FROST_cc": {
+    "m": 0.1309,
+    "sd": 0.001
+   },
+   "FROST": {
+    "m": 0.1353,
+    "sd": 0.0009
+   },
+   "Harmony": {
+    "m": 0.0814,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0521,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.0409,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.0781,
+    "sd": null
+   },
+   "center": {
+    "m": 0.111,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.1169,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0849,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1253,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1224,
+    "sd": 0.0016
+   },
+   "FROST_cc": {
+    "m": 0.1338,
+    "sd": 0.0004
+   },
+   "FROST": {
+    "m": 0.1352,
+    "sd": 0.0005
+   },
+   "Harmony": {
+    "m": 0.1052,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0877,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.009,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.2622,
+    "sd": null
+   },
+   "center": {
+    "m": 0.3445,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4101,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.2848,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.4027,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3645,
+    "sd": 0.0056
+   },
+   "FROST_cc": {
+    "m": 0.4212,
+    "sd": 0.0012
+   },
+   "FROST": {
+    "m": 0.4238,
+    "sd": 0.0005
+   },
+   "Harmony": {
+    "m": 0.3268,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2869,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1836,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.0895,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1359,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.1283,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1309,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1392,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1125,
+    "sd": 0.0009
+   },
+   "FROST_cc": {
+    "m": 0.1394,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.1395,
+    "sd": 0.0004
+   },
+   "Harmony": {
+    "m": 0.0827,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.1562,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1977,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.0347,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0776,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.1272,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0608,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1381,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.0981,
+    "sd": 0.0015
+   },
+   "FROST_cc": {
+    "m": 0.1286,
+    "sd": 0.0003
+   },
+   "FROST": {
+    "m": 0.13,
+    "sd": 0.0016
+   },
+   "Harmony": {
+    "m": 0.0756,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0347,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.0056,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.2177,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4213,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4075,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.2762,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.4077,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3979,
+    "sd": 0.0041
+   },
+   "FROST_cc": {
+    "m": 0.3845,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.3841,
+    "sd": 0.0024
+   },
+   "Harmony": {
+    "m": 0.3163,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2639,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2552,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.2165,
+    "sd": null
+   },
+   "center": {
+    "m": 0.354,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3492,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.2278,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.4141,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3886,
+    "sd": 0.0036
+   },
+   "FROST_cc": {
+    "m": 0.411,
+    "sd": 0.0031
+   },
+   "FROST": {
+    "m": 0.3987,
+    "sd": 0.0141
+   },
+   "Harmony": {
+    "m": 0.3243,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2165,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1414,
+    "sd": null
+   }
+  }
+ },
+ "knn_xen": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.2939,
+    "sd": null
+   },
+   "center": {
+    "m": 0.3536,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3388,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3583,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.3465,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3822,
+    "sd": 0.0031,
+    "seed0_nb36": 0.3786
+   },
+   "FROST_cc": {
+    "m": 0.3864,
+    "sd": 0.0047
+   },
+   "FROST": {
+    "m": 0.3863,
+    "sd": 0.0018
+   },
+   "Harmony": {
+    "m": 0.3069,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2912,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.294,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.3933,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4301,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3746,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4083,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.3923,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4339,
+    "sd": 0.0007,
+    "seed0_nb36": 0.4346
+   },
+   "FROST_cc": {
+    "m": 0.4187,
+    "sd": 0.003
+   },
+   "FROST": {
+    "m": 0.4185,
+    "sd": 0.0034
+   },
+   "Harmony": {
+    "m": 0.4258,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3933,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2971,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.454,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4736,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4483,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4654,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.4342,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4847,
+    "sd": 0.002,
+    "seed0_nb36": 0.487
+   },
+   "FROST_cc": {
+    "m": 0.4633,
+    "sd": 0.0041
+   },
+   "FROST": {
+    "m": 0.4654,
+    "sd": 0.0033
+   },
+   "Harmony": {
+    "m": 0.4756,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4626,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.3059,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.4558,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4908,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.4975,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.4729,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.5068,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.5034,
+    "sd": 0.0033,
+    "seed0_nb36": 0.4997
+   },
+   "FROST_cc": {
+    "m": 0.5118,
+    "sd": 0.0034
+   },
+   "FROST": {
+    "m": 0.5123,
+    "sd": 0.0049
+   },
+   "Harmony": {
+    "m": 0.4924,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.4489,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.4339,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.2732,
+    "sd": null
+   },
+   "center": {
+    "m": 0.2925,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.288,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3038,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2757,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3328,
+    "sd": 0.0011
+   },
+   "FROST_cc": {
+    "m": 0.3261,
+    "sd": 0.0051
+   },
+   "FROST": {
+    "m": 0.3271,
+    "sd": 0.0044
+   },
+   "Harmony": {
+    "m": 0.2562,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.302,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2213,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.3234,
+    "sd": null
+   },
+   "center": {
+    "m": 0.3506,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3092,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3148,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.3373,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3718,
+    "sd": 0.0026
+   },
+   "FROST_cc": {
+    "m": 0.3607,
+    "sd": 0.0045
+   },
+   "FROST": {
+    "m": 0.3609,
+    "sd": 0.0057
+   },
+   "Harmony": {
+    "m": 0.3511,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3234,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.234,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.2773,
+    "sd": null
+   },
+   "center": {
+    "m": 0.3121,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.2777,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.2856,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2954,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.3178,
+    "sd": 0.0023
+   },
+   "FROST_cc": {
+    "m": 0.3065,
+    "sd": 0.0014
+   },
+   "FROST": {
+    "m": 0.3092,
+    "sd": 0.001
+   },
+   "Harmony": {
+    "m": 0.3118,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.292,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1307,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.389,
+    "sd": null
+   },
+   "center": {
+    "m": 0.4133,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.3819,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.3966,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.3791,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.4202,
+    "sd": 0.0014
+   },
+   "FROST_cc": {
+    "m": 0.4155,
+    "sd": 0.0048
+   },
+   "FROST": {
+    "m": 0.412,
+    "sd": 0.0028
+   },
+   "Harmony": {
+    "m": 0.4131,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.3913,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2602,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.1774,
+    "sd": null
+   },
+   "center": {
+    "m": 0.189,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.1815,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1883,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1429,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1766,
+    "sd": 0.002
+   },
+   "FROST_cc": {
+    "m": 0.1775,
+    "sd": 0.0027
+   },
+   "FROST": {
+    "m": 0.1797,
+    "sd": 0.0013
+   },
+   "Harmony": {
+    "m": 0.1798,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.175,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1754,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.1927,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1871,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.1834,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.2002,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1846,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.201,
+    "sd": 0.0107
+   },
+   "FROST_cc": {
+    "m": 0.186,
+    "sd": 0.0046
+   },
+   "FROST": {
+    "m": 0.1989,
+    "sd": 0.0054
+   },
+   "Harmony": {
+    "m": 0.1863,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.1927,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.1748,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.2418,
+    "sd": null
+   },
+   "center": {
+    "m": 0.2304,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.1981,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.2224,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2113,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.2124,
+    "sd": 0.0059
+   },
+   "FROST_cc": {
+    "m": 0.2074,
+    "sd": 0.0024
+   },
+   "FROST": {
+    "m": 0.2128,
+    "sd": 0.0083
+   },
+   "Harmony": {
+    "m": 0.2331,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2331,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.2151,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.2011,
+    "sd": null
+   },
+   "center": {
+    "m": 0.2468,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.2265,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.2017,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.2156,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.2099,
+    "sd": 0.0145
+   },
+   "FROST_cc": {
+    "m": 0.2263,
+    "sd": 0.0041
+   },
+   "FROST": {
+    "m": 0.2127,
+    "sd": 0.0098
+   },
+   "Harmony": {
+    "m": 0.2202,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.2011,
+    "sd": null
+   },
+   "Symphony": {
+    "m": 0.222,
+    "sd": null
+   }
+  }
+ },
+ "imputation": {
+  "coad/cosmx6k": {
+   "raw": {
+    "m": 0.1763,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1685,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.1465,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1737,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.0661,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1699,
+    "sd": 0.0004
+   },
+   "FROST_cc": {
+    "m": 0.1563,
+    "sd": 0.0001
+   },
+   "FROST": {
+    "m": 0.156,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.1758,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.174,
+    "sd": null
+   },
+   "Symphony": {
+    "m": null,
+    "sd": null
+   }
+  },
+  "coad/stereoseq": {
+   "raw": {
+    "m": 0.0945,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0849,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.0778,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.085,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.0498,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.0432,
+    "sd": 0.0082
+   },
+   "FROST_cc": {
+    "m": 0.0472,
+    "sd": 0.0055
+   },
+   "FROST": {
+    "m": 0.1041,
+    "sd": 0.0033
+   },
+   "Harmony": {
+    "m": 0.0988,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0814,
+    "sd": null
+   },
+   "Symphony": {
+    "m": null,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ff": {
+   "raw": {
+    "m": 0.1347,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1551,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.1196,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1392,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.1123,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1796,
+    "sd": 0.0012
+   },
+   "FROST_cc": {
+    "m": 0.1725,
+    "sd": 0.001
+   },
+   "FROST": {
+    "m": 0.1729,
+    "sd": 0.0004
+   },
+   "Harmony": {
+    "m": 0.1581,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.1407,
+    "sd": null
+   },
+   "Symphony": {
+    "m": null,
+    "sd": null
+   }
+  },
+  "coad/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.1537,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1607,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.1479,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1561,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.0899,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1546,
+    "sd": 0.0002
+   },
+   "FROST_cc": {
+    "m": 0.1489,
+    "sd": 0.0006
+   },
+   "FROST": {
+    "m": 0.1495,
+    "sd": 0.0008
+   },
+   "Harmony": {
+    "m": 0.1538,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.1489,
+    "sd": null
+   },
+   "Symphony": {
+    "m": null,
+    "sd": null
+   }
+  },
+  "ov/cosmx6k": {
+   "raw": {
+    "m": 0.1803,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1865,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.1404,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1837,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.0503,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1831,
+    "sd": 0.0005
+   },
+   "FROST_cc": {
+    "m": 0.1552,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.1558,
+    "sd": 0.0002
+   },
+   "Harmony": {
+    "m": 0.1801,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.1803,
+    "sd": null
+   },
+   "Symphony": {
+    "m": null,
+    "sd": null
+   }
+  },
+  "ov/stereoseq": {
+   "raw": {
+    "m": 0.0314,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0332,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.0417,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0435,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.037,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.0808,
+    "sd": 0.0004
+   },
+   "FROST_cc": {
+    "m": 0.0776,
+    "sd": 0.0008
+   },
+   "FROST": {
+    "m": 0.0681,
+    "sd": 0.0011
+   },
+   "Harmony": {
+    "m": 0.0494,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0314,
+    "sd": null
+   },
+   "Symphony": {
+    "m": null,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ff": {
+   "raw": {
+    "m": 0.0866,
+    "sd": null
+   },
+   "center": {
+    "m": 0.099,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.0688,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1007,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.0984,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1549,
+    "sd": 0.001
+   },
+   "FROST_cc": {
+    "m": 0.1497,
+    "sd": 0.0018
+   },
+   "FROST": {
+    "m": 0.1484,
+    "sd": 0.0032
+   },
+   "Harmony": {
+    "m": 0.1161,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0946,
+    "sd": null
+   },
+   "Symphony": {
+    "m": null,
+    "sd": null
+   }
+  },
+  "ov/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.0692,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1131,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.0916,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0802,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.0936,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1321,
+    "sd": 0.0002
+   },
+   "FROST_cc": {
+    "m": 0.1333,
+    "sd": 0.0008
+   },
+   "FROST": {
+    "m": 0.1344,
+    "sd": 0.0003
+   },
+   "Harmony": {
+    "m": 0.0968,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0784,
+    "sd": null
+   },
+   "Symphony": {
+    "m": null,
+    "sd": null
+   }
+  },
+  "hcc/cosmx6k": {
+   "raw": {
+    "m": 0.0947,
+    "sd": null
+   },
+   "center": {
+    "m": 0.116,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.096,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1106,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.0168,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.1134,
+    "sd": 0.0002
+   },
+   "FROST_cc": {
+    "m": 0.1006,
+    "sd": 0.0002
+   },
+   "FROST": {
+    "m": 0.1007,
+    "sd": 0.0002
+   },
+   "Harmony": {
+    "m": 0.0943,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0947,
+    "sd": null
+   },
+   "Symphony": {
+    "m": null,
+    "sd": null
+   }
+  },
+  "hcc/stereoseq": {
+   "raw": {
+    "m": 0.016,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0319,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.0367,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0324,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.0332,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.0076,
+    "sd": 0.0037
+   },
+   "FROST_cc": {
+    "m": 0.0197,
+    "sd": 0.0032
+   },
+   "FROST": {
+    "m": 0.0288,
+    "sd": 0.0037
+   },
+   "Harmony": {
+    "m": 0.0374,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.016,
+    "sd": null
+   },
+   "Symphony": {
+    "m": null,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ff": {
+   "raw": {
+    "m": 0.0763,
+    "sd": null
+   },
+   "center": {
+    "m": 0.1017,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.0924,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.1019,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.0428,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.0967,
+    "sd": 0.0006
+   },
+   "FROST_cc": {
+    "m": 0.0879,
+    "sd": 0.0003
+   },
+   "FROST": {
+    "m": 0.088,
+    "sd": 0.0005
+   },
+   "Harmony": {
+    "m": 0.0767,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0728,
+    "sd": null
+   },
+   "Symphony": {
+    "m": null,
+    "sd": null
+   }
+  },
+  "hcc/visiumhd_ffpe": {
+   "raw": {
+    "m": 0.0327,
+    "sd": null
+   },
+   "center": {
+    "m": 0.0373,
+    "sd": null
+   },
+   "CORAL": {
+    "m": 0.043,
+    "sd": null
+   },
+   "MNN-ref": {
+    "m": 0.0334,
+    "sd": null
+   },
+   "ridge": {
+    "m": 0.0539,
+    "sd": null
+   },
+   "FROST_base": {
+    "m": 0.0647,
+    "sd": 0.0044
+   },
+   "FROST_cc": {
+    "m": 0.0667,
+    "sd": 0.0037
+   },
+   "FROST": {
+    "m": 0.0678,
+    "sd": 0.0025
+   },
+   "Harmony": {
+    "m": 0.0444,
+    "sd": null
+   },
+   "Scanorama": {
+    "m": 0.0345,
+    "sd": null
+   },
+   "Symphony": {
+    "m": null,
+    "sd": null
+   }
+  }
+ }
+}
