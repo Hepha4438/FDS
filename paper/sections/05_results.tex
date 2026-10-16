@@ -47,7 +47,10 @@ $-0.006$, $n=12$, $p=0.06$; ridge slightly higher), xfer\_main ($n=12$, $p=0.29$
 rare\_purity ($n=12$, $p=0.68$). total\_v2 is not independent evidence: batch\_v2 spans 0.34--0.66 across methods
 and bio\_v2 only 0.60--0.69, so total\_v2 follows mixing. The knn\_xen advantage is specific to ridge; against
 centring and Harmony it is not significant. Read as a Pareto trade-off (Figure~\ref{fig:pareto}), \frost gains mixing over ridge
-with no significant loss in conservation or transfer. \frost exceeds Symphony, the published reference-mapping method, on all
+with no significant loss in conservation or transfer. Stratifying by representation does not change this reading:
+within the scGPT-spatial pairs ($n=7$) \frost exceeds ridge on batch\_v2, total\_v2, knn\_xen and imputation ($p\le0.031$)
+with no significant difference on the other metrics, and within the PCA pairs ($n=5$) the same four differences have
+the same sign at the smallest attainable $p=0.0625$ (Supplementary Table~\ref{tab:strat}). \frost exceeds Symphony, the published reference-mapping method, on all
 seven metrics ($n=12$, $p$ from 0.0005 to 0.034); against centring and Harmony it is better on most metrics (Supplementary Table~\ref{tab:center_harmony}).
 
 \begin{table}[t]
@@ -126,10 +129,18 @@ microenvironment better; the two branches differ in architecture, $\lambda_{\mat
 so this is a pipeline-level comparison. We keep the linear map for the conservation end of the trade-off
 (Supplementary Table~\ref{tab:mstep}).
 
+\paragraph{Building structure once: bundled evidence on 12 pairs.}\label{sec:res_once}
+USHER-CC rebuilds $\Cs$ on $f_\theta(\mathbf{X}^{s})$ at every iteration; \frost builds it once on the unmapped source
+and caches it. Across the 12 pairs the two do not differ significantly on any metric ($n=12$; batch\_v2 $p=0.52$,
+bio\_v2 $p=0.95$, total\_v2 $p=0.43$, xfer\_main $p=0.85$, xfer\_all $p=0.26$, rare\_purity $p=0.72$, knn\_xen
+$p=0.30$, imputation $p=0.23$; largest absolute median difference 0.0008). This is bundled evidence, not a
+single-variable ablation: the two configurations also differ in the landmark approximation, the microenvironment
+block and, on the PCA pairs, the 64-dimensional projection, so effects of opposite sign could cancel. A
+comparison that isolates how $\Cs$ is built exists only on the four COAD pairs, below.
+
 \paragraph{Structure matrices and microenvironment.}\label{sec:res_niche}
-\frost and USHER-CC do not differ significantly on any metric (all $p\ge0.067$, largest median difference 0.0008).
-Three diagnostic arms on the four COAD pairs (seed 0, 25 iterations) take the difference apart (Table~\ref{tab:arms});
-they differ only in how $\Cs$ is built: (a) landmark distances recomputed every iteration, as in USHER-ST; (b) exact
+Three diagnostic arms on the four COAD pairs (seed 0, 25 iterations) take the bundled difference apart
+(Table~\ref{tab:arms}); they differ only in how $\Cs$ is built: (a) landmark distances recomputed every iteration, as in USHER-ST; (b) exact
 geodesics, cached; (c) \frost, which adds the microenvironment; the configuration differs from the main benchmark, so the
 tables are not directly comparable. Going from (a) to (b)
 changes two things---the landmark approximation and the per-iteration recomputation---and leaves quality unchanged

@@ -68,7 +68,43 @@ landmarks,
   C^{s}_{ik}=-\beta^{-1}\log\textstyle\sum_{l=1}^{L}\exp\bigl(-\beta(D_{il}+D_{kl})\bigr),\qquad \beta=2,
 \end{equation}
 where $D_{il}$ is the hop distance to landmark $l$. It builds $B(T+1)$ matrices. \textbf{USHER-CC} adds (v) to
-USHER-ST.
+USHER-ST. Figure~\ref{fig:variants} sets the four configurations side by side.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\matrix (m) [matrix of nodes, column sep=1.2mm, row sep=1.2mm,
+  nodes={draw=black!40, rounded corners=2pt, align=center, inner sep=3pt, font=\small, text width=3.0cm,
+    minimum width=3.2cm, execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000}},
+  column 1/.style={nodes={draw=none, text width=1.9cm, minimum width=2.1cm, align=right, font=\small\itshape}},
+  row 1/.style={nodes={draw=none, font=\small\bfseries, minimum height=0.5cm}},
+  row 2/.style={nodes={minimum height=1.75cm}},
+  row 3/.style={nodes={minimum height=1.05cm}},
+  row 4/.style={nodes={minimum height=1.05cm}},
+  row 5/.style={nodes={minimum height=0.55cm}}]
+{
+  & USHER & USHER-ST & USHER-CC & \frost \\
+  $\Cs$ / $\Ct$ & $\Cs$ and $\Ct$ exact, rebuilt every iteration
+  & |[fill=black!10]| $\Ct$ exact, cached; $\Cs$ landmark, rebuilt every iteration
+  & $\Ct$ exact, cached; $\Cs$ landmark, rebuilt every iteration
+  & |[fill=black!10]| $\Cs$ and $\Ct$ exact on $[\mathbf{x},s\mathbf{N}]$, built once, cached \\
+  M-step & two layers (512), $\lambda_{\mathrm{id}}=0$
+  & |[fill=black!10]| linear, $\lambda_{\mathrm{id}}=0.3$
+  & linear, $\lambda_{\mathrm{id}}=0.3$
+  & linear, $\lambda_{\mathrm{id}}=0.3$ \\
+  Post hoc & floor 200$^{\ast}$; CORAL with and without
+  & floor 200; no CORAL
+  & |[fill=black!10]| floor 200; CORAL
+  & floor 200; CORAL \\
+  Builds & $2BT$ & |[fill=black!10]| $B(T+1)$ & $B(T+1)$ & |[fill=black!10]| $2B$ \\
+};
+\end{tikzpicture}
+\caption{The four configurations compared. Shaded cells differ from the column to their left. Builds: number of
+structure matrices computed with $B$ batches and $T$ EM iterations. $^{\ast}$Not part of USHER; applied for
+comparability. USHER also differs in its auxiliary cost and $\varepsilon$ (Supplementary
+Table~\ref{tab:usher_vs_frost}).}
+\label{fig:variants}
+\end{figure}
 
 \paragraph{Hyperparameters.} One configuration is used for all pairs; $\alpha$ and $\gamma$ follow~\citep{pratapa2025usher}
 (Supplementary Section~S1).

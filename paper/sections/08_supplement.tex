@@ -235,6 +235,31 @@ knn\_xen     & $-0.0021$ & 0.7910 & $-0.0006$ & 0.6221 \\
 
 \begin{table}[h]
 \centering
+\caption{\frost against ridge within each representation. Mean over pairs of \frost and ridge, median paired
+difference ($\Delta$, \frost $-$ ridge) and exact Wilcoxon $p$. The smallest attainable $p$ is 0.0625 at $n=5$ and
+0.0156 at $n=7$. In the PCA group one pair has zero difference on xfer\_all, so that test has $n=4$ (smallest
+attainable $p=0.125$). Imputation uses the original protocol (Section~\ref{sec:limitations}).}
+\label{tab:strat}
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+ & \multicolumn{4}{c}{PCA ($n=5$)} & \multicolumn{4}{c}{scGPT-spatial ($n=7$)} \\
+\cmidrule(lr){2-5}\cmidrule(l){6-9}
+Metric & \frost & ridge & $\Delta$ & $p$ & \frost & ridge & $\Delta$ & $p$ \\
+\midrule
+batch\_v2    & 0.6775 & 0.5521 & $+0.1289$ & 0.0625 & 0.6462 & 0.5395 & $+0.0984$ & 0.0156 \\
+bio\_v2      & 0.7090 & 0.7165 & $-0.0068$ & 0.4375 & 0.6613 & 0.6665 & $-0.0045$ & 0.1562 \\
+total\_v2    & 0.6964 & 0.6507 & $+0.0437$ & 0.0625 & 0.6553 & 0.6157 & $+0.0363$ & 0.0156 \\
+xfer\_main   & 0.7632 & 0.7587 & $+0.0045$ & 0.1250 & 0.6362 & 0.6353 & $-0.0013$ & 0.8906 \\
+xfer\_all    & 0.4735 & 0.4678 & $+0.0037$ & 0.3750 & 0.3973 & 0.3972 & $-0.0024$ & 0.8125 \\
+rare\_purity & 0.2824 & 0.2776 & $+0.0075$ & 0.4375 & 0.2512 & 0.2513 & $-0.0058$ & 0.9375 \\
+knn\_xen     & 0.3236 & 0.2966 & $+0.0368$ & 0.0625 & 0.3397 & 0.3198 & $+0.0236$ & 0.0312 \\
+imputation   & 0.1300 & 0.0532 & $+0.0839$ & 0.0625 & 0.1035 & 0.0683 & $+0.0408$ & 0.0312 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
 \caption{USHER reference implementation versus \frost, four COAD pairs. USHER: one seed, 25 iterations; \frost and
 ridge: three seeds. With four pairs no paired test can reach significance (floor $p=0.125$). $\Delta$: \frost minus
 USHER. Imputation is omitted because the archived values use the leaking protocol.}

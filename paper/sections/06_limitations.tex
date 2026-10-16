@@ -1,4 +1,15 @@
-\section{Scope and limitations}\label{sec:limitations}
+\section{Discussion}\label{sec:discussion}
+
+\paragraph{Building structure once.}
+Computing $\Cs$ from the unmapped source assumes that the source's own geometry, rather than its mapped image,
+is what the correspondences need. The evidence for this comes at two strengths. On the four COAD pairs, arms (a) and (b)
+differ only in how $\Cs$ is built (approximation and recomputation together); the change leaves total\_v2 and imputation unchanged and makes the assignments
+converge further (Table~\ref{tab:arms}). On all 12 pairs, \frost and USHER-CC do not differ significantly on any
+metric (largest absolute median difference 0.0008; Section~\ref{sec:res_once}), but that comparison bundles four
+changes. Together they show that building structure once does not degrade the correspondences on these data; they do
+not cover a source whose geometry is distorted enough that rebuilding $\Cs$ on the mapped image would help.
+
+\subsection{Scope and limitations}\label{sec:limitations}
 
 \paragraph{Global alignment blurs gene-level neighbourhoods.}
 \frost fits one global map so that source cells match the reference in distribution and label neighbourhoods; nothing
@@ -35,4 +46,6 @@ cell2location~\citep{kleshchevnikov2022cell2location} rest on different assumpti
 \paragraph{Scope of the evaluation.}
 The data comprise one patient per tissue, so paired tests describe consistency across pairs that share references,
 not generalisation across patients. The comparison with spatial integration uses one representative method,
-GraphST, at its published defaults and on a subsample.
+GraphST, at its published defaults, one seed and on a subsample, so the claim that spatial integration fails in the
+reference-preserving setting rests on that method. Label transfer is evaluated against the SPATCH reference
+annotations as given; robustness to a noisier reference annotation lies outside the claims made here.

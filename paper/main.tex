@@ -10,6 +10,8 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{xspace}
 \usepackage{microtype}
+\usepackage{tikz}
+\usetikzlibrary{matrix}
 
 \newcommand{\frost}{FROST\xspace}
 \newcommand{\um}{\,\ensuremath{\mu}m\xspace}
@@ -38,8 +40,8 @@
 
 \clearpage
 \appendix
-\setcounter{table}{0}\renewcommand{\thetable}{S\arabic{table}}
-\setcounter{figure}{0}\renewcommand{\thefigure}{S\arabic{figure}}
+\setcounter{table}{0}\renewcommand{\thetable}{S\arabic{table}}\renewcommand{\theHtable}{S\arabic{table}}
+\setcounter{figure}{0}\renewcommand{\thefigure}{S\arabic{figure}}\renewcommand{\theHfigure}{S\arabic{figure}}
 \label{sec:supp_start}
 \input{sections/08_supplement}
 \end{document}

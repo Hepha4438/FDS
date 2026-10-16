@@ -13,15 +13,19 @@ recovers only hepatocytes, so label metrics are not interpreted for that pair.
 
 \paragraph{Representations.}\label{sec:reps}
 Each pair uses PCA of log-normalised expression or scGPT-spatial~\citep{wang2025scgptspatial} (Supplementary
-Table~\ref{tab:reps}), chosen once per pair before alignment by within-assay label recoverability on held-out tiles;
-this uses held-out tiles, but every reference-preserving method receives the same input.
+Table~\ref{tab:reps}), chosen once per pair before alignment by within-assay label recoverability on held-out tiles.
+This choice uses held-out tiles, but every reference-preserving method, \frost included, receives the same
+representation for a given pair, so it cannot favour \frost within that group. The bias that remains runs the other
+way: Harmony and Scanorama are fitted transductively on all source cells, held-out tiles included, whereas \frost is
+fitted on the training tiles only.
 
 \paragraph{Baselines.}\label{sec:baselines}
 Reference-preserving: no alignment (raw), mean centring (center), CORAL~\citep{sun2016coral}, source-side MNN
 (MNN-ref)~\citep{haghverdi2018mnn}, and a label-informed ridge regression that pairs source and reference cells by
-the auxiliary labels of \frost and applies the same moment matching (ridge). Reference-modifying:
-Harmony~\citep{korsunsky2019harmony} and Scanorama~\citep{hie2019scanorama}, both fitted transductively on held-out
-tiles, which favours them (with its default matching threshold Scanorama returned the input unchanged on all
+the auxiliary labels of \frost and applies the same moment matching (ridge). Centring, CORAL and ridge form the
+family of affine and linear post-hoc adapters, the lightweight alternative to iterative alignment; MNN-ref applies
+local, cell-specific translations. Reference-modifying:
+Harmony~\citep{korsunsky2019harmony} and Scanorama~\citep{hie2019scanorama}, both fitted transductively as noted above (with its default matching threshold Scanorama returned the input unchanged on all
 three Stereo-seq pairs and on HCC Visium HD FFPE; we report the default), and Symphony~\citep{kang2021symphony}, which builds its own count-based space.
 Spatially aware: GraphST~\citep{long2023graphst}, a representative spatial-integration method, at published
 defaults on a common subsample (Section~\ref{sec:res_spatial}).

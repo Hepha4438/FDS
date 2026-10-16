@@ -8,6 +8,9 @@ jointly, so analyses built on the previous reference must be redone.
 \paragraph{Mapping into a reference.}
 Symphony~\citep{kang2021symphony} and scArches~\citep{lotfollahi2022scarches} map queries without changing the
 reference, but the reference must be built in their own model rather than in an embedding the analyst already uses.
+The lightest reference-preserving alternatives are affine or linear post-hoc adapters fitted after the fact: a
+translation (mean centring), a second-order affine map (CORAL~\citep{sun2016coral}) or a linear map fitted on matched
+cells; we include all three as baselines.
 
 \paragraph{Optimal transport.}
 SCOT~\citep{demetci2022scot} aligns modalities with Gromov--Wasserstein transport over $k$-NN geodesics. USHER~\citep{pratapa2025usher} couples
