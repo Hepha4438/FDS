@@ -16,8 +16,8 @@ significant change in bio\_v2 (Section~\ref{sec:res_coral}). For gene-level task
 expression geometry, we recommend leaving the source unaligned or applying a local correction: under the
 leakage-controlled protocol no alignment exceeds \frost on all three Stereo-seq pairs
 (Section~\ref{sec:limitations}). If a \frost map is needed anyway, CORAL should be omitted: \frost without CORAL
-scores above \frost on reversed imputation on the three Stereo-seq pairs (Supplementary Table~\ref{tab:imp_rev}) and
-on neighbour-based deconvolution (mean JSD 0.1123 against 0.1242; Supplementary Table~\ref{tab:deconv}).
+scores above \frost on reversed imputation on the three Stereo-seq pairs (Supplementary Table~\ref{S-tab:imp_rev}) and
+on neighbour-based deconvolution (mean JSD 0.1123 against 0.1242; Supplementary Table~\ref{S-tab:deconv}).
 
 \paragraph{The microenvironment term.}
 Its effect was observed only on Stereo-seq sources; the other three technologies give no criterion that
@@ -29,7 +29,7 @@ generalises. The term is optional, and users should test it on their own data.
 \frost fits one global map so that source cells match the reference in distribution and label neighbourhoods; nothing
 in that objective preserves each cell's gene-expression neighbourhood. Four measurements agree. Under
 leakage-controlled imputation, archived for the three Stereo-seq pairs, no alignment exceeds \frost 1.5-, 1.6- and
-4.9-fold (COAD, OV, HCC; Supplementary Table~\ref{tab:imp_rev}), and gene masking agrees (below). In neighbour-based deconvolution centring is best, and the
+4.9-fold (COAD, OV, HCC; Supplementary Table~\ref{S-tab:imp_rev}), and gene masking agrees (below). In neighbour-based deconvolution centring is best, and the
 proportions from USHER-family maps are too diffuse (below). The CORAL trade-off is the same phenomenon at a smaller
 scale. This does not hold for alignment in general. Local corrections keep gene-level neighbourhoods about as well as
 no alignment (COAD Stereo-seq: MNN-ref 0.2015, Harmony 0.1792, raw 0.1850), but they mix far less: mean iLISI over
@@ -53,7 +53,7 @@ Reference-based deconvolution relies on counts, a signature matrix and the addit
 embedding preserves, so \frost is not a deconvolution method by design. On the narrower question of whether alignment
 helps a neighbour-based proportion estimator (pseudo-spots of 4 and 8 cells, 49--65\um and 91--124\um across, 22
 settings), it does not: centring is best (mean JSD 0.0855 against 0.1242 for \frost, $p=0.001$), and CORAL degrades
-most settings (Supplementary Table~\ref{tab:deconv}). The claim is specific to neighbour-based proportion
+most settings (Supplementary Table~\ref{S-tab:deconv}). The claim is specific to neighbour-based proportion
 estimators; count-based models such as RCTD~\citep{cable2022rctd} and
 cell2location~\citep{kleshchevnikov2022cell2location} rest on different assumptions.
 

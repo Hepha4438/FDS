@@ -31,16 +31,16 @@ No alignment (raw) & 0.6162 & 0.0208 & 0.000 \\
 
 \subsection{Benchmark}\label{sec:res_bench}
 Because batch\_v2 and bio\_v2 average other metrics, we summarise with the compact set of Table~\ref{tab:main}
-(all 15 metrics in Supplementary Figure~\ref{fig:grid}). On all seven cell-level metrics \frost ranks among the top three of 11 methods, counting its two internal variants (Supplementary
-Table~\ref{tab:main_variants}): first on
-xfer\_all; second on batch\_v2, total\_v2, rare\_purity and knn\_xen; third on bio\_v2 and xfer\_main. The only baseline
-that leads a column is ridge on bio\_v2. The imputation column
+(all 15 metrics in Supplementary Figure~\ref{S-fig:grid}). On all seven cell-level metrics \frost ranks among the top three of 11 methods, counting its two internal variants (Supplementary
+Table~\ref{S-tab:main_variants}): first on
+xfer\_all; second on batch\_v2, total\_v2, rare\_purity and knn\_xen; third on bio\_v2 and xfer\_main. The only column led by an external baseline is bio\_v2, led by ridge, which uses the same
+reference-derived labels as \frost; the difference is not significant ($p=0.06$). The imputation column
 favours \frost only under a protocol that leaks the predicted gene, and the ranking reverses once the leak is removed
 (Section~\ref{sec:limitations}). Figure~\ref{fig:umap} shows the hardest pair, COAD Stereo-seq. Without alignment, and after Harmony, the two
 platforms occupy separate regions; USHER-ST brings them into contact but leaves them partly segregated; after
 \frost the platforms interleave throughout while the major cell types remain in distinct groups.
 
-Ridge is the informative comparison (Supplementary Figure~\ref{fig:gaps}): it uses the same auxiliary labels and moment matching as
+Ridge is the informative comparison (Supplementary Figure~\ref{S-fig:gaps}): it uses the same auxiliary labels and moment matching as
 \frost and differs mainly in how cells are paired. \frost exceeds ridge on batch\_v2 ($n=12$, $p=0.0005$), total\_v2
 ($n=12$, $p=0.0005$) and knn\_xen ($n=12$, $p=0.0015$), and does not differ significantly on bio\_v2 (median
 $-0.006$, $n=12$, $p=0.06$; ridge slightly higher), xfer\_main ($n=12$, $p=0.29$), xfer\_all ($n=11$, $p=0.64$) or
@@ -50,14 +50,14 @@ centring and Harmony it is not significant. Read as a Pareto trade-off (Figure~\
 with no significant loss in conservation or transfer. Stratifying by representation does not change this reading:
 within the scGPT-spatial pairs ($n=7$) \frost exceeds ridge on batch\_v2, total\_v2, knn\_xen and imputation ($p\le0.031$)
 with no significant difference on the other metrics, and within the PCA pairs ($n=5$) the same four differences have
-the same sign at the smallest attainable $p=0.0625$ (Supplementary Table~\ref{tab:strat}). \frost exceeds Symphony, the published reference-mapping method, on all
-seven metrics ($n=12$, $p$ from 0.0005 to 0.034); against centring and Harmony it is better on most metrics (Supplementary Table~\ref{tab:center_harmony}).
+the same sign at the smallest attainable $p=0.0625$ (Supplementary Table~\ref{S-tab:strat}). \frost exceeds Symphony, the published reference-mapping method, on all
+seven metrics ($n=12$, $p$ from 0.0005 to 0.034); against centring and Harmony it is better on most metrics (Supplementary Table~\ref{S-tab:center_harmony}).
 
 \begin{table}[t]
 \centering
 \caption{\frost against external baselines, means over 12 pairs (three seeds for stochastic methods); bold: best among
 the methods shown. The internal variants, which lead every column except xfer\_all and bio\_v2, are in
-Section~\ref{sec:res_ablation} and Supplementary Table~\ref{tab:main_variants}. batch, bio, total: batch\_v2, bio\_v2,
+Section~\ref{sec:res_ablation} and Supplementary Table~\ref{S-tab:main_variants}. batch, bio, total: batch\_v2, bio\_v2,
 total\_v2; x-main, x-all: xfer\_main, xfer\_all; rare: rare\_purity; knn: knn\_xen. $^{*}$Modifies the reference.
 $^{\dagger}$Original imputation protocol, which leaks the predicted gene; the ranking reverses under leakage control
 (Section~\ref{sec:limitations}). Symphony is not scored on imputation.}
@@ -100,12 +100,12 @@ FROST were embedded separately. $^{*}$Modifies the reference.}
 joins the Pareto-optimal methods (no other method is higher on both axes). \frost and USHER-CC coincide within
 noise (no significant difference on any metric); USHER-ST, without moment matching, trades mixing for transfer.
 Diamonds and $^{*}$: methods that modify the reference. Other task metrics: Supplementary
-Figure~\ref{fig:pareto_supp}.}\label{fig:pareto}\end{minipage}
+Figure~\ref{S-fig:pareto_supp}.}\label{fig:pareto}\end{minipage}
 \end{figure}
 
 \subsection{Comparison with USHER}\label{sec:res_usher}
 On the four COAD pairs, with one USHER seed, no paired test can reach significance (floor $p=0.125$), so we report
-differences descriptively (Supplementary Table~\ref{tab:usher}); the pipelines also differ in four components, and
+differences descriptively (Supplementary Table~\ref{S-tab:usher}); the pipelines also differ in four components, and
 \frost runs 10 iterations against USHER's 25, a bias against \frost. Total scores are similar (0.7055 for USHER, 0.7025
 for \frost); USHER is numerically higher on batch mixing, \frost on conservation and on every task metric, most on
 xfer\_all, rare\_purity and knn\_xen ($+0.034$ to $+0.038$), with 8 instead of 200 structure computations per pair and
@@ -123,11 +123,11 @@ most 0.006. The floor of 200 is kept in the reported configuration.
 
 \paragraph{Identity regularisation and M-step.}
 Raising $\lambda_{\mathrm{id}}$ above 0.3 lowers mixing and total score on both pairs; $\lambda_{\mathrm{id}}=0$ was
-evaluated only together with a two-layer M-step (Supplementary Table~\ref{tab:lambda}). USHER's two-layer M-step
+evaluated only together with a two-layer M-step (Supplementary Table~\ref{S-tab:lambda}). USHER's two-layer M-step
 ($\lambda_{\mathrm{id}}=0$, no target floor) mixes more, while the linear map transfers labels and predicts
 microenvironment better; the two branches differ in architecture, $\lambda_{\mathrm{id}}$ and floor simultaneously,
 so this is a pipeline-level comparison. We keep the linear map for the conservation end of the trade-off
-(Supplementary Table~\ref{tab:mstep}).
+(Supplementary Table~\ref{S-tab:mstep}).
 
 \paragraph{Building structure once: bundled evidence on 12 pairs.}\label{sec:res_once}
 USHER-CC rebuilds $\Cs$ on $f_\theta(\mathbf{X}^{s})$ at every iteration; \frost builds it once on the unmapped source
@@ -177,13 +177,13 @@ no alignment                  & --    & 0.140 & 0.0945 & -- \\
 \end{table}
 
 Stopping at 10 iterations costs a small, measurable amount: all three arms still change 6--8\% of assignments per iteration at iteration
-10 (Supplementary Figure~\ref{fig:converge}), yet \frost scores total\_v2 0.7025 at 10 iterations (three seeds) and
+10 (Supplementary Figure~\ref{S-fig:converge}), yet \frost scores total\_v2 0.7025 at 10 iterations (three seeds) and
 0.706 at 25 (one seed) on the same pairs, against a per-pair seed standard deviation of about 0.002. Arm (a) differs
 from the USHER implementation in the auxiliary cost, $\varepsilon$, the $\Cs$ approximation and the M-step, yet ends
 close to where USHER stops (0.046 against 0.059, medians at the end), suggesting that recomputing $\Cs$ every
 iteration, which they share, matters more for convergence than those four components.
 
 Caching, not the landmark approximation, is also where the cost saving comes from: an EM iteration takes 15.4\,s
-with cached exact $\Cs$ and 18.3\,s with recomputed landmarks ($T=25$; Supplementary Table~\ref{tab:cost}). Structure builds fall from $B(T+1)$ to $2B$, which no
+with cached exact $\Cs$ and 18.3\,s with recomputed landmarks ($T=25$; Supplementary Table~\ref{S-tab:cost}). Structure builds fall from $B(T+1)$ to $2B$, which no
 longer depends on $T$: 5.5-fold fewer at $T=10$ and 13-fold fewer at $T=25$; wall-clock at $T=10$ was not measured.
 

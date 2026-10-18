@@ -28,7 +28,7 @@ M-step updates $f_\theta$ on
 \end{equation}
 
 \subsection{FROST}\label{sec:frost}
-\frost keeps this EM skeleton and changes five components. Supplementary Table~\ref{tab:usher_vs_frost} lists every
+\frost keeps this EM skeleton and changes five components. Supplementary Table~\ref{S-tab:usher_vs_frost} lists every
 difference from the USHER reference implementation.
 
 \paragraph{(i) Auxiliary cost.} After aligning first moments, each source cell receives the label frequencies
@@ -102,7 +102,7 @@ USHER-ST. Figure~\ref{fig:variants} sets the four configurations side by side.
 \caption{The four configurations compared. Shaded cells differ from the column to their left. Builds: number of
 structure matrices computed with $B$ batches and $T$ EM iterations. $^{\ast}$Not part of USHER; applied for
 comparability. USHER also differs in its auxiliary cost and $\varepsilon$ (Supplementary
-Table~\ref{tab:usher_vs_frost}).}
+Table~\ref{S-tab:usher_vs_frost}).}
 \label{fig:variants}
 \end{figure}
 
