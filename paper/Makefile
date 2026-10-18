@@ -3,7 +3,11 @@
 # silently leaves them stale. Always build with `make`.
 TEX = pdflatex -interaction=nonstopmode -halt-on-error
 
-all: main.pdf supplement.pdf
+all: main.pdf supplement.pdf FROST_full.pdf
+
+# Single PDF for reading/review: main followed by supplement (submission uses the two files).
+FROST_full.pdf: main.pdf supplement.pdf
+	pdfunite main.pdf supplement.pdf FROST_full.pdf
 
 main.pdf supplement.pdf: main.tex supplement.tex refs.bib $(wildcard sections/*.tex)
 	$(TEX) main
