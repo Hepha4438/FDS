@@ -22,10 +22,11 @@ iteration), and $\Cs,\Ct$ are geodesic distances on $k$-NN graphs~\citep{demetci
 $\mathbf{P}^{\star}$ are discarded and a linear assignment~\citep{kuhn1955hungarian} gives matches $\pi(i)$. The
 M-step updates $f_\theta$ on
 \begin{equation}\label{eq:mstep}
-  \mathcal{L}(\theta)=\lambda_{\mathrm{cross}}\,\mathbb{E}_i\bigl\|f_\theta(\mathbf{x}^{s}_{i})-\mathbf{x}^{t}_{\pi(i)}\bigr\|
-  +\lambda_{\mathrm{var}}\bigl\|\mathrm{Var}\,f_\theta(\mathbf{X}^{s})-\mathrm{Var}\,\mathbf{X}^{t}\bigr\|_{1}
-  +\lambda_{\mathrm{id}}\,\mathcal{R}_{\mathrm{id}}(\theta).
+  \mathcal{L}_{\mathrm{fit}}(\theta)=\lambda_{\mathrm{fit}}\,\mathbb{E}_i\bigl\|f_\theta(\mathbf{x}^{s}_{i})-\mathbf{x}^{t}_{\pi(i)}\bigr\|
+  +(1-\lambda_{\mathrm{fit}})\bigl\|\mathrm{Var}\,f_\theta(\mathbf{X}^{s})-\mathrm{Var}\,\mathbf{X}^{t}\bigr\|_{1},
 \end{equation}
+with $\lambda_{\mathrm{fit}}=0.9$ and $f_\theta$ a one- or two-layer network. USHER also regularises $f_\theta$ toward
+the identity but reports neither the form nor the weight of that term.
 
 \subsection{FROST}\label{sec:frost}
 \frost keeps this EM skeleton and changes five components. Supplementary Table~\ref{S-tab:usher_vs_frost} lists every
@@ -49,7 +50,8 @@ once, the microenvironment block adds no cost (Section~\ref{sec:res_niche}).
 source composition estimated in (i), with at least $\min(200,n_c)$ cells per class. Because balanced FGW must
 transport all source mass, a purely proportional subset starves rare types of partners.
 
-\paragraph{(iv) Linear M-step.} $f_\theta(\mathbf{x})=\mathbf{W}\mathbf{x}+\mathbf{b}$ with
+\paragraph{(iv) Linear M-step.} $f_\theta(\mathbf{x})=\mathbf{W}\mathbf{x}+\mathbf{b}$, and we add
+$\lambda_{\mathrm{id}}\mathcal{R}_{\mathrm{id}}$ to Eq.~\eqref{eq:mstep}, with
 $\mathcal{R}_{\mathrm{id}}=\mathbb{E}_i\|(\mathbf{W}-\mathbf{I})\mathbf{x}^{s}_{i}\|^{2}/d$ and
 $\lambda_{\mathrm{id}}=0.3$; translation is left free.
 
@@ -72,37 +74,36 @@ USHER-ST. Figure~\ref{fig:variants} sets the four configurations side by side.
 
 \begin{figure}[t]
 \centering
-\begin{tikzpicture}
-\matrix (m) [matrix of nodes, column sep=1.2mm, row sep=1.2mm,
-  nodes={draw=black!40, rounded corners=2pt, align=center, inner sep=3pt, font=\small, text width=3.0cm,
-    minimum width=3.2cm, execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000}},
-  column 1/.style={nodes={draw=none, text width=1.9cm, minimum width=2.1cm, align=right, font=\small\itshape}},
-  row 1/.style={nodes={draw=none, font=\small\bfseries, minimum height=0.5cm}},
-  row 2/.style={nodes={minimum height=1.75cm}},
-  row 3/.style={nodes={minimum height=1.05cm}},
-  row 4/.style={nodes={minimum height=1.05cm}},
-  row 5/.style={nodes={minimum height=0.55cm}}]
-{
-  & USHER & USHER-ST & USHER-CC & \frost \\
-  $\Cs$ / $\Ct$ & $\Cs$ and $\Ct$ exact, rebuilt every iteration
-  & |[fill=black!10]| $\Ct$ exact, cached; $\Cs$ landmark, rebuilt every iteration
-  & $\Ct$ exact, cached; $\Cs$ landmark, rebuilt every iteration
-  & |[fill=black!10]| $\Cs$ and $\Ct$ exact on $[\mathbf{x},s\mathbf{N}]$, built once, cached \\
-  M-step & two layers (512), $\lambda_{\mathrm{id}}=0$
-  & |[fill=black!10]| linear, $\lambda_{\mathrm{id}}=0.3$
-  & linear, $\lambda_{\mathrm{id}}=0.3$
-  & linear, $\lambda_{\mathrm{id}}=0.3$ \\
-  Post hoc & floor 200$^{\ast}$; CORAL with and without
-  & floor 200; no CORAL
-  & |[fill=black!10]| floor 200; CORAL
-  & floor 200; CORAL \\
-  Builds & $2BT$ & |[fill=black!10]| $B(T+1)$ & $B(T+1)$ & |[fill=black!10]| $2B$ \\
-};
-\end{tikzpicture}
-\caption{The four configurations compared. Shaded cells differ from the column to their left. Builds: number of
-structure matrices computed with $B$ batches and $T$ EM iterations. $^{\ast}$Not part of USHER; applied for
-comparability. USHER also differs in its auxiliary cost and $\varepsilon$ (Supplementary
-Table~\ref{S-tab:usher_vs_frost}).}
+\small
+\newcommand{\cellA}[2]{\parbox[c][#1][c]{\linewidth}{\centering #2}}
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.0}
+\begin{tabular}{@{}>{\raggedleft\itshape}m{1.4cm}|m{3.45cm}|m{3.45cm}|m{3.45cm}|>{\columncolor{black!8}}m{3.45cm}@{}}
+ & \cellA{0.55cm}{\textbf{USHER}} & \cellA{0.55cm}{\textbf{USHER-ST}} & \cellA{0.55cm}{\textbf{USHER-CC}} & \cellA{0.55cm}{\textbf{\frost}} \\ \hline
+$\Cs$ / $\Ct$ & \cellA{1.5cm}{both exact,\\rebuilt every iteration}
+ & \cellA{1.5cm}{$\Ct$ exact, cached;\\$\Cs$ landmark,\\every iteration}
+ & \cellA{1.5cm}{$\Ct$ exact, cached;\\$\Cs$ landmark,\\every iteration}
+ & \cellA{1.5cm}{both exact on $[\mathbf{x},s\mathbf{N}]$,\\built once, cached} \\ \hline
+M-step & \cellA{1.5cm}{2-layer (512) or\\linear (USHER-L);\\identity: no value}
+ & \cellA{1.5cm}{linear;\\$\lambda_{\mathrm{id}}=0.3$ (ours)}
+ & \cellA{1.5cm}{linear;\\$\lambda_{\mathrm{id}}=0.3$ (ours)}
+ & \cellA{1.5cm}{linear;\\$\lambda_{\mathrm{id}}=0.3$ (ours)} \\ \hline
+Post hoc & \cellA{1.5cm}{floor 200$^{\ast}$;\\no CORAL (CORAL\\variant reported)}
+ & \cellA{1.5cm}{floor 200; no CORAL}
+ & \cellA{1.5cm}{floor 200; CORAL}
+ & \cellA{1.5cm}{floor 200; CORAL} \\ \hline
+Builds & \cellA{0.6cm}{$2BT$} & \cellA{0.6cm}{$B(T+1)$} & \cellA{0.6cm}{$B(T+1)$} & \cellA{0.6cm}{$2B$} \\ \hline
+Shared & \multicolumn{4}{m{14.4cm}@{}}{\cellA{1.0cm}{$\alpha=0.3$ \textperiodcentered{} $\gamma=0.4$ \textperiodcentered{} $k$-NN $k=30$
+ \textperiodcentered{} $\lambda_{\mathrm{fit}}=0.9$ \textperiodcentered{} 100 M-step epochs per iteration \textperiodcentered{}
+ Adam, learning rate $10^{-3}$ \textperiodcentered{} sketch $\approx$4{,}000}} \\
+\end{tabular}
+\caption{The four configurations compared; \frost (shaded) is the proposed one. Builds: structure matrices computed
+with $B$ batches and $T$ EM iterations. Shared: settings published for USHER~\citep{pratapa2025usher} and kept in all
+four. $\lambda_{\mathrm{fit}}$ is USHER's weight between the matching and variance terms of Eq.~\eqref{eq:mstep};
+$\lambda_{\mathrm{id}}$ is our identity-regularisation weight, not a USHER parameter; USHER states an identity regularisation but gives no value. $^{\ast}$Not part of USHER, which
+instead subsamples the reference to match the source cell-type composition; applied to all four for comparability.
+USHER as run here also differs in its auxiliary cost, $\varepsilon$ (0.05 against 0.1) and the number of EM
+iterations (25 against 10 in the benchmark; Supplementary Table~\ref{S-tab:usher_vs_frost}).}
 \label{fig:variants}
 \end{figure}
 

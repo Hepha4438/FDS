@@ -14,17 +14,17 @@ $\varepsilon$ & 0.05 & 0.1 & 0.1 \\
 $\Ct$ & exact, every iteration & exact, cached & exact on $[\mathbf{x},s\mathbf{N}]$, cached \\
 $\Cs$ & exact on $f_\theta(\mathbf{x})$, every iteration & landmark on $f_\theta(\mathbf{x})$, every iteration & exact on $[\mathbf{x},s\mathbf{N}]$, cached \\
 Structure builds & $2BT$ & $B(T+1)$ & $2B$ \\
-M-step & two layers (hidden 512), $\lambda_{\mathrm{id}}=0$\textsuperscript{a} & linear, $\lambda_{\mathrm{id}}=0.3$ & linear, $\lambda_{\mathrm{id}}=0.3$ \\
+M-step & two layers (hidden 512), no identity term\textsuperscript{a} & linear, $\lambda_{\mathrm{id}}=0.3$ & linear, $\lambda_{\mathrm{id}}=0.3$ \\
 EM iterations & 25 & 10 & 10 \\
 Per-class floor & 200\textsuperscript{b} & 200 & 200 \\
-Post-hoc CORAL & with and without & no / yes & yes \\
+Post-hoc CORAL & none (also reported with CORAL) & no / yes & yes \\
 \bottomrule
 \end{tabular}
 
 \smallskip
 \raggedright
 \textsuperscript{a}The identity term is described in~\citep{pratapa2025usher} but commented out in the reference
-implementation, which we left unmodified. \textsuperscript{b}Not part of USHER; applied to both for comparability.
+implementation, which we left unmodified. \textsuperscript{b}Not part of USHER, which instead subsamples the reference to match the source cell-type composition; applied to both for comparability.
 \end{table}
 
 \begin{table}[h]
@@ -48,8 +48,7 @@ every tensor. Embeddings were extracted in half precision, and for assays where 
 1{,}200-gene input (where genes are sampled at random) we averaged five extraction seeds.
 
 \paragraph{Hyperparameters.}\label{sec:supp_hp} $\alpha=0.3$, $\gamma=0.4$ ($\gamma=1$ at the first iteration), $\varepsilon=0.1$, $k=30$,
-sketches of 4{,}300 cells, 10 EM iterations of 100 Adam steps (learning rate $10^{-3}$), $\lambda_{\mathrm{cross}}=0.9$,
-$\lambda_{\mathrm{var}}=0.1$, $\lambda_{\mathrm{id}}=0.3$, reference subset of 20{,}000 cells with a per-class floor of 200,
+sketches of 4{,}300 cells, 10 EM iterations of 100 Adam steps (learning rate $10^{-3}$), $\lambda_{\mathrm{fit}}=0.9$, $\lambda_{\mathrm{id}}=0.3$, reference subset of 20{,}000 cells with a per-class floor of 200,
 512 landmarks with $\beta=2$ (USHER-ST). Entropic filtering removes rows above the 90th percentile of entropy or below
 the 10th percentile of row maximum.
 
