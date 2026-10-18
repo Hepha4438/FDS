@@ -7,6 +7,7 @@
 \usepackage{booktabs,multirow,array}
 \usepackage{graphicx}
 \usepackage[numbers,sort&compress]{natbib}
+\usepackage{xr-hyper}
 \usepackage[hidelinks]{hyperref}
 \usepackage{xspace}
 \usepackage{microtype}
@@ -18,6 +19,7 @@
 \newcommand{\Cs}{\ensuremath{\mathbf{C}^{s}}\xspace}
 \newcommand{\Ct}{\ensuremath{\mathbf{C}^{t}}\xspace}
 \newcommand{\todo}[1]{\textbf{[TODO: #1]}}
+\externaldocument{supplement}
 
 \title{FROST: Reference-preserving post-hoc alignment of cross-platform spatial transcriptomics with fused Gromov--Wasserstein transport}
 \author{}
@@ -38,10 +40,4 @@
 \bibliographystyle{plainnat}
 \bibliography{refs}
 
-\clearpage
-\appendix
-\setcounter{table}{0}\renewcommand{\thetable}{S\arabic{table}}\renewcommand{\theHtable}{S\arabic{table}}
-\setcounter{figure}{0}\renewcommand{\thefigure}{S\arabic{figure}}\renewcommand{\theHfigure}{S\arabic{figure}}
-\label{sec:supp_start}
-\input{sections/08_supplement}
 \end{document}

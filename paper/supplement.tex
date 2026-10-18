@@ -1,0 +1,38 @@
+% FROST supplementary material -- compiled separately; cross-references to main.tex via xr-hyper.
+\documentclass[11pt]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{booktabs,multirow,array}
+\usepackage{graphicx}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{xr-hyper}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xspace}
+\usepackage{microtype}
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+
+\newcommand{\frost}{FROST\xspace}
+\newcommand{\um}{\,\ensuremath{\mu}m\xspace}
+\newcommand{\Cs}{\ensuremath{\mathbf{C}^{s}}\xspace}
+\newcommand{\Ct}{\ensuremath{\mathbf{C}^{t}}\xspace}
+\newcommand{\todo}[1]{\textbf{[TODO: #1]}}
+\externaldocument{main}
+
+\renewcommand{\thetable}{S\arabic{table}}\renewcommand{\theHtable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}\renewcommand{\theHfigure}{S\arabic{figure}}
+\renewcommand{\theequation}{S\arabic{equation}}\renewcommand{\theHequation}{S\arabic{equation}}
+
+\begin{document}
+\begin{center}
+{\Large Supplementary material for}\\[4pt]
+{\large FROST: Reference-preserving post-hoc alignment of cross-platform spatial transcriptomics with fused Gromov--Wasserstein transport}
+\end{center}
+
+\input{sections/08_supplement}
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+\end{document}

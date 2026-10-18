@@ -9,6 +9,20 @@ metric (largest absolute median difference 0.0008; Section~\ref{sec:res_once}), 
 changes. Together they show that building structure once does not degrade the correspondences on these data; they do
 not cover a source whose geometry is distorted enough that rebuilding $\Cs$ on the mapped image would help.
 
+\paragraph{Choosing a configuration.}
+For cell-level tasks, batch mixing and label transfer, \frost with moment matching is the configuration to use:
+adding CORAL to USHER-ST raises batch\_v2 ($+0.127$), total\_v2 ($+0.053$) and rare\_purity ($+0.029$) without a
+significant change in bio\_v2 (Section~\ref{sec:res_coral}). For gene-level tasks, or analyses that depend on local
+expression geometry, we recommend leaving the source unaligned or applying a local correction: under the
+leakage-controlled protocol no alignment exceeds \frost on all three Stereo-seq pairs
+(Section~\ref{sec:limitations}). If a \frost map is needed anyway, CORAL should be omitted: \frost without CORAL
+scores above \frost on reversed imputation on the three Stereo-seq pairs (Supplementary Table~\ref{tab:imp_rev}) and
+on neighbour-based deconvolution (mean JSD 0.1123 against 0.1242; Supplementary Table~\ref{tab:deconv}).
+
+\paragraph{The microenvironment term.}
+Its effect was observed only on Stereo-seq sources; the other three technologies give no criterion that
+generalises. The term is optional, and users should test it on their own data.
+
 \subsection{Scope and limitations}\label{sec:limitations}
 
 \paragraph{Global alignment blurs gene-level neighbourhoods.}
