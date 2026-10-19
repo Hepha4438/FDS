@@ -54,7 +54,8 @@ with no significant loss in conservation or transfer. Stratifying by representat
 within the scGPT-spatial pairs ($n=7$) \frost exceeds ridge on batch\_v2, total\_v2, knn\_xen and imputation ($p\le0.031$)
 with no significant difference on the other metrics, and within the PCA pairs ($n=5$) the same four differences have
 the same sign at the smallest attainable $p=0.0625$ (Supplementary Table~\ref{S-tab:strat}). \frost exceeds Symphony, the published reference-mapping method, on all
-seven metrics ($n=12$, $p$ from 0.0005 to 0.034); against centring and Harmony it is better on most metrics (Supplementary Table~\ref{S-tab:center_harmony}).
+seven metrics ($n=12$, $p$ from 0.0005 to 0.034); against centring and Harmony it is better on most metrics (Supplementary Table~\ref{S-tab:center_harmony}), and
+against Harmony, fitted transductively on the evaluation tiles, these margins are lower bounds (Section~\ref{sec:reps}).
 
 \begin{table}[t]
 \centering
@@ -126,11 +127,11 @@ most 0.006. The floor of 200 is kept in the reported configuration.
 
 \paragraph{Identity regularisation and M-step.}
 Raising $\lambda_{\mathrm{id}}$ above 0.3 lowers mixing and total score on both pairs; $\lambda_{\mathrm{id}}=0$ was
-evaluated only together with a two-layer M-step (Supplementary Table~\ref{S-tab:lambda}). USHER's two-layer M-step
+evaluated only together with a two-layer M-step (Supplementary Table~\ref{S-tab:sens}). USHER's two-layer M-step
 ($\lambda_{\mathrm{id}}=0$, no target floor) mixes more, while the linear map transfers labels and predicts
 microenvironment better; the two branches differ in architecture, $\lambda_{\mathrm{id}}$ and floor simultaneously,
 so this is a pipeline-level comparison. We keep the linear map for the conservation end of the trade-off
-(Supplementary Table~\ref{S-tab:mstep}).
+(Supplementary Table~\ref{S-tab:sens}).
 
 \paragraph{Building structure once: bundled evidence on 12 pairs.}\label{sec:res_once}
 USHER-CC rebuilds $\Cs$ on $f_\theta(\mathbf{X}^{s})$ at every iteration; \frost builds it once on the unmapped source

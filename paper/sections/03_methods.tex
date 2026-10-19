@@ -118,4 +118,33 @@ iterations (25 against 10 in the benchmark; Supplementary Table~\ref{S-tab:usher
 \end{figure}
 
 \paragraph{Hyperparameters.} One configuration is used for all pairs; $\alpha$ and $\gamma$ follow~\citep{pratapa2025usher}
-(Supplementary Section~S1).
+(Supplementary Section~S1). Algorithm~\ref{alg:frost} collects steps (i)--(v).
+
+\begin{algorithm}[t]
+\caption{\frost. Steps refer to Section~\ref{sec:frost}; the reference $\mathbf{X}^{t}$ is never modified.}
+\label{alg:frost}
+\hrule\smallskip
+\noindent\textbf{Input:} source embeddings $\mathbf{X}^{s}$ (training tiles), reference embeddings $\mathbf{X}^{t}$ with
+labels $y$, spatial positions of both; $B$ batches, $T$ iterations.
+\begin{enumerate}\setlength{\itemsep}{1pt}
+\item \emph{Auxiliary cost (i).} Align first moments; $\mathbf{p}^{s}_{i}\leftarrow$ label frequencies among the 15
+  nearest reference cells; $M_{\mathrm{aux}}(i,j)\leftarrow\|\mathbf{p}^{s}_{i}-\mathbf{e}_{y_j}\|_2$, max-normalised.
+\item \emph{Reference floor (iii).} Draw 20{,}000 reference cells following the source composition estimated from
+  $\mathbf{p}^{s}$, with at least $\min(200,n_c)$ cells per class.
+\item \emph{Structure, once (ii).} For each batch $b$: $\Cs_b,\Ct_b\leftarrow$ exact $k$-NN geodesics on
+  $[\mathbf{x},s\mathbf{N}]$ of the unmapped source and of the reference; cache.
+\item Initialise $f_\theta$ as the identity ($\mathbf{W}=\mathbf{I}$, $\mathbf{b}=\mathbf{0}$).
+\item For $t=1,\dots,T$:
+  \begin{enumerate}\setlength{\itemsep}{1pt}
+  \item For each batch $b$: $\mathbf{M}\leftarrow\gamma_t\mathbf{M}_{\mathrm{aux}}+(1-\gamma_t)\mathbf{M}_{\mathrm{feat}}$
+    with $\gamma_1=1$, $\gamma_{t>1}=\gamma$; solve entropic FGW (Eq.~\ref{eq:fgw}) with the cached $\Cs_b,\Ct_b$;
+    discard high-entropy rows of $\mathbf{P}^{\star}$; Hungarian assignment gives matches $\pi$.
+  \item \emph{Linear M-step (iv).} Update $\mathbf{W},\mathbf{b}$ on the matches of all batches by minimising
+    Eq.~\eqref{eq:mstep} $+\,\lambda_{\mathrm{id}}\mathcal{R}_{\mathrm{id}}$, $\lambda_{\mathrm{id}}=0.3$.
+  \end{enumerate}
+\item \emph{Post-hoc moment matching (v).} $\mathbf{z}\leftarrow f_\theta(\mathbf{x})$ for every source cell, then CORAL
+  (Eq.~\ref{eq:coral}).
+\end{enumerate}
+\noindent\textbf{Output:} mapped source embeddings in the coordinates of $\mathbf{X}^{t}$.
+\smallskip\hrule
+\end{algorithm}

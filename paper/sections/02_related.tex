@@ -23,3 +23,15 @@ need not cover the same tissue. RAFT-UP~\citep{wu2026raftup} aligns partially ov
 Gromov--Wasserstein formulation that adds a pairwise distance-consistency cutoff and relaxed marginals that leave
 unmatched mass untransported; scArches~\citep{lotfollahi2022scarches} maps queries that contain cell types absent from
 the reference. Neither is evaluated here.
+
+\paragraph{Other mapping, alignment and transport methods.}
+SpCAST integrates single-cell RNA-seq with single-cell-resolved spatial transcriptomics
+\todo{cite SpCAST, arXiv 2605.26904}. INST-Align~\citep{han2026instalign} couples a coordinate-based
+deformation network with a canonical expression field, an implicit neural representation mapping spatial coordinates
+to expression embeddings, for joint alignment and reconstruction. STG3Net~\citep{fang2024stg3net} and
+SemanticST~\citep{zahedi2025semanticst} learn graph-based representations, for multi-slice domain identification
+with batch correction and for clustering and integration respectively; like GraphST, they produce new embeddings,
+which is a mismatch to the problem setting here rather than a shortcoming of the methods. LCN-Sinkhorn~\citep{gasteiger2021lcn}
+and Geodesic Sinkhorn~\citep{huguet2022geodesic} make entropic transport log-linear, the latter by diffusing a heat
+kernel on a manifold graph. We keep exact geodesics instead: caching makes the number of structure computations
+$2B$, independent of $T$, so building them is no longer the cost that such approximations address.

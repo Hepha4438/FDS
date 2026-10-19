@@ -17,7 +17,8 @@ Table~\ref{S-tab:reps}), chosen once per pair before alignment by within-assay l
 This choice uses held-out tiles, but every reference-preserving method, \frost included, receives the same
 representation for a given pair, so it cannot favour \frost within that group. The bias that remains runs the other
 way: Harmony and Scanorama are fitted transductively on all source cells, held-out tiles included, whereas \frost is
-fitted on the training tiles only.
+fitted on the training tiles only. This bias favours those two baselines, so the margins by which \frost exceeds them
+should be read as lower bounds.
 
 \paragraph{Baselines.}\label{sec:baselines}
 Reference-preserving: no alignment (raw), mean centring (center), CORAL~\citep{sun2016coral}, source-side MNN

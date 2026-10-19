@@ -16,11 +16,11 @@ performance under that level of label noise. The ridge baseline receives the sam
 not run a controlled label-corruption study.
 
 \paragraph{Sensitivity to settings.}
-The settings we changed from USHER were examined directly: $\lambda_{\mathrm{id}}$ (Supplementary
-Table~\ref{S-tab:lambda}), the M-step (Supplementary Table~\ref{S-tab:mstep}), the per-class floor
-(Section~\ref{sec:res_coral}) and the number of EM iterations (Section~\ref{sec:res_niche}). $\alpha$, $\gamma$ and
-$k$ keep the values published for USHER, whose sensitivity to $\alpha$, $\gamma$ and $\lambda_{\mathrm{fit}}$ is
-reported in~\citep{pratapa2025usher} (Figs.~S2--S4 there). The comparison with ridge, the strongest external
+The settings that \frost adds to USHER are varied in one table: the per-class floor, $\lambda_{\mathrm{id}}$ and the
+M-step (Supplementary Table~\ref{S-tab:sens}), with the construction of $\Cs$ in Table~\ref{tab:arms} and the
+number of EM iterations in Section~\ref{sec:res_niche}. $\alpha$, $\gamma$ and $k$ keep the values published for
+USHER, whose sensitivity to $\alpha$, $\gamma$ and $\lambda_{\mathrm{fit}}$ is reported in~\citep{pratapa2025usher}
+(Figs.~S2--S4 there). The comparison with ridge, the strongest external
 baseline, reaches the same conclusions within the PCA pairs and within the scGPT-spatial pairs (Supplementary
 Table~\ref{S-tab:strat}), so that comparison is not decided by the choice of representation.
 
@@ -36,7 +36,9 @@ on neighbour-based deconvolution (mean JSD 0.1123 against 0.1242; Supplementary 
 
 \paragraph{The microenvironment term.}
 Its effect was observed only on Stereo-seq sources; the other three technologies give no criterion that
-generalises. The term is optional, and users should test it on their own data.
+generalises. The term is optional, and users should test it on their own data. The neighbourhood is a fixed number of cells whose
+spatial extent differs between platforms (median 15th-neighbour distance 16.7--33.9\um; Supplementary Section~S4),
+a further reason to treat the term as optional.
 
 \subsection{Scope and limitations}\label{sec:limitations}
 
