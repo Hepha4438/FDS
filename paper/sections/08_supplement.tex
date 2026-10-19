@@ -1,7 +1,7 @@
 
 
 \subsection*{S1. Configurations}
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Configurations compared. USHER is the reference implementation run unmodified.}
 \label{tab:usher_vs_frost}
@@ -27,7 +27,7 @@ Post-hoc CORAL & none (also reported with CORAL) & no / yes & yes \\
 implementation, which we left unmodified. \textsuperscript{b}Not part of USHER, which instead subsamples the reference to match the source cell-type composition; applied to both for comparability.
 \end{table}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Representation used for each pair.}
 \label{tab:reps}
@@ -69,7 +69,7 @@ All experiments ran on Kaggle (2$\times$NVIDIA T4, 16\,GB each; about 29\,GB RAM
 the GraphST comparison ran at different times on different PyTorch builds. Baseline packages were installed from PyPI
 at run time without pinning; Table~\ref{tab:software} lists the versions resolved.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Software. ``Main'': main benchmark; ``Spatial'': GraphST comparison. GraphST does not expose version
 metadata; symphonypy was installed in a separate virtual environment, as its documentation recommends.}
@@ -108,7 +108,7 @@ imputation protocol it recovers part of the gene-level loss on COAD Stereo-seq (
 below no alignment.
 
 \subsection*{S5. Additional results}
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{EM cost, four COAD pairs, seed 0, $T=25$ iterations. Wall-clock is real time; $\Cs$ time is thread time summed
 over four workers and must not be added to wall-clock.}
@@ -127,7 +127,7 @@ EM time per iteration (s) & 18.3 & 15.4 & 15.5 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Each change from USHER, the ablation that isolates it, and where it is reported. Arms (a)--(c): four COAD
 pairs, seed 0, $T=25$ (Table~\ref{M-tab:arms}, Table~\ref{tab:cost}); runtime is mean EM wall-clock per pair.}
@@ -157,7 +157,7 @@ $\mathbf{M}_{\mathrm{aux}}$ with weight $\beta$. Only two of the four COAD pairs
 the pre-set threshold of $+0.020$ (Table~\ref{tab:registration}). \frost uses spatial coordinates only within each
 section, through $\Cs$ and $\Ct$, which needs no registration.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Registered coordinates in the auxiliary cost: change in total\_v2 relative to the same configuration without
 them.}
@@ -174,7 +174,7 @@ COAD Visium HD FFPE & with microenvironment & $-0.0029$ & $+0.020$ \\
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Sensitivity to the settings that \frost adds to USHER, measured in the USHER-ST configuration (landmark $\Cs$,
 no CORAL) on COAD pairs, three seeds, held-out tiles, means over seeds. (a) Per-class reference floor (linear M-step,
@@ -232,7 +232,7 @@ Pair & Setting & batch & bio & total & x-main & rare & knn \\
 
 
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Compact benchmark for \frost and its internal variants, means over 12 pairs (three seeds); columns as in
 Table~\ref{M-tab:main}. Bold: best among the three (for the external baselines, see Table~\ref{M-tab:main}).}
@@ -248,7 +248,7 @@ USHER-CC & \textbf{0.6600} & \textbf{0.6813} & \textbf{0.6728} & 0.6896 & 0.4288
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{\frost against centring and Harmony on the compact metrics: median paired difference (\frost $-$ baseline)
 and exact Wilcoxon $p$, $n=12$.}
@@ -269,7 +269,7 @@ knn\_xen     & $-0.0021$ & 0.7910 & $-0.0006$ & 0.6221 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{\frost against ridge within each representation. Mean over pairs of \frost and ridge, median paired
 difference ($\Delta$, \frost $-$ ridge) and exact Wilcoxon $p$. The smallest attainable $p$ is 0.0625 at $n=5$ and
@@ -294,7 +294,7 @@ imputation   & 0.1300 & 0.0532 & $+0.0839$ & 0.0625 & 0.1035 & 0.0683 & $+0.0408
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{GraphST with three seeds on all twelve pairs. The subsample is fixed (seed 0), so the \frost values are those of
 Table~\ref{M-tab:graphst}. Transfer accuracy per seed, its standard deviation (SD), and $\Delta$ = \frost $-$ mean
@@ -323,7 +323,7 @@ Tissue & Source & GraphST (seeds 0 / 1 / 2) & SD & \frost & $\Delta$ \\
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{USHER reference implementation versus \frost, four COAD pairs. USHER: one seed, 25 iterations; \frost and
 ridge: three seeds. With four pairs no paired test can reach significance (floor $p=0.125$). $\Delta$: \frost minus
@@ -360,7 +360,7 @@ Total & total\_v2 & 0.7055 & 0.7120 & 0.7025 & 0.6502 & $-0.0030$ \\
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Leakage-controlled (reversed) imputation, Stereo-seq pairs: median Spearman correlation over genes. Only
 these three pairs were archived.}
@@ -384,7 +384,7 @@ niche-only + CORAL   & 0.1409 & 0.0762 & 0.0751 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Neighbour-based deconvolution, 22 settings (11 pairs $\times$ pseudo-spots of 4 and 8 cells). Wins: settings
 with the best JSD; below floor: settings worse than the prior-composition floor (JSD 0.1944).}
@@ -420,7 +420,7 @@ metrics to their left. $^{*}$Modifies the reference.}
 \label{fig:grid_tissue}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{figs/fig_converge.png}
 \caption{Convergence of the E-step: fraction of assignments that change between consecutive EM iterations, mean over
@@ -430,14 +430,14 @@ reference implementation was measured at five checkpoints.}
 \label{fig:converge}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{figs/fig_pareto_supp.png}
 \caption{As Figure~\ref{M-fig:pareto}, for label transfer, transfer over all groups and rare-type purity.}
 \label{fig:pareto_supp}
 \end{figure}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Within-assay label recoverability (accuracy over the 16 groups, held-out tiles; COAD only, final
 configuration, three seeds) for the candidate representations. Nicheformer uses assay-derived mean vectors; it is not better than PCA or scGPT-spatial on any assay
@@ -457,7 +457,7 @@ scRNA-seq      & \textbf{0.943} & 0.875 & 0.901 \\
 \end{tabular}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{figs/fig_gaps.png}
 \caption{Paired comparison of each baseline with \frost (12 pairs). The blue line marks \frost; the black tick marks

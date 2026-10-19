@@ -11,7 +11,8 @@ spatially aware GraphST (balanced accuracy 0.72 vs 0.37; exact Wilcoxon $p=0.000
 in mixing, whereas GraphST is worse than no alignment and displaces its own reference (neighbourhood drift 0.98;
 zero for \frost by construction). Against the USHER reference implementation, \frost reaches a similar total score
 from the other side of the mixing--conservation trade-off, with 25-fold fewer structure computations and about
-7.5-fold less EM time. A global map fitted to distributions and labels does blur gene-level neighbourhoods: once
+7.5-fold less EM time, both at USHER's 25 EM iterations (the reduction in structure computations equals the number
+of iterations). A global map fitted to distributions and labels does blur gene-level neighbourhoods: once
 leakage is removed, imputation and neighbour-based deconvolution favour unaligned or locally corrected embeddings,
 which defines the scope of the method.
 \end{abstract}

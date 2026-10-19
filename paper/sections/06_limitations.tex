@@ -89,6 +89,10 @@ transported and will be spread over the nearest reference types. The entropy and
 unchanged from USHER (rows above the 90th entropy percentile or below the 10th confidence percentile of each batch are
 left out of the M-step) keep such diffuse rows out of the fit of $f_\theta$, but those cells are still mapped, and
 because the filters remove a fixed fraction of rows per batch, the fraction removed is not by itself a signal of
-absent types. A diagnostic for absent types, and the principled remedy of unbalanced or partial transport, are outside
-this evaluation. Label transfer is evaluated against the SPATCH reference
+absent types. A diagnostic that should carry signal, which we have not tested, uses the value of the row entropy rather than the
+fraction of rows removed: averaged over groups of source cells (source labels are not available in use, so clusters
+of the mapped source), a type without a reference counterpart should show systematically higher entropy, and its
+barycentric projections should lie farther from the nearest reference cell. Neither quantity is stored for the
+reported configuration, so this requires a rerun with additional logging; the principled remedy, unbalanced or partial
+transport, is likewise outside this evaluation. Label transfer is evaluated against the SPATCH reference
 annotations as given; robustness to a noisier reference annotation lies outside the claims made here.
