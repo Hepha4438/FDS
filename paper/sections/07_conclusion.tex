@@ -1,7 +1,10 @@
 \section{Conclusion}\label{sec:conclusion}
 Integrating platforms into a fixed reference changes which methods work: a spatially aware joint method transfers labels worse than no alignment here and rebuilds
-the reference it was asked to serve. \frost keeps the reference fixed by construction, transfers labels at least as
-well as every baseline, and sits on the mixing--conservation frontier with 25-fold fewer structure computations than
-the algorithm it builds on; gene-level information remains outside the reach of embedding alignment.
+the reference it was asked to serve. \frost keeps the reference fixed by construction and transfers labels better than, or not significantly differently
+from, every external baseline. Plotted as batch mixing against label transfer, it sits with USHER-CC at the
+high-mixing end, the two indistinguishable; the substantial gaps separate them from no alignment, Harmony and
+Scanorama (Figure~\ref{fig:pareto}) and from GraphST (Table~\ref{tab:graphst}). It does so with 25-fold fewer
+structure computations than the algorithm it builds on; gene-level information remains outside the reach of
+embedding alignment.
 
-\paragraph{Code availability.} Code will be made available.
+\paragraph{Code availability.} \todo{decide before submission: public repository or available on request}

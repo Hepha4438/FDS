@@ -9,6 +9,12 @@ metric (largest absolute median difference 0.0008; Section~\ref{sec:res_once}), 
 changes. Together they show that building structure once does not degrade the correspondences on these data; they do
 not cover a source whose geometry is distorted enough that rebuilding $\Cs$ on the mapped image would help.
 
+\paragraph{Reference labels in the auxiliary cost.}
+\frost's auxiliary cost is seeded by a 15-NN vote of reference labels whose accuracy on held-out tiles is 0.69--0.79
+across the four COAD pairs, i.e.\ 21--31\% of the transferred labels are wrong; the method attains its reported
+performance under that level of label noise. The ridge baseline receives the same reference-derived labels. We did
+not run a controlled label-corruption study.
+
 \paragraph{Sensitivity to settings.}
 The settings we changed from USHER were examined directly: $\lambda_{\mathrm{id}}$ (Supplementary
 Table~\ref{S-tab:lambda}), the M-step (Supplementary Table~\ref{S-tab:mstep}), the per-class floor
@@ -43,7 +49,7 @@ proportions from USHER-family maps are too diffuse (below). The CORAL trade-off 
 scale. This does not hold for alignment in general. Local corrections keep gene-level neighbourhoods about as well as
 no alignment (COAD Stereo-seq: MNN-ref 0.2015, Harmony 0.1792, raw 0.1850), but they mix far less: mean iLISI over
 12 pairs is 0.0012 for raw, 0.024 for MNN-ref, 0.062 for Harmony and 0.486 for \frost. Global reference-preserving
-maps sit at the high-mixing end of this frontier, which is why \frost is not positioned as a gene-level method.
+maps sit at the high-mixing end of this trade-off, which is why \frost is not positioned as a gene-level method.
 
 \paragraph{Why the original imputation protocol favoured \frost.}
 It predicts each gene of a mapped source cell from its reference neighbours, while the source embedding was computed
