@@ -2,30 +2,31 @@
 
 \subsection{A spatially aware baseline fails in the reference-preserving setting}\label{sec:res_spatial}
 On a common subsample of 10{,}000 cells per side (Table~\ref{tab:graphst}), \frost transfers labels more accurately
-than GraphST (median paired difference $+0.376$, $n=12$, $p=0.0005$).
+than GraphST (median paired difference $+0.377$, $n=12$, $p=0.0005$; GraphST averaged over three seeds).
 Mixing does not differ significantly ($+0.092$, $n=12$, $p=0.064$), so GraphST loses transfer without gaining mixing
 in exchange. GraphST is also worse than no alignment on transfer (mean difference $-0.243$, $n=12$, $p=0.0015$); its only
 gain over it is mixing (mean $+0.377$, $p=0.0005$), the signature of over-correction. \frost improves on no alignment in both
 transfer ($p=0.0010$) and mixing ($p=0.0005$).
 
-On the four COAD pairs we reran GraphST with three seeds on the same subsample: the smallest transfer gap between
-\frost and GraphST (0.286) is 15 times GraphST's largest seed standard deviation (0.019), so the choice of seed does
-not explain the gap (Supplementary Table~\ref{S-tab:graphst_seeds}).
-GraphST also moves the reference (drift 0.966--0.989, mean 0.979), so anything built on it must be rebuilt. GraphST had to be subsampled (its dense spatial
-graph exhausted memory at 90{,}000 cells), whereas \frost runs on all 40{,}000--45{,}000 cells per side. On the four
-COAD pairs GraphST training took 1{,}093.8\,s on average on the subsample and the \frost EM loop 387.3\,s on all cells
-at $T=25$ ($T=10$, used in the benchmark, was not timed), both excluding input preparation.
+The smallest \frost$-$GraphST gap in label transfer across the twelve pairs (0.211) exceeds the largest across-seed
+standard deviation observed for GraphST (0.019) by more than an order of magnitude; seed choice does not account for
+the gap (Supplementary Table~\ref{S-tab:graphst_seeds}).
+GraphST also moves the reference (drift 0.965--0.989 across pairs and seeds, mean 0.979), so anything built on it must be rebuilt. GraphST had to be subsampled (its dense spatial
+graph exhausted memory at 90{,}000 cells), whereas \frost runs on all 40{,}000--45{,}000 cells per side. GraphST
+training took 883--1{,}152\,s per run on the subsample (mean 1{,}067\,s over 36 runs), and the \frost EM loop 387.3\,s
+on all cells of the four COAD pairs at $T=25$ ($T=10$, used in the benchmark, was not timed), both excluding input preparation.
 
 \begin{table}[t]
 \centering
-\caption{Comparison with GraphST on a common subsample (10{,}000 + 10{,}000 cells per pair, 12 pairs, seed 0).
+\caption{Comparison with GraphST on a common subsample (10{,}000 + 10{,}000 cells per pair, subsample seed 0, 12
+pairs). GraphST values are means over three seeds.
 Means over pairs. These measures are not comparable with those of Table~\ref{tab:main}.}
 \label{tab:graphst}
 \begin{tabular}{@{}lccc@{}}
 \toprule
 Method & Transfer $\uparrow$ & Mixing $\uparrow$ & Reference drift $\downarrow$ \\
 \midrule
-GraphST            & 0.3731 & 0.3982 & 0.979 \\
+GraphST            & 0.3728 & 0.3979 & 0.979 \\
 No alignment (raw) & 0.6162 & 0.0208 & 0.000 \\
 \frost             & \textbf{0.7223} & \textbf{0.5158} & 0.000 \\
 \bottomrule
@@ -120,7 +121,7 @@ about 7.5-fold less EM time (387.3 against 2{,}911\,s).
 Comparing USHER-CC with USHER-ST isolates CORAL. It raises batch\_v2 ($+0.127$, $p=0.0010$), total\_v2 ($+0.053$,
 $p=0.0010$), rare\_purity ($+0.029$, $p=0.0015$) and xfer\_all ($+0.025$, $p=0.012$), with no significant change
 in bio\_v2 ($p=0.23$), xfer\_main ($p=0.73$) or knn\_xen ($p=0.15$; $n=12$ throughout). On the GraphST subsample it
-raises mean mixing by $+0.191$ ($p=0.0015$) and mean transfer by only $+0.009$. CORAL is therefore justified at the cell level;
+raises mean mixing by $+0.194$ ($p=0.0015$) and mean transfer by only $+0.008$. CORAL is therefore justified at the cell level;
 its cost appears at the gene level (Section~\ref{sec:limitations}). The per-class reference floor was introduced to protect rare types: on the four COAD pairs (three seeds) it raises
 rare\_purity by 0.020, about nine times the seed standard deviation, while every other compact metric changes by at
 most 0.006. The floor of 200 is kept in the reported configuration.
