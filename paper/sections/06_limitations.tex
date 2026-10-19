@@ -11,9 +11,11 @@ not cover a source whose geometry is distorted enough that rebuilding $\Cs$ on t
 
 \paragraph{Reference labels in the auxiliary cost.}
 \frost's auxiliary cost is seeded by a 15-NN vote of reference labels whose accuracy on held-out tiles is 0.69--0.79
-across the four COAD pairs, i.e.\ 21--31\% of the transferred labels are wrong; the method attains its reported
-performance under that level of label noise. The ridge baseline receives the same reference-derived labels. We did
-not run a controlled label-corruption study.
+across the four COAD pairs, i.e.\ 21--31\% of the transferred labels are wrong; on these pairs the method attains
+the performance reported here under that level of label noise. This is the noise that arises naturally in our
+pipeline on four COAD pairs, not a controlled corruption curve, and we do not claim robustness to label noise in
+general. The ridge baseline receives the same reference-derived labels. We did not run a controlled label-corruption
+study.
 
 \paragraph{Sensitivity to settings.}
 The settings that \frost adds to USHER are varied in one table: the per-class floor, $\lambda_{\mathrm{id}}$ and the
@@ -35,10 +37,11 @@ scores above \frost on reversed imputation on the three Stereo-seq pairs (Supple
 on neighbour-based deconvolution (mean JSD 0.1123 against 0.1242; Supplementary Table~\ref{S-tab:deconv}).
 
 \paragraph{The microenvironment term.}
-Its effect was observed only on Stereo-seq sources; the other three technologies give no criterion that
-generalises. The term is optional, and users should test it on their own data. The neighbourhood is a fixed number of cells whose
-spatial extent differs between platforms (median 15th-neighbour distance 16.7--33.9\um; Supplementary Section~S4),
-a further reason to treat the term as optional.
+Its effect was observed only on Stereo-seq sources, and neither measure of spatial extent available to us singles
+Stereo-seq out: its median 15th-neighbour distance (25.0--29.5\um) lies inside the range of the other platforms
+(16.7--33.9\um; Supplementary Section~S4), and the median diameter of its 4-cell pseudo-spots (58.8\um in COAD,
+65.4\um in OV) is exceeded by CosMx 6K in COAD (59.4\um). We therefore have no basis for an automatic criterion. The
+term is optional; we recommend deciding it by validation on a held-out part of the training tiles.
 
 \subsection{Scope and limitations}\label{sec:limitations}
 
@@ -81,5 +84,11 @@ GraphST, at its published defaults and on a subsample of 10{,}000 + 10{,}000 cel
 pairs, so the claim that spatial integration fails in the reference-preserving setting
 rests on that method. Like USHER, \frost solves balanced FGW; unbalanced or partial variants are outside this
 evaluation, and the per-class floor addresses mass imbalance between cell-type groups, not incomplete overlap between
-sections. Label transfer is evaluated against the SPATCH reference
+sections. For the same reason, a cell type present in the source but absent from the reference must still be
+transported and will be spread over the nearest reference types. The entropy and confidence filters inherited
+unchanged from USHER (rows above the 90th entropy percentile or below the 10th confidence percentile of each batch are
+left out of the M-step) keep such diffuse rows out of the fit of $f_\theta$, but those cells are still mapped, and
+because the filters remove a fixed fraction of rows per batch, the fraction removed is not by itself a signal of
+absent types. A diagnostic for absent types, and the principled remedy of unbalanced or partial transport, are outside
+this evaluation. Label transfer is evaluated against the SPATCH reference
 annotations as given; robustness to a noisier reference annotation lies outside the claims made here.

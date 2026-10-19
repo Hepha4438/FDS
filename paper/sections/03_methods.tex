@@ -56,9 +56,19 @@ batches and $T$ iterations, \frost builds $2B$ structure matrices; USHER builds 
 (the USHER-ST variant below) builds $B(T+1)$. Caching is the reason for the configuration; once $\Cs$ is computed
 once, the microenvironment block adds no cost (Section~\ref{sec:res_niche}).
 
-\paragraph{(iii) Reference floor.} FGW is solved on 20{,}000 reference cells whose class composition follows the
-source composition estimated in (i), with at least $\min(200,n_c)$ cells per class. Because balanced FGW must
-transport all source mass, a purely proportional subset starves rare types of partners.
+\paragraph{(iii) Reference floor.} FGW is solved on a reference subset of $n_{\mathrm{tgt}}=20{,}000$ cells. Let $f_c$
+be the frequency of class $c$ among the auxiliary labels (the argmax of $\mathbf{p}^{s}_{i}$) of the source training
+cells, and $n_c$ the number of \emph{reference} cells of class $c$. Every class present in the reference, including
+classes the auxiliary labels never predict, is allocated
+\[
+  a_c=\min\bigl(n_c,\;\max\bigl(\min(200,n_c),\;\mathrm{round}(f_c\,n_{\mathrm{tgt}})\bigr)\bigr).
+\]
+If $\sum_c a_c>n_{\mathrm{tgt}}$, all allocations are scaled by $n_{\mathrm{tgt}}/\sum_c a_c$ and any that falls below
+$\min(200,n_c)$ is raised back to it, so the total stays close to $n_{\mathrm{tgt}}$ and classes above the floor keep
+their relative proportions up to rounding; only rare classes are raised. Cells are drawn without replacement with a
+fixed random seed, so the subset is the same for every run. Because balanced FGW must transport all source mass, a
+purely proportional subset starves rare types of partners; what the floor costs elsewhere is measured in
+Supplementary Table~\ref{S-tab:sens}.
 
 \paragraph{(iv) Linear M-step.} $f_\theta(\mathbf{x})=\mathbf{W}\mathbf{x}+\mathbf{b}$, and we add
 $\lambda_{\mathrm{id}}\mathcal{R}_{\mathrm{id}}$ to Eq.~\eqref{eq:mstep}, with
@@ -129,8 +139,8 @@ labels $y$, spatial positions of both; $B$ batches, $T$ iterations.
 \begin{enumerate}\setlength{\itemsep}{1pt}
 \item \emph{Auxiliary cost (i).} Align first moments; $\mathbf{p}^{s}_{i}\leftarrow$ label frequencies among the 15
   nearest reference cells; $M_{\mathrm{aux}}(i,j)\leftarrow\|\mathbf{p}^{s}_{i}-\mathbf{e}_{y_j}\|_2$, max-normalised.
-\item \emph{Reference floor (iii).} Draw 20{,}000 reference cells following the source composition estimated from
-  $\mathbf{p}^{s}$, with at least $\min(200,n_c)$ cells per class.
+\item \emph{Reference floor (iii).} Draw 20{,}000 reference cells, allocating $a_c$ cells to every reference class
+  $c$ as in (iii).
 \item \emph{Structure, once (ii).} For each batch $b$: $\Cs_b,\Ct_b\leftarrow$ exact $k$-NN geodesics on
   $[\mathbf{x},s\mathbf{N}]$ of the unmapped source and of the reference; cache.
 \item Initialise $f_\theta$ as the identity ($\mathbf{W}=\mathbf{I}$, $\mathbf{b}=\mathbf{0}$).

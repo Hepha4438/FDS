@@ -188,7 +188,11 @@ from the USHER implementation in the auxiliary cost, $\varepsilon$, the $\Cs$ ap
 close to where USHER stops (0.046 against 0.059, medians at the end), suggesting that recomputing $\Cs$ every
 iteration, which they share, matters more for convergence than those four components.
 
-Caching, not the landmark approximation, is also where the cost saving comes from: an EM iteration takes 15.4\,s
-with cached exact $\Cs$ and 18.3\,s with recomputed landmarks ($T=25$; Supplementary Table~\ref{S-tab:cost}). Structure builds fall from $B(T+1)$ to $2B$, which no
+Caching, not the landmark approximation, is also where the cost saving comes from. From arm (a) to arm (b), EM
+wall-clock falls from 457.7\,s to 386.1\,s ($T=25$) although an exact build takes more thread time than a landmark
+build (30.6 against 3.3\,s): the saving comes from building 4 rather than 100 source matrices. From (b) to (c), the
+microenvironment block changes wall-clock by $+1.2$\,s, small against the spread across pairs (355--435\,s);
+an EM iteration takes 15.4\,s with cached exact $\Cs$ and 18.3\,s with recomputed landmarks (Supplementary
+Table~\ref{S-tab:cost}). Supplementary Table~\ref{S-tab:changes} maps every change from USHER to its ablation. Structure builds fall from $B(T+1)$ to $2B$, which no
 longer depends on $T$: 5.5-fold fewer at $T=10$ and 13-fold fewer at $T=25$; wall-clock at $T=10$ was not measured.
 
