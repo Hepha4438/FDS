@@ -48,8 +48,11 @@ every tensor. Embeddings were extracted in half precision, and for assays where 
 1{,}200-gene input (where genes are sampled at random) we averaged five extraction seeds.
 
 \paragraph{Hyperparameters.}\label{sec:supp_hp} $\alpha=0.3$, $\gamma=0.4$ ($\gamma=1$ at the first iteration), $\varepsilon=0.1$, $k=30$,
-sketches of 4{,}300 cells, 10 EM iterations of 100 Adam steps (learning rate $10^{-3}$), $\lambda_{\mathrm{fit}}=0.9$, $\lambda_{\mathrm{id}}=0.3$, reference subset of 20{,}000 cells with a per-class floor of 200,
-512 landmarks with $\beta=2$ (USHER-ST). Entropic filtering removes rows above the 90th percentile of entropy or below
+sketches of 4{,}300 cells, 10 EM iterations of 100 Adam steps (learning rate $10^{-3}$), $\lambda_{\mathrm{fit}}=0.9$, $\lambda_{\mathrm{id}}=0.3$, reference subset of 20{,}000 cells with a per-class floor of 200, drawn without replacement with a fixed random seed so that the subset is the same for every run,
+512 landmarks with $\beta=2$ (USHER-ST): with $D_{il}$ the hop distance from cell $i$ to landmark $l$,
+\begin{equation}\label{eq:landmark}
+  C^{s}_{ik}=-\beta^{-1}\log\textstyle\sum_{l=1}^{L}\exp\bigl(-\beta(D_{il}+D_{kl})\bigr),\qquad L=512,\ \beta=2.
+\end{equation} Entropic filtering removes rows above the 90th percentile of entropy or below
 the 10th percentile of row maximum.
 
 \subsection*{S2. Metric definitions}\label{sec:supp_metrics}
@@ -65,6 +68,15 @@ $f_{\mathrm{same}}$ the fraction of same-platform cells among 15 neighbours in t
 transfer uses no centring.
 
 \subsection*{S3. Computing environment}
+\paragraph{Reproducibility scope.} The code release is described in the main text (Code and data availability). All figures, tables and statistical tests in this
+paper can be regenerated from the derived data files included in the release, which contain
+the per-pair metric values for every method and seed. Rebuilding the alignment maps from raw
+expression data additionally requires the SPATCH datasets and a GPU environment; the release
+documents the exact notebook order, input datasets and environment for that path. The
+dependency pins reflect the versions resolved at run time; two packages (\texttt{GraphST} and
+\texttt{symphonypy}) expose no version metadata in our environment and are therefore recorded
+by their installation commands.
+
 All experiments ran on Kaggle (2$\times$NVIDIA T4, 16\,GB each; about 29\,GB RAM; 4 vCPUs). The main benchmark and
 the GraphST comparison ran at different times on different PyTorch builds. Baseline packages were installed from PyPI
 at run time without pinning; Table~\ref{tab:software} lists the versions resolved.
@@ -96,7 +108,23 @@ symphonypy   & --           & Main; \texttt{pip install symphonypy} in a separat
 \end{table}
 
 \subsection*{S4. Microenvironment term}\label{sec:supp_niche}
-The difference between \frost and USHER-CC measures the joint effect of three simultaneous changes to $\Cs$: adding
+\paragraph{Construction.} For each cell, the raw counts of its 15 nearest spatial neighbours (Euclidean distance
+between cell positions within the same assay, the cell itself excluded) are summed over the genes shared by the pair.
+The summed vectors of reference and source are pooled, scaled to $10^{4}$ counts and log-transformed, restricted to
+2{,}000 highly variable genes, standardised per gene and reduced to 50 principal components, giving $\mathbf{N}_i$.
+The neighbourhood has a fixed number of cells, not a fixed radius, and no correction for local cell density is
+applied: the count scaling removes the total count of the neighbourhood but not its spatial extent, which varies with
+density. The structure matrices are built on $[\mathbf{x}_i,\,s\mathbf{N}_i]$ with
+$s=\bigl(\tfrac{1}{n_t}\sum_j\|\mathbf{x}^{t}_j\|_2\bigr)\big/\bigl(\tfrac{1}{n_t}\sum_j\|\mathbf{N}^{t}_j\|_2\bigr)$,
+computed on the reference, so that the two blocks have the same scale; otherwise the larger block would dominate the
+$k$-NN graph. Before the graph is built, rows are $\ell_2$-normalised and centred and, only when their dimension
+exceeds 64, projected onto the 64 leading eigenvectors of their covariance, as in the USHER implementation. On PCA
+pairs $[\mathbf{x},s\mathbf{N}]$ has 100 dimensions and is projected, whereas the 50-dimensional embedding used by
+USHER-CC is not; this is the fourth difference listed below.
+
+\paragraph{Confounds.} Across the 12 pairs, \frost and USHER-CC give batch\_v2 $p=0.52$, bio\_v2 $p=0.95$,
+total\_v2 $p=0.43$, xfer\_main $p=0.85$, xfer\_all $p=0.26$, rare\_purity $p=0.72$, knn\_xen $p=0.30$ and
+imputation $p=0.23$ (exact Wilcoxon, $n=12$; largest absolute median difference 0.0008). The difference between \frost and USHER-CC measures the joint effect of three simultaneous changes to $\Cs$: adding
 the microenvironment, replacing landmark distances with exact geodesics, and replacing per-iteration recomputation on
 $f_\theta(\mathbf{X}^{s})$ with a single computation on the unmapped source. On the PCA pairs a fourth difference is
 added: the 64-dimensional low-rank projection applies to the augmented features but not to the 50-dimensional
@@ -426,7 +454,10 @@ metrics to their left. $^{*}$Modifies the reference.}
 \caption{Convergence of the E-step: fraction of assignments that change between consecutive EM iterations, mean over
 the four COAD pairs (seed 0, 25 iterations); values quoted in the text and in Table~\ref{M-tab:arms} are medians over
 pairs and the last three iterations, and the USHER value is the median at iteration 25. The first iteration (warm start with $\gamma=1$) is omitted. The USHER
-reference implementation was measured at five checkpoints.}
+reference implementation was measured at five checkpoints. Arm (a) differs from the USHER implementation in the
+auxiliary cost, $\varepsilon$, the $\Cs$ approximation and the M-step, yet ends close to where USHER stops (0.046
+against 0.059, medians at the end), suggesting that recomputing $\Cs$ every iteration, which they share, matters more
+for convergence than those four components.}
 \label{fig:converge}
 \end{figure}
 
@@ -468,6 +499,23 @@ signed-rank test. Bold: $p<0.05$. $^{*}$Modifies the reference.}
 
 \clearpage
 \subsection*{S6. UMAP of every pair}\label{sec:supp_umap}
+Figure~\ref{fig:umap} shows the hardest pair, COAD Stereo-seq, from the benchmark run; the figures that follow show
+every pair.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figs/fig_umap_stereoseq_scgpt.png}
+\caption{UMAP of 3{,}000 reference and 3{,}000 source cells for COAD Stereo-seq, the hardest pair. Top row: colour by
+platform; bottom row: colour by each platform's own cell-type annotation. The same cells appear in every panel.
+With its default threshold Scanorama returned the input unchanged for this pair, so its panel equals the unaligned
+one. Each panel is an independent UMAP fit on the same sampled cells; panels are not registered to a
+common frame. The raw, Harmony and Scanorama embeddings are those computed in the benchmark run; USHER-ST and
+FROST were embedded separately. Without alignment, and after Harmony, the two platforms occupy separate
+regions; USHER-ST brings them into contact but leaves them partly segregated; after \frost the platforms interleave
+throughout while the major cell types remain in distinct groups. $^{*}$Modifies the reference.}
+\label{fig:umap}
+\end{figure}
+
 Each figure shows one pair: the top image is coloured by platform (grey: Xenium reference; red: mapped source), the
 bottom image by cell type; each panel is one method. The panel labels in these images are in Vietnamese, from the
 original report (diacritics omitted here): ``USHER-ST (san 200)'' is USHER-ST (floor 200), ``+ mo-men'' is USHER-CC,

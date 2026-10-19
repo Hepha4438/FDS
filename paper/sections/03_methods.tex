@@ -3,10 +3,9 @@
 \subsection{Problem setting}\label{sec:setting}
 Let $\mathbf{X}^{t}\in\mathbb{R}^{n_t\times d}$ be embeddings of annotated cells from a \emph{reference} platform
 and $\mathbf{X}^{s}\in\mathbb{R}^{n_s\times d}$ embeddings of cells from the same tissue on a \emph{source}
-platform. We learn $f_\theta:\mathbb{R}^{d}\to\mathbb{R}^{d}$ that places source cells in the reference coordinate
-system, under one hard constraint: $\mathbf{X}^{t}$ is never modified, so everything built on the reference stays
-valid and reference drift is zero by construction. Source labels are used only for evaluation; spatial coordinates
-only within a section, to describe a cell's microenvironment.
+platform. We learn $f_\theta:\mathbb{R}^{d}\to\mathbb{R}^{d}$ that places source cells in the reference coordinates while
+$\mathbf{X}^{t}$ is never modified, so reference drift is zero by construction. Source labels are used only for
+evaluation; spatial coordinates only within a section.
 
 \subsection{Base algorithm: USHER}\label{sec:usher}
 USHER~\citep{pratapa2025usher} alternates between correspondences and a transform. The E-step solves the FGW
@@ -37,21 +36,12 @@ $\mathbf{p}^{s}_{i}$ among its 15 nearest reference cells, and
 $M_{\mathrm{aux}}(i,j)=\|\mathbf{p}^{s}_{i}-\mathbf{e}_{y_j}\|_{2}$ (max-normalised), where $\mathbf{e}_{y_j}$ is
 the one-hot annotation of reference cell $j$.
 
-\paragraph{(ii) Structure built once.} For each cell we sum the raw counts of its 15 nearest spatial neighbours
-(Euclidean distance between cell positions within the same assay, the cell itself excluded) over the genes shared by
-the pair. The summed vectors of reference and source are pooled, scaled to $10^{4}$ counts and log-transformed,
-restricted to 2{,}000 highly variable genes, standardised per gene and reduced to 50 principal components, giving
-$\mathbf{N}_i$. The neighbourhood has a fixed number of cells, not a fixed radius, and no correction for local cell
-density is applied: the count scaling removes the total count of the neighbourhood but not its spatial extent, which
-varies with density (Supplementary Section~S4). $\Cs$ and $\Ct$ are exact hop-count geodesics on symmetrised $k$-NN
-graphs ($k=30$, cosine) of $[\mathbf{x}_i,\,s\mathbf{N}_i]$ with
-$s=\bigl(\tfrac{1}{n_t}\sum_j\|\mathbf{x}^{t}_j\|_2\bigr)\big/\bigl(\tfrac{1}{n_t}\sum_j\|\mathbf{N}^{t}_j\|_2\bigr)$,
-computed on the reference, so that the two blocks have the same scale; otherwise the larger block would dominate the
-$k$-NN graph. Before the graph is built, rows are $\ell_2$-normalised and centred and, only when their dimension
-exceeds 64, projected onto the 64 leading eigenvectors of their covariance, as in the USHER implementation. On PCA
-pairs $[\mathbf{x},s\mathbf{N}]$ has 100 dimensions and is projected, whereas the 50-dimensional embedding used by
-USHER-CC is not; this is the fourth difference noted in Section~\ref{sec:res_once}.
-Both are computed from the \emph{unmapped} source and from the reference, once per batch, and cached. With $B$
+\paragraph{(ii) Structure built once.} For each cell we sum the raw counts of its 15 nearest spatial neighbours over
+the genes shared by the pair and reduce the result to 50 principal components, $\mathbf{N}_i$. The neighbourhood has a
+fixed number of cells, not a fixed radius, and no correction for local cell density is applied (construction details
+in Supplementary Section~S4). $\Cs$ and $\Ct$ are exact hop-count geodesics on symmetrised $k$-NN graphs ($k=30$,
+cosine) of $[\mathbf{x}_i,\,s\mathbf{N}_i]$, where $s$ equalises the mean row norms of the two blocks on the
+reference so that neither dominates the graph. Both are computed from the \emph{unmapped} source and from the reference, once per batch, and cached. With $B$
 batches and $T$ iterations, \frost builds $2B$ structure matrices; USHER builds $2BT$, and recomputing only $\Cs$
 (the USHER-ST variant below) builds $B(T+1)$. Caching is the reason for the configuration; once $\Cs$ is computed
 once, the microenvironment block adds no cost (Section~\ref{sec:res_niche}).
@@ -65,8 +55,7 @@ classes the auxiliary labels never predict, is allocated
 \]
 If $\sum_c a_c>n_{\mathrm{tgt}}$, all allocations are scaled by $n_{\mathrm{tgt}}/\sum_c a_c$ and any that falls below
 $\min(200,n_c)$ is raised back to it, so the total stays close to $n_{\mathrm{tgt}}$ and classes above the floor keep
-their relative proportions up to rounding; only rare classes are raised. Cells are drawn without replacement with a
-fixed random seed, so the subset is the same for every run. Because balanced FGW must transport all source mass, a
+their relative proportions up to rounding; only rare classes are raised. Because balanced FGW must transport all source mass, a
 purely proportional subset starves rare types of partners; what the floor costs elsewhere is measured in
 Supplementary Table~\ref{S-tab:sens}.
 
@@ -84,12 +73,8 @@ with a ridge of $0.01\,\mathrm{tr}(\bm{\Sigma})/d$ on both covariances. It uses 
 untouched.
 
 \paragraph{Ablation variants.} \textbf{USHER-ST} shares (i), (iii) and (iv) but builds structure as in our earlier
-pipeline: $\Ct$ exact and cached, $\Cs$ recomputed every iteration on $f_\theta(\mathbf{X}^{s})$ with $L=512$
-landmarks,
-\begin{equation}\label{eq:landmark}
-  C^{s}_{ik}=-\beta^{-1}\log\textstyle\sum_{l=1}^{L}\exp\bigl(-\beta(D_{il}+D_{kl})\bigr),\qquad \beta=2,
-\end{equation}
-where $D_{il}$ is the hop distance to landmark $l$. It builds $B(T+1)$ matrices. \textbf{USHER-CC} adds (v) to
+pipeline: $\Ct$ exact and cached, $\Cs$ recomputed every iteration on $f_\theta(\mathbf{X}^{s})$ as a soft-minimum of hop
+distances through 512 landmarks (Supplementary Section~S1). It builds $B(T+1)$ matrices. \textbf{USHER-CC} adds (v) to
 USHER-ST. Figure~\ref{fig:variants} sets the four configurations side by side.
 
 \begin{figure}[t]
@@ -134,27 +119,26 @@ iterations (25 against 10 in the benchmark; Supplementary Table~\ref{S-tab:usher
 \caption{\frost. Steps refer to Section~\ref{sec:frost}; the reference $\mathbf{X}^{t}$ is never modified.}
 \label{alg:frost}
 \hrule\smallskip
-\noindent\textbf{Input:} source embeddings $\mathbf{X}^{s}$ (training tiles), reference embeddings $\mathbf{X}^{t}$ with
-labels $y$, spatial positions of both; $B$ batches, $T$ iterations.
+\noindent\textbf{Input:} $\mathbf{X}^{s}$ (training tiles), $\mathbf{X}^{t}$ with labels $y$, spatial positions; $B$, $T$.
 \begin{enumerate}\setlength{\itemsep}{1pt}
-\item \emph{Auxiliary cost (i).} Align first moments; $\mathbf{p}^{s}_{i}\leftarrow$ label frequencies among the 15
-  nearest reference cells; $M_{\mathrm{aux}}(i,j)\leftarrow\|\mathbf{p}^{s}_{i}-\mathbf{e}_{y_j}\|_2$, max-normalised.
+\item \emph{Auxiliary cost (i).} $\mathbf{p}^{s}_{i}\leftarrow$ 15-NN reference label frequencies;
+  $M_{\mathrm{aux}}(i,j)\leftarrow\|\mathbf{p}^{s}_{i}-\mathbf{e}_{y_j}\|_2$.
 \item \emph{Reference floor (iii).} Draw 20{,}000 reference cells, allocating $a_c$ cells to every reference class
   $c$ as in (iii).
-\item \emph{Structure, once (ii).} For each batch $b$: $\Cs_b,\Ct_b\leftarrow$ exact $k$-NN geodesics on
-  $[\mathbf{x},s\mathbf{N}]$ of the unmapped source and of the reference; cache.
+\item \emph{Structure, once (ii).} For each batch $b$, cache $\Cs_b,\Ct_b$: exact geodesics on
+  $[\mathbf{x},s\mathbf{N}]$ of the unmapped source and the reference.
 \item Initialise $f_\theta$ as the identity ($\mathbf{W}=\mathbf{I}$, $\mathbf{b}=\mathbf{0}$).
 \item For $t=1,\dots,T$:
   \begin{enumerate}\setlength{\itemsep}{1pt}
   \item For each batch $b$: $\mathbf{M}\leftarrow\gamma_t\mathbf{M}_{\mathrm{aux}}+(1-\gamma_t)\mathbf{M}_{\mathrm{feat}}$
-    with $\gamma_1=1$, $\gamma_{t>1}=\gamma$; solve entropic FGW (Eq.~\ref{eq:fgw}) with the cached $\Cs_b,\Ct_b$;
-    discard high-entropy rows of $\mathbf{P}^{\star}$; Hungarian assignment gives matches $\pi$.
+    ($\gamma_1=1$); entropic FGW (Eq.~\ref{eq:fgw}) with cached $\Cs_b,\Ct_b$; drop high-entropy rows;
+    Hungarian matches $\pi$.
   \item \emph{Linear M-step (iv).} Update $\mathbf{W},\mathbf{b}$ on the matches of all batches by minimising
     Eq.~\eqref{eq:mstep} $+\,\lambda_{\mathrm{id}}\mathcal{R}_{\mathrm{id}}$, $\lambda_{\mathrm{id}}=0.3$.
   \end{enumerate}
 \item \emph{Post-hoc moment matching (v).} $\mathbf{z}\leftarrow f_\theta(\mathbf{x})$ for every source cell, then CORAL
   (Eq.~\ref{eq:coral}).
 \end{enumerate}
-\noindent\textbf{Output:} mapped source embeddings in the coordinates of $\mathbf{X}^{t}$.
+\noindent\textbf{Output:} source embeddings in the coordinates of $\mathbf{X}^{t}$.
 \smallskip\hrule
 \end{algorithm}
