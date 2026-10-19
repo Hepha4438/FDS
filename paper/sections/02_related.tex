@@ -16,3 +16,10 @@ cells; we include all three as baselines.
 SCOT~\citep{demetci2022scot} aligns modalities with Gromov--Wasserstein transport over $k$-NN geodesics. USHER~\citep{pratapa2025usher} couples
 FGW correspondences with a low-capacity transform in an EM loop to move foundation-model embeddings into a fixed
 target. \frost inherits this design and changes how and when the structure is computed.
+
+\paragraph{Partial overlap.}
+Both USHER and \frost solve balanced FGW, so all source mass is transported, although sections from different platforms
+need not cover the same tissue. RAFT-UP~\citep{wu2026raftup} aligns partially overlapping slices with a fused supervised
+Gromov--Wasserstein formulation that adds a pairwise distance-consistency cutoff and relaxed marginals that leave
+unmatched mass untransported; scArches~\citep{lotfollahi2022scarches} maps queries that contain cell types absent from
+the reference. Neither is evaluated here.

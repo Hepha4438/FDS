@@ -37,10 +37,20 @@ $\mathbf{p}^{s}_{i}$ among its 15 nearest reference cells, and
 $M_{\mathrm{aux}}(i,j)=\|\mathbf{p}^{s}_{i}-\mathbf{e}_{y_j}\|_{2}$ (max-normalised), where $\mathbf{e}_{y_j}$ is
 the one-hot annotation of reference cell $j$.
 
-\paragraph{(ii) Structure built once.} For each cell we sum the counts of its 15 nearest spatial neighbours in its own
-section and reduce them to 50 principal components, $\mathbf{N}_i$. $\Cs$ and $\Ct$ are exact hop-count geodesics on
-symmetrised $k$-NN graphs ($k=30$, cosine) of $[\mathbf{x}_i,\,s\mathbf{N}_i]$, with
-$s=\overline{\|\mathbf{x}^{t}\|}/\overline{\|\mathbf{N}^{t}\|}$, projected to 64 dimensions when larger.
+\paragraph{(ii) Structure built once.} For each cell we sum the raw counts of its 15 nearest spatial neighbours
+(Euclidean distance between cell positions within the same assay, the cell itself excluded) over the genes shared by
+the pair. The summed vectors of reference and source are pooled, scaled to $10^{4}$ counts and log-transformed,
+restricted to 2{,}000 highly variable genes, standardised per gene and reduced to 50 principal components, giving
+$\mathbf{N}_i$. The neighbourhood has a fixed number of cells, not a fixed radius, and no correction for local cell
+density is applied: the count scaling removes the total count of the neighbourhood but not its spatial extent, which
+varies with density (Supplementary Section~S4). $\Cs$ and $\Ct$ are exact hop-count geodesics on symmetrised $k$-NN
+graphs ($k=30$, cosine) of $[\mathbf{x}_i,\,s\mathbf{N}_i]$ with
+$s=\bigl(\tfrac{1}{n_t}\sum_j\|\mathbf{x}^{t}_j\|_2\bigr)\big/\bigl(\tfrac{1}{n_t}\sum_j\|\mathbf{N}^{t}_j\|_2\bigr)$,
+computed on the reference, so that the two blocks have the same scale; otherwise the larger block would dominate the
+$k$-NN graph. Before the graph is built, rows are $\ell_2$-normalised and centred and, only when their dimension
+exceeds 64, projected onto the 64 leading eigenvectors of their covariance, as in the USHER implementation. On PCA
+pairs $[\mathbf{x},s\mathbf{N}]$ has 100 dimensions and is projected, whereas the 50-dimensional embedding used by
+USHER-CC is not; this is the fourth difference noted in Section~\ref{sec:res_once}.
 Both are computed from the \emph{unmapped} source and from the reference, once per batch, and cached. With $B$
 batches and $T$ iterations, \frost builds $2B$ structure matrices; USHER builds $2BT$, and recomputing only $\Cs$
 (the USHER-ST variant below) builds $B(T+1)$. Caching is the reason for the configuration; once $\Cs$ is computed

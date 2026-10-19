@@ -8,6 +8,9 @@ in exchange. GraphST is also worse than no alignment on transfer (mean differenc
 gain over it is mixing (mean $+0.377$, $p=0.0005$), the signature of over-correction. \frost improves on no alignment in both
 transfer ($p=0.0010$) and mixing ($p=0.0005$).
 
+On the four COAD pairs we reran GraphST with three seeds on the same subsample: the smallest transfer gap between
+\frost and GraphST (0.286) is 15 times GraphST's largest seed standard deviation (0.019), so the choice of seed does
+not explain the gap (Supplementary Table~\ref{S-tab:graphst_seeds}).
 GraphST also moves the reference (drift 0.966--0.989, mean 0.979), so anything built on it must be rebuilt. GraphST had to be subsampled (its dense spatial
 graph exhausted memory at 90{,}000 cells), whereas \frost runs on all 40{,}000--45{,}000 cells per side. On the four
 COAD pairs GraphST training took 1{,}093.8\,s on average on the subsample and the \frost EM loop 387.3\,s on all cells

@@ -101,7 +101,7 @@ the microenvironment, replacing landmark distances with exact geodesics, and rep
 $f_\theta(\mathbf{X}^{s})$ with a single computation on the unmapped source. On the PCA pairs a fourth difference is
 added: the 64-dimensional low-rank projection applies to the augmented features but not to the 50-dimensional
 embeddings. Three diagnostic arms (Table~\ref{M-tab:arms}) separate these changes partly: arm (b) differs from arm (a) in the
-first two, and arm (c) differs from arm (b) only in the microenvironment on the two scGPT-spatial pairs, which include
+last two, and arm (c) differs from arm (b) only in the microenvironment on the two scGPT-spatial pairs, which include
 Stereo-seq; on the two PCA pairs it also changes the projection. The 15-neighbour radius that defines the microenvironment differs between platforms (16.7--33.9\um). A microenvironment-only variant (structure on $\mathbf{N}$ alone) was run with a single seed
 and is reported only in Table~\ref{tab:imp_rev}. Under the reversed
 imputation protocol it recovers part of the gene-level loss on COAD Stereo-seq (Table~\ref{tab:imp_rev}), still
@@ -253,6 +253,25 @@ xfer\_all    & 0.4735 & 0.4678 & $+0.0037$ & 0.3750 & 0.3973 & 0.3972 & $-0.0024
 rare\_purity & 0.2824 & 0.2776 & $+0.0075$ & 0.4375 & 0.2512 & 0.2513 & $-0.0058$ & 0.9375 \\
 knn\_xen     & 0.3236 & 0.2966 & $+0.0368$ & 0.0625 & 0.3397 & 0.3198 & $+0.0236$ & 0.0312 \\
 imputation   & 0.1300 & 0.0532 & $+0.0839$ & 0.0625 & 0.1035 & 0.0683 & $+0.0408$ & 0.0312 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{GraphST with three seeds, four COAD pairs. The subsample is fixed (seed 0), so the \frost values are those of
+Table~\ref{M-tab:graphst}. Transfer accuracy per seed, its standard deviation, and $\Delta$ = \frost $-$ mean GraphST.
+Across seeds, the standard deviation of mixing is at most 0.002 on every pair, reference drift is 0.965--0.979
+(\frost 0.000), and one GraphST training run takes 954--1{,}147\,s. GraphST parameters are its published defaults.}
+\label{tab:graphst_seeds}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Pair & GraphST (seeds 0 / 1 / 2) & SD & \frost & $\Delta$ \\
+\midrule
+CosMx 6K (PCA)               & 0.3947 / 0.4142 / 0.3761 & 0.019 & 0.8523 & $+0.457$ \\
+Visium HD FF (scGPT-spatial) & 0.5260 / 0.5383 / 0.5171 & 0.011 & 0.9102 & $+0.383$ \\
+Visium HD FFPE (PCA)         & 0.4671 / 0.4592 / 0.4676 & 0.005 & 0.8350 & $+0.370$ \\
+Stereo-seq (scGPT-spatial)   & 0.3245 / 0.3213 / 0.3197 & 0.002 & 0.6076 & $+0.286$ \\
 \bottomrule
 \end{tabular}
 \end{table}

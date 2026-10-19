@@ -9,6 +9,15 @@ metric (largest absolute median difference 0.0008; Section~\ref{sec:res_once}), 
 changes. Together they show that building structure once does not degrade the correspondences on these data; they do
 not cover a source whose geometry is distorted enough that rebuilding $\Cs$ on the mapped image would help.
 
+\paragraph{Sensitivity to settings.}
+The settings we changed from USHER were examined directly: $\lambda_{\mathrm{id}}$ (Supplementary
+Table~\ref{S-tab:lambda}), the M-step (Supplementary Table~\ref{S-tab:mstep}), the per-class floor
+(Section~\ref{sec:res_coral}) and the number of EM iterations (Section~\ref{sec:res_niche}). $\alpha$, $\gamma$ and
+$k$ keep the values published for USHER, whose sensitivity to $\alpha$, $\gamma$ and $\lambda_{\mathrm{fit}}$ is
+reported in~\citep{pratapa2025usher} (Figs.~S2--S4 there). The comparison with ridge, the strongest external
+baseline, reaches the same conclusions within the PCA pairs and within the scGPT-spatial pairs (Supplementary
+Table~\ref{S-tab:strat}), so that comparison is not decided by the choice of representation.
+
 \paragraph{Choosing a configuration.}
 For cell-level tasks, batch mixing and label transfer, \frost with moment matching is the configuration to use:
 adding CORAL to USHER-ST raises batch\_v2 ($+0.127$), total\_v2 ($+0.053$) and rare\_purity ($+0.029$) without a
@@ -60,6 +69,9 @@ cell2location~\citep{kleshchevnikov2022cell2location} rest on different assumpti
 \paragraph{Scope of the evaluation.}
 The data comprise one patient per tissue, so paired tests describe consistency across pairs that share references,
 not generalisation across patients. The comparison with spatial integration uses one representative method,
-GraphST, at its published defaults, one seed and on a subsample, so the claim that spatial integration fails in the
-reference-preserving setting rests on that method. Label transfer is evaluated against the SPATCH reference
+GraphST, at its published defaults and on a subsample of 10{,}000 + 10{,}000 cells, with three seeds on the four
+COAD pairs and one seed on the others, so the claim that spatial integration fails in the reference-preserving setting
+rests on that method. Like USHER, \frost solves balanced FGW; unbalanced or partial variants are outside this
+evaluation, and the per-class floor addresses mass imbalance between cell-type groups, not incomplete overlap between
+sections. Label transfer is evaluated against the SPATCH reference
 annotations as given; robustness to a noisier reference annotation lies outside the claims made here.
