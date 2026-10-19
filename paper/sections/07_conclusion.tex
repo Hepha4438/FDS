@@ -7,4 +7,32 @@ Scanorama (Figure~\ref{fig:pareto}) and from GraphST (Table~\ref{tab:graphst}). 
 structure computations than the algorithm it builds on; gene-level information remains outside the reach of
 embedding alignment.
 
-\paragraph{Code availability.} \todo{decide before submission: public repository or available on request}
+\section*{Code and data availability}
+
+\noindent\textbf{Code.} All code supporting this study will be released at
+\url{https://github.com/<ORG>/frost} and archived with a DOI on Zenodo upon publication.
+The release comprises (i) the alignment pipeline and all baseline wrappers, (ii) the
+evaluation and statistics code for every metric reported here, (iii) the figure scripts
+together with the derived data files they read, and (iv) pinned dependency specifications
+for the three environments used (main benchmark, spatial baseline, and the isolated
+environment required by \texttt{symphonypy}).
+
+\noindent\textbf{Modifications to third-party code.} \frost is built on the USHER reference
+implementation~\citep{pratapa2025usher}. Our changes to that code base are distributed as patches
+against the upstream repository rather than as a redistributed copy, so that every
+difference from the published implementation is explicit and auditable.
+
+\noindent\textbf{Reproducibility scope.} All figures, tables and statistical tests in this
+paper can be regenerated from the derived data files included in the release, which contain
+the per-pair metric values for every method and seed. Rebuilding the alignment maps from raw
+expression data additionally requires the SPATCH datasets and a GPU environment; the release
+documents the exact notebook order, input datasets and environment for that path. The
+dependency pins reflect the versions resolved at run time; two packages (\texttt{GraphST} and
+\texttt{symphonypy}) expose no version metadata in our environment and are therefore recorded
+by their installation commands.
+
+\noindent\textbf{Data.} This study uses the SPATCH resource~\citep{ren2025spatch}
+(\url{https://spatch.pku-genomics.org}), which provides matched Xenium 5K, CosMx 6K,
+Visium HD and Stereo-seq profiles of colon adenocarcinoma, hepatocellular carcinoma and
+ovarian cancer. No new data were generated. We redistribute no primary data; the release
+includes a download script that retrieves the required sections from the SPATCH portal.
