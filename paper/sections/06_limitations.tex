@@ -33,10 +33,13 @@ Its effect was observed only on Stereo-seq sources, and neither measure of spati
 we have no basis for an automatic criterion. The
 term is optional; we recommend deciding it by validation on a held-out part of the training tiles. Its neighbourhood
 size $k$ (5, 15, 30) was varied on the four COAD pairs, which include the Stereo-seq pair where the effect exists,
-scoring imputation only (Supplementary Table~\ref{S-tab:kniche}): $k$ has no effect on three pairs (range at most
-0.0010), while on Stereo-seq $k=30$ exceeds the reported $k=15$ by 0.0095 with disjoint intervals. We keep $k=15$,
-fixed before the sweep, because changing it now would select on the evaluation tiles and imputation lies outside the
-method's recommended use. The label vote of the auxiliary cost has its own $k$, which was not varied. Across $k$ the
+scoring imputation only under the leakage-controlled protocol (Supplementary Table~\ref{S-tab:kniche}): $k$ has no
+effect on three pairs (range at most 0.005), while on Stereo-seq imputation rises with $k$, the intervals at $k=5$ and
+$k=30$ are disjoint, and $k=30$ exceeds the reported $k=15$ by 0.0129 (the original protocol shows the same trend,
+$+0.0127$ from $k=5$ to $k=30$ against $+0.0136$ here). Even at $k=30$ \frost stays below no alignment on that pair
+(0.1386 against 0.1850): the sweep narrows the gene-level gap but does not close it. We keep $k=15$, fixed before the
+sweep, because changing it now would select on the evaluation tiles and imputation lies outside the method's
+recommended use. The label vote of the auxiliary cost has its own $k$, which was not varied. Across $k$ the
 neighbourhood radius on the COAD sections spans 10.5--41.1\um.
 
 \subsection{Scope and limitations}\label{sec:limitations}
