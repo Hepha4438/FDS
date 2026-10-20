@@ -561,6 +561,32 @@ signed-rank test. Bold: $p<0.05$. $^{*}$Modifies the reference.}
 \end{figure}
 
 \clearpage
+\subsection*{S7. Future directions}\label{sec:supp_future}
+\paragraph{Unbalanced or partial transport.} \frost, like USHER, solves balanced FGW, so all source mass is
+transported, although sections from different platforms need not cover the same tissue and the source may contain
+cell types absent from the reference. Formulations that relax the marginals so that unmatched mass stays
+untransported, as RAFT-UP~\citep{wu2026raftup} does for partially overlapping slices, address both cases directly;
+we have not evaluated them. If such solvers are slower, approximate entropic transport such as LCN-Sinkhorn~\citep{gasteiger2021lcn}
+or Geodesic Sinkhorn~\citep{huguet2022geodesic} could offset the cost.
+
+\paragraph{Feature-level and feature-weighted FGW.} \frost couples cells only, and its global map blurs gene-level
+neighbourhoods (main text, Section~\ref{M-sec:limitations}). CO-Optimal Transport (COOT)~\citep{redko2020coot} optimises two transport
+maps simultaneously, one between samples and one between features; a coupling at the feature level is a named route
+to that limitation. The structure of \frost is built on $[\mathbf{x},s\mathbf{N}]$ with $s$ set once, by hand, from
+the ratio of mean $\ell_2$ norms. fsFGW~\citep{lee2026fsfgw} adds adaptive feature-compression weights to the FGW
+objective because existing formulations treat all features uniformly, which is a principled replacement for that
+fixed weight. Linear FGW~\citep{nguyen2022linearfgw} embeds graphs in a vector space so that kernel matrices over
+many graphs are computed faster than with pairwise FGW; \frost computes a single coupling between two sets, so that
+speed-up does not apply here.
+
+\paragraph{Global map with local correction.} Under the leakage-controlled protocol on COAD Stereo-seq, the local
+correction MNN-ref reaches 0.2015, above no alignment (0.1850), whereas \frost reaches 0.1251 (Table~\ref{tab:imp_rev}).
+A hybrid that applies the global linear map and then a light local correction is therefore worth testing.
+
+\paragraph{Other settings.} The per-class floor was varied on the COAD pairs only (Table~\ref{tab:sens}); a floor
+set from the data is an alternative. Replacing CORAL by whitening with diagonal shrinkage of the covariances has not
+been measured.
+
 \subsection*{S6. UMAP of every pair}\label{sec:supp_umap}
 Figure~\ref{fig:umap} shows the hardest pair, COAD Stereo-seq, from the benchmark run; the figures that follow show
 every pair.

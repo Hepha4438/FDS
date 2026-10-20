@@ -27,8 +27,10 @@ the auxiliary labels of \frost and applies the same moment matching (ridge). Cen
 family of affine and linear post-hoc adapters, the lightweight alternative to iterative alignment; MNN-ref applies
 local, cell-specific translations. Reference-modifying:
 Harmony~\citep{korsunsky2019harmony} and Scanorama~\citep{hie2019scanorama}, both fitted transductively as noted above (with its default matching threshold Scanorama returned the input unchanged on all
-three Stereo-seq pairs and on HCC Visium HD FFPE; we report the default), and Symphony~\citep{kang2021symphony}, which builds its own count-based space.
-Spatially aware: GraphST~\citep{long2023graphst}, a representative spatial-integration method, at published
+three Stereo-seq pairs and on HCC Visium HD FFPE; we report the default), and Symphony~\citep{kang2021symphony}, which builds its own space from Xenium counts (2{,}000 highly variable
+genes, PCA, Harmony over two pseudo-batches of the reference) and maps the source into it, without the
+foundation-model embedding.
+Spatially aware: GraphST~\citep{long2023graphst}, the one spatially aware method tested, at published
 defaults on a common subsample (Section~\ref{sec:res_spatial}).
 
 \paragraph{Metrics.}\label{sec:metrics}

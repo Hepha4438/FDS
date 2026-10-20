@@ -39,8 +39,9 @@ $k=30$ are disjoint, and $k=30$ exceeds the reported $k=15$ by 0.0129 (the origi
 $+0.0127$ from $k=5$ to $k=30$ against $+0.0136$ here). Even at $k=30$ \frost stays below no alignment on that pair
 (0.1386 against 0.1850): the sweep narrows the gene-level gap but does not close it. We keep $k=15$, fixed before the
 sweep, because changing it now would select on the evaluation tiles and imputation lies outside the method's
-recommended use. The label vote of the auxiliary cost has its own $k$, which was not varied. Across $k$ the
-neighbourhood radius on the COAD sections spans 10.5--41.1\um.
+recommended use. The label vote of the auxiliary cost has its own $k$, which was not varied. A fixed $k$ does not fix
+the radius: at $k=15$ it is 16.7\um on Visium HD FF and 28.7\um on CosMx 6K in COAD, and across $k$ it spans
+10.5--41.1\um; a radius-based neighbourhood is the alternative.
 
 \subsection{Scope and limitations}\label{sec:limitations}
 
@@ -78,11 +79,14 @@ cell2location~\citep{kleshchevnikov2022cell2location} rest on different assumpti
 
 \paragraph{Scope of the evaluation.}
 The data comprise one patient per tissue, so paired tests describe consistency across pairs that share references,
-not generalisation across patients. The comparison with spatial integration uses one representative method,
+not generalisation across patients. The comparison with spatial integration uses one method,
 GraphST, on a subsample of 10{,}000 + 10{,}000 cells, at its published defaults with three seeds on all twelve
 pairs and with two further neighbourhood sizes on the four COAD pairs. A second spatially aware method, STAligner,
-could not be run in our environment, so the claim that spatial integration fails in the reference-preserving setting
-rests on one method. Like USHER, \frost solves balanced FGW; unbalanced or partial variants are outside this
+could not be run in our environment, so the measured findings on transfer, mixing and run time concern GraphST only;
+reference drift, which follows from re-embedding both sides, applies to joint integration methods as a class. The
+per-class floor was varied on the COAD pairs only. Building one exact structure matrix scales quadratically with the
+number of sketched cells (Supplementary Table~\ref{S-tab:cost}), and run time was not measured beyond about 45{,}000
+cells per side. Like USHER, \frost solves balanced FGW; unbalanced or partial variants are outside this
 evaluation, and the per-class floor addresses mass imbalance between cell-type groups, not incomplete overlap between
 sections. For the same reason, a cell type present in the source but absent from the reference must still be
 transported and will be spread over the nearest reference types. The entropy and confidence filters inherited
@@ -96,3 +100,5 @@ barycentric projections should lie farther from the nearest reference cell. Neit
 reported configuration, so this requires a rerun with additional logging; the principled remedy, unbalanced or partial
 transport, is likewise outside this evaluation. Label transfer is evaluated against the SPATCH reference
 annotations as given; robustness to a noisier reference annotation lies outside the claims made here.
+Directions that follow from these limits, among them unbalanced or partial transport, feature-level and
+feature-weighted FGW, and a global map followed by a local correction, are set out in Supplementary Section~S7.

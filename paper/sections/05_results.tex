@@ -1,6 +1,6 @@
 \section{Results}\label{sec:results}
 
-\subsection{A spatially aware baseline fails in the reference-preserving setting}\label{sec:res_spatial}
+\subsection{GraphST fails in the reference-preserving setting}\label{sec:res_spatial}
 On a common subsample of 10{,}000 cells per side (Table~\ref{tab:graphst}), \frost transfers labels more accurately
 than GraphST (median paired difference $+0.377$, $p=0.0005$; $n=12$ throughout, GraphST averaged over three seeds),
 with no significant difference in mixing ($+0.092$, $p=0.064$). GraphST is also worse than no alignment on transfer
@@ -11,7 +11,7 @@ The smallest \frost$-$GraphST gap in label transfer across the twelve pairs (0.2
 standard deviation observed for GraphST (0.019) by more than an order of magnitude; seed choice does not account for
 the gap (Supplementary Table~\ref{S-tab:graphst_seeds}).
 GraphST also moves the reference (drift 0.965--0.989 across pairs and seeds, mean 0.979), so anything built on it
-must be rebuilt; this follows from the algorithm, which re-embeds both sections. A secondary sweep of GraphST's
+must be rebuilt; this follows from re-embedding both sections and so holds for any joint integration method. A secondary sweep of GraphST's
 \texttt{n\_neighbors} (default 3; also 6 and 12) on the four COAD pairs, to be extended to the other tissues had any
 setting approached \frost on transfer or lowered drift appreciably, changed neither: transfer rose from 3 to 12 while
 mixing fell monotonically, the smallest transfer gap to \frost was 0.239 and drift stayed at or above 0.939. On Visium
