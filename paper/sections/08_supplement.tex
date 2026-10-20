@@ -211,15 +211,44 @@ COAD Visium HD FFPE & with microenvironment & $-0.0029$ & $+0.020$ \\
 \end{tabular}
 \end{table}
 
+\paragraph{Sensitivity analyses.} Table~\ref{tab:sensidx} indexes which settings of \frost were varied, on which pairs,
+and where the results are; the detailed tables follow it.
+
+\begin{table}[htbp]
+\centering
+\caption{Index of sensitivity analyses for the settings of \frost. All sweeps use COAD pairs, none the full set of 12
+pairs. The neighbourhood size of the baseline GraphST is a setting of that baseline, not of \frost, and is reported
+separately (Table~\ref{tab:graphst_nn}).}
+\label{tab:sensidx}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Setting & Values & Pairs & Reported in \\
+\midrule
+Per-class floor & 0 / 200 / 500 / 1000 & 4 COAD (3 seeds) & Table~\ref{tab:sens}(a) \\
+$\lambda_{\mathrm{id}}$ & 0.3 / 1.0 / 3.0 & 2 COAD (3 seeds) & Table~\ref{tab:sens}(b) \\
+M-step & linear / two-layer MLP & 2 COAD (3 seeds) & Table~\ref{tab:sens}(c) \\
+Microenvironment $k$ & 5 / 15 / 30 & 4 COAD (seed 0)$^{a}$ & Table~\ref{tab:kniche} \\
+Construction of $\Cs$ & three arms & 4 COAD (seed 0) & Table~\ref{M-tab:arms} \\
+$\alpha$, $\gamma$, $\lambda_{\mathrm{fit}}$ & USHER's values & -- & USHER, Figs.~S2--S4~\citep{pratapa2025usher} \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\raggedright
+$^{a}$Imputation only. Not varied: the reference subset size ($n_{\mathrm{tgt}}=20{,}000$), the sketch size (4{,}300), the $k$ of the
+auxiliary-cost label vote (15), the $k$ of the structure graphs (30, USHER's value, for which USHER reports no
+sweep), and $\varepsilon$ (0.1, against USHER's 0.05). The number of EM iterations has two points, $T=10$ and $T=25$,
+not a sweep.
+\end{table}
+
 \begin{table}[htbp]
 \centering
 \caption{Sensitivity to the settings that \frost adds to USHER, measured in the USHER-ST configuration (landmark $\Cs$,
 no CORAL) on COAD pairs, three seeds, held-out tiles, means over seeds. (a) Per-class reference floor (linear M-step,
 $\lambda_{\mathrm{id}}=0.3$); (b) $\lambda_{\mathrm{id}}$ (floor 200); (c) M-step, where MLP is two layers (hidden
 512) with $\lambda_{\mathrm{id}}=0$. $^{\dagger}$Reported setting; rows marked $^{\dagger}$ are the same runs across
-panels. The construction of $\Cs$ is varied in Table~\ref{M-tab:arms}. $\alpha$, $\gamma$ and $k$ keep the values
-published for USHER, which reports their sensitivity and that of $\lambda_{\mathrm{fit}}$ (Figs.~S2--S4
-of~\citep{pratapa2025usher}). Column abbreviations as in Table~\ref{M-tab:main}.}
+panels. The construction of $\Cs$ is varied in Table~\ref{M-tab:arms}; settings not varied are listed in
+Table~\ref{tab:sensidx}. Column abbreviations as in Table~\ref{M-tab:main}.}
 \label{tab:sens}
 \begin{tabular}{@{}llcccccc@{}}
 \toprule
