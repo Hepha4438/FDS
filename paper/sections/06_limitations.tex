@@ -79,10 +79,10 @@ cell2location~\citep{kleshchevnikov2022cell2location} rest on different assumpti
 
 \paragraph{Scope of the evaluation.}
 The data comprise one patient per tissue, so paired tests describe consistency across pairs that share references,
-not generalisation across patients. This is the limit of the data source rather than a choice: SPATCH, to our
-knowledge the only resource that profiles one tumour on five spatial platforms from serial sections of its FFPE and
-fresh-frozen blocks~\citep{ren2025spatch,ren2024spatchpreprint}, contains one patient per tumour type, so extending
-the analysis across patients awaits a comparable multi-platform resource rather than a rerun. The comparison with spatial integration uses one method,
+not generalisation across patients. This follows from how multi-platform benchmarks are built rather than from a
+choice of this study: SPATCH~\citep{ren2025spatch,ren2024spatchpreprint}, like at least one other benchmark that
+profiles serial sections on several platforms, contains one tumour per cancer type. Validation across patients needs
+repeated patients within a tumour type, which SPATCH does not provide. The comparison with spatial integration uses one method,
 GraphST, on a subsample of 10{,}000 + 10{,}000 cells, at its published defaults with three seeds on all twelve
 pairs and with two further neighbourhood sizes on the four COAD pairs. A second spatially aware method, STAligner,
 could not be run in our environment, so the measured findings on transfer, mixing and run time concern GraphST only;
