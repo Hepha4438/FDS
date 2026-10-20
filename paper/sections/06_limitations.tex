@@ -13,8 +13,9 @@ pipeline on four COAD pairs; we ran no controlled label-corruption study and do 
 in general. The ridge baseline receives the same reference-derived labels.
 
 \paragraph{Sensitivity to settings.}
-Supplementary Table~\ref{S-tab:sensidx} indexes what was varied, on which pairs, and what
-was not; $\alpha$, $\gamma$ and $\lambda_{\mathrm{fit}}$ keep USHER's published values, whose sensitivity USHER
+The per-class floor, $\lambda_{\mathrm{id}}$, the M-step, the microenvironment $k$ and the
+construction of $\Cs$ were varied, on COAD pairs only; Supplementary Table~\ref{S-tab:sensidx} indexes these sweeps
+and the settings not varied; $\alpha$, $\gamma$ and $\lambda_{\mathrm{fit}}$ keep USHER's published values, whose sensitivity USHER
 reports (Figs.~S2--S4 of~\citep{pratapa2025usher}).
 
 \paragraph{Choosing a configuration.}
@@ -99,5 +100,6 @@ barycentric projections should lie farther from the nearest reference cell. Neit
 reported configuration, so this requires a rerun with additional logging; the principled remedy, unbalanced or partial
 transport, is likewise outside this evaluation. Label transfer is evaluated against the SPATCH reference
 annotations as given; robustness to a noisier reference annotation lies outside the claims made here.
-Directions that follow from these limits, among them unbalanced or partial transport, feature-level and
-feature-weighted FGW, and a global map followed by a local correction, are set out in Supplementary Section~S7.
+Directions that follow from these limits are set out in Supplementary Section~S7: unbalanced or partial transport
+for incomplete overlap and absent cell types, joint coupling of cells and genes~\citep{redko2020coot} and
+feature-weighted FGW~\citep{lee2026fsfgw} for the gene-level loss, and a global map followed by a local correction.
