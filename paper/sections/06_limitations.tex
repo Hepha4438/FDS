@@ -1,11 +1,9 @@
 \section{Discussion}\label{sec:discussion}
 
 \paragraph{Building structure once.}
-Computing $\Cs$ from the unmapped source assumes that the source's own geometry, not its mapped image, is what the
-correspondences need. The four-pair comparison of arms (a) and (b), which changes only how $\Cs$ is built, and the
-bundled 12-pair comparison of \frost with USHER-CC (Sections~\ref{sec:res_once} and~\ref{sec:res_niche}) show that
-building structure once does not degrade the correspondences on these data; they do not cover a source whose geometry
-is distorted enough that rebuilding $\Cs$ on the mapped image would help.
+The comparisons of Sections~\ref{sec:res_once} and~\ref{sec:res_niche} show that computing $\Cs$ once, from the
+unmapped source, does not degrade the correspondences on these data; they do not cover a source whose geometry is
+distorted enough that rebuilding $\Cs$ on the mapped image would help.
 
 \paragraph{Reference labels in the auxiliary cost.}
 \frost's auxiliary cost is seeded by a 15-NN vote of reference labels whose accuracy on held-out tiles is 0.69--0.79
@@ -30,11 +28,16 @@ scores above \frost on reversed imputation on the three Stereo-seq pairs (Supple
 on neighbour-based deconvolution (mean JSD 0.1123 against 0.1242; Supplementary Table~\ref{S-tab:deconv}).
 
 \paragraph{The microenvironment term.}
-Its effect was observed only on Stereo-seq sources, and neither measure of spatial extent available to us singles
-Stereo-seq out: its median 15th-neighbour distance (25.0--29.5\um) lies inside the range of the other platforms
-(16.7--33.9\um; Supplementary Section~S4), and the median diameter of its 4-cell pseudo-spots (58.8\um in COAD,
-65.4\um in OV) is exceeded by CosMx 6K in COAD (59.4\um). We therefore have no basis for an automatic criterion. The
-term is optional; we recommend deciding it by validation on a held-out part of the training tiles.
+Its effect was observed only on Stereo-seq sources, and neither measure of spatial extent available to us, the
+15th-neighbour distance or the diameter of 4-cell pseudo-spots, singles Stereo-seq out (Supplementary Section~S4), so
+we have no basis for an automatic criterion. The
+term is optional; we recommend deciding it by validation on a held-out part of the training tiles. Its neighbourhood
+size $k$ (5, 15, 30) was varied on the four COAD pairs, which include the Stereo-seq pair where the effect exists,
+scoring imputation only (Supplementary Table~\ref{S-tab:kniche}): $k$ has no effect on three pairs (range at most
+0.0010), while on Stereo-seq $k=30$ exceeds the reported $k=15$ by 0.0095 with disjoint intervals. We keep $k=15$,
+fixed before the sweep, because changing it now would select on the evaluation tiles and imputation lies outside the
+method's recommended use. The label vote of the auxiliary cost has its own $k$, which was not varied. Across $k$ the
+neighbourhood radius on the COAD sections spans 10.5--41.1\um.
 
 \subsection{Scope and limitations}\label{sec:limitations}
 
@@ -73,9 +76,10 @@ cell2location~\citep{kleshchevnikov2022cell2location} rest on different assumpti
 \paragraph{Scope of the evaluation.}
 The data comprise one patient per tissue, so paired tests describe consistency across pairs that share references,
 not generalisation across patients. The comparison with spatial integration uses one representative method,
-GraphST, at its published defaults and on a subsample of 10{,}000 + 10{,}000 cells, with three seeds on all twelve
-pairs, so the claim that spatial integration fails in the reference-preserving setting
-rests on that method. Like USHER, \frost solves balanced FGW; unbalanced or partial variants are outside this
+GraphST, on a subsample of 10{,}000 + 10{,}000 cells, at its published defaults with three seeds on all twelve
+pairs and with two further neighbourhood sizes on the four COAD pairs. A second spatially aware method, STAligner,
+could not be run in our environment, so the claim that spatial integration fails in the reference-preserving setting
+rests on one method. Like USHER, \frost solves balanced FGW; unbalanced or partial variants are outside this
 evaluation, and the per-class floor addresses mass imbalance between cell-type groups, not incomplete overlap between
 sections. For the same reason, a cell type present in the source but absent from the reference must still be
 transported and will be spread over the nearest reference types. The entropy and confidence filters inherited

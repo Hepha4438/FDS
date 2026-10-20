@@ -10,7 +10,13 @@ over-correction; \frost improves on no alignment in both ($p=0.0010$ and $0.0005
 The smallest \frost$-$GraphST gap in label transfer across the twelve pairs (0.211) exceeds the largest across-seed
 standard deviation observed for GraphST (0.019) by more than an order of magnitude; seed choice does not account for
 the gap (Supplementary Table~\ref{S-tab:graphst_seeds}).
-GraphST also moves the reference (drift 0.965--0.989 across pairs and seeds, mean 0.979), so anything built on it must be rebuilt. GraphST had to be subsampled (its dense spatial
+GraphST also moves the reference (drift 0.965--0.989 across pairs and seeds, mean 0.979), so anything built on it
+must be rebuilt; this follows from the algorithm, which re-embeds both sections. A secondary sweep of GraphST's
+\texttt{n\_neighbors} (default 3; also 6 and 12) on the four COAD pairs, to be extended to the other tissues had any
+setting approached \frost on transfer or lowered drift appreciably, changed neither: transfer rose from 3 to 12 while
+mixing fell monotonically, the smallest transfer gap to \frost was 0.239 and drift stayed at or above 0.939. On Visium
+HD FF, GraphST mixes more than \frost at 3 and 6 neighbours (Supplementary Table~\ref{S-tab:graphst_nn}).
+GraphST had to be subsampled (its dense spatial
 graph exhausted memory at 90{,}000 cells), whereas \frost runs on all 40{,}000--45{,}000 cells per side. GraphST
 training took 883--1{,}152\,s per run on the subsample (mean 1{,}067\,s over 36 runs), and the \frost EM loop 387.3\,s
 on all cells of the four COAD pairs at $T=25$ ($T=10$, used in the benchmark, was not timed), both excluding input preparation.
@@ -33,9 +39,9 @@ No alignment (raw) & 0.6162 & 0.0208 & 0.000 \\
 \end{table}
 
 \subsection{Benchmark}\label{sec:res_bench}
-Because batch\_v2 and bio\_v2 average other metrics, we summarise with the compact set of Table~\ref{tab:main}
-(all 15 metrics in Supplementary Figure~\ref{S-fig:grid}). On all seven cell-level metrics \frost ranks among the top three of 11 methods, counting its two internal variants (Supplementary
-Table~\ref{S-tab:main_variants}): first on
+Table~\ref{tab:main} gives the compact metrics (all 15 in Supplementary Figure~\ref{S-fig:grid}). On all seven
+cell-level metrics \frost ranks among the top three of 11 methods, counting its two internal variants
+(Supplementary Table~\ref{S-tab:main_variants}): first on
 xfer\_all; second on batch\_v2, total\_v2, rare\_purity and knn\_xen; third on bio\_v2 and xfer\_main. The only column led by an external baseline is bio\_v2, led by ridge, which uses the same
 reference-derived labels as \frost; the difference is not significant ($p=0.06$). The imputation column
 favours \frost only under a protocol that leaks the predicted gene, and the ranking reverses once the leak is removed
@@ -104,8 +110,7 @@ about 7.5-fold less EM time (387.3 against 2{,}911\,s).
 \paragraph{Post-hoc moment matching.}\label{sec:res_coral}
 Comparing USHER-CC with USHER-ST isolates CORAL. It raises batch\_v2 ($+0.127$, $p=0.0010$), total\_v2 ($+0.053$,
 $p=0.0010$), rare\_purity ($+0.029$, $p=0.0015$) and xfer\_all ($+0.025$, $p=0.012$), with no significant change
-in bio\_v2 ($p=0.23$), xfer\_main ($p=0.73$) or knn\_xen ($p=0.15$; $n=12$ throughout). On the GraphST subsample it
-raises mean mixing by $+0.194$ ($p=0.0015$) and mean transfer by only $+0.008$. CORAL is therefore justified at the cell level;
+in bio\_v2 ($p=0.23$), xfer\_main ($p=0.73$) or knn\_xen ($p=0.15$; $n=12$ throughout). CORAL is therefore justified at the cell level;
 its cost appears at the gene level (Section~\ref{sec:limitations}). On the four COAD pairs (three seeds) the
 per-class floor of 200 raises rare\_purity by 0.020, about nine times the seed standard deviation, while every other
 compact metric changes by at most 0.006.
@@ -132,8 +137,7 @@ recomputation together and leaves quality unchanged (total\_v2 $-0.005$, imputat
 assignments still changing falls from 0.046 to 0.008. Going from (b) to (c) adds only the microenvironment on the two
 scGPT-spatial pairs; on the two PCA pairs it also changes the dimensionality projection. Stereo-seq is one of the
 clean pairs, and it is where the effect appears: under the original imputation protocol, (c) raises Stereo-seq
-imputation from 0.048 to 0.113 (bootstrap intervals 0.045--0.052 and 0.107--0.118), above no alignment (0.0945),
-while convergence is unchanged on average (1.08-fold) but 2.44-fold slower on that pair. Under the leakage-controlled
+imputation from 0.048 to 0.113 (bootstrap intervals 0.045--0.052 and 0.107--0.118), above no alignment (0.0945). Under the leakage-controlled
 protocol the gain persists in the benchmark configuration (\frost $-$ USHER-CC $=+0.044$ on COAD Stereo-seq,
 disjoint intervals), but \frost stays below no alignment (0.1251 against 0.1850; Section~\ref{sec:limitations}).
 Averaged over the 12 pairs the term is neutral, so we do not claim that it improves the method. We keep it because it

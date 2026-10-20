@@ -122,7 +122,13 @@ exceeds 64, projected onto the 64 leading eigenvectors of their covariance, as i
 pairs $[\mathbf{x},s\mathbf{N}]$ has 100 dimensions and is projected, whereas the 50-dimensional embedding used by
 USHER-CC is not; this is the fourth difference listed below.
 
-\paragraph{Confounds.} Across the 12 pairs, \frost and USHER-CC give batch\_v2 $p=0.52$, bio\_v2 $p=0.95$,
+\paragraph{Spatial extent.} The median 15th-neighbour distance of Stereo-seq (25.0--29.5\um) lies inside the range of
+the other platforms (16.7--33.9\um), and the median diameter of its 4-cell pseudo-spots (58.8\um in COAD, 65.4\um in
+OV) is exceeded by CosMx 6K in COAD (59.4\um), so neither measure singles out the platform on which the
+microenvironment term has an effect.
+
+\paragraph{Confounds.} In the three-arm comparison, adding the microenvironment (arm (b) to (c)) leaves convergence
+unchanged on average (1.08-fold) but makes it 2.44-fold slower on COAD Stereo-seq. Across the 12 pairs, \frost and USHER-CC give batch\_v2 $p=0.52$, bio\_v2 $p=0.95$,
 total\_v2 $p=0.43$, xfer\_main $p=0.85$, xfer\_all $p=0.26$, rare\_purity $p=0.72$, knn\_xen $p=0.30$ and
 imputation $p=0.23$ (exact Wilcoxon, $n=12$; largest absolute median difference 0.0008). The difference between \frost and USHER-CC measures the joint effect of three simultaneous changes to $\Cs$: adding
 the microenvironment, replacing landmark distances with exact geodesics, and replacing per-iteration recomputation on
@@ -177,6 +183,9 @@ Auxiliary cost, $\varepsilon$ & not isolated & -- & -- \\
 
 Building one exact structure matrix scales quadratically with the number of cells: 0.42, 1.61 and 7.61\,s at
 $n=1{,}000$, 2{,}000 and 4{,}300 (the sketch size).
+
+\paragraph{Moment matching on the GraphST subsample.} On the common subsample of the GraphST comparison (12 pairs),
+CORAL (USHER-CC against USHER-ST) raises mean mixing by $+0.194$ ($p=0.0015$) and mean transfer by only $+0.008$.
 
 \paragraph{Cross-section registration.} We also tested adding registered physical coordinates of the two sections to
 $\mathbf{M}_{\mathrm{aux}}$ with weight $\beta$. Only two of the four COAD pairs could be registered (CosMx:
@@ -254,6 +263,34 @@ Pair & Setting & batch & bio & total & x-main & rare & knn \\
 \multirow{3}{*}{Visium HD FF (scGPT)} & MLP, floor 0 & 0.6683 & 0.7610 & 0.7239 & 0.6709 & 0.1586 & 0.4544 \\
  & linear, floor 0 & 0.6300 & 0.7897 & 0.7259 & 0.6817 & 0.1543 & 0.4816 \\
  & linear, floor 200$^{\dagger}$ & 0.6548 & 0.7877 & 0.7346 & 0.6868 & 0.1844 & 0.4847 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Neighbourhood size $k$ of the microenvironment block: four COAD pairs, one seed, held-out tiles, imputation
+only (median Spearman correlation over genes; interval rounded to three decimals), under the original imputation protocol, which leaks
+the predicted gene (main text, Section~\ref{M-sec:limitations}). All $k$ were scored in one run with the same split,
+queries (10{,}000 cells) and reference (20{,}000 Xenium cells), so $k$ is the only variable. On COAD Stereo-seq in the
+same run, no alignment scores 0.0945 and Harmony 0.0988. Three pairs are flat within 0.0010 while one moves
+monotonically, which is not the pattern of run-to-run noise. Median 15th-neighbour distance at $k=5/15/30$:
+Xenium 14.0/24.4/34.9\um, CosMx 16.3/28.7/41.1, Visium HD FF 10.5/16.7/23.6, Visium HD FFPE 11.3/17.9/25.3,
+Stereo-seq 14.3/25.0/35.6. The $k$ of the auxiliary-cost label vote is a separate setting and was not varied. $^{\dagger}$Reported setting.}
+\label{tab:kniche}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llccc@{}}
+\toprule
+Pair & Variant & $k=5$ & $k=15^{\dagger}$ & $k=30$ \\
+\midrule
+\multirow{2}{*}{CosMx 6K} & w/o CORAL & 0.1697 [0.167, 0.173] & 0.1700 [0.167, 0.174] & 0.1701 [0.167, 0.174] \\
+ & \frost & 0.1555 [0.152, 0.160] & 0.1562 [0.153, 0.160] & 0.1558 [0.153, 0.159] \\
+\multirow{2}{*}{Visium HD FF} & w/o CORAL & 0.1785 [0.168, 0.192] & 0.1794 [0.169, 0.193] & 0.1784 [0.168, 0.193] \\
+ & \frost & 0.1723 [0.165, 0.186] & 0.1731 [0.164, 0.187] & 0.1732 [0.165, 0.186] \\
+\multirow{2}{*}{Visium HD FFPE} & w/o CORAL & 0.1539 [0.150, 0.161] & 0.1544 [0.150, 0.162] & 0.1542 [0.149, 0.161] \\
+ & \frost & 0.1492 [0.144, 0.156] & 0.1502 [0.144, 0.155] & 0.1497 [0.144, 0.155] \\
+\multirow{2}{*}{Stereo-seq} & w/o CORAL & 0.1124 [0.108, 0.117] & 0.1140 [0.109, 0.118] & 0.1220 [0.117, 0.127] \\
+ & \frost & 0.1022 [0.098, 0.106] & 0.1054 [0.101, 0.109] & 0.1149 [0.111, 0.122] \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -347,6 +384,29 @@ Tissue & Source & GraphST (seeds 0 / 1 / 2) & SD & \frost & $\Delta$ \\
  & Visium HD FF (PCA) & 0.4808 / 0.4823 / 0.4833 & 0.001 & 0.8761 & $+0.394$ \\
  & Visium HD FFPE (scGPT) & 0.3220 / 0.3336 / 0.3274 & 0.006 & 0.7657 & $+0.438$ \\
  & Stereo-seq (scGPT) & 0.1990 / 0.1979 / 0.1975 & 0.001 & 0.4089 & $+0.211$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{GraphST at three neighbourhood sizes (\texttt{n\_neighbors}; 3 is the default), four COAD pairs, seed 0,
+10{,}000 cells per side, the same subsample as Table~\ref{M-tab:graphst}. GraphST reference drift was 0.966--0.978 at 3, 0.955--0.974 at 6 and
+0.939--0.966 at 12 neighbours; \frost and all reference-preserving methods have drift 0.000 by construction. The default column is the seed-0 run of Table~\ref{tab:graphst_seeds}.
+A training run took 926.8--1{,}113.9\,s at 6 neighbours and 1{,}032.0--1{,}245.3\,s at 12. Before the sweep we
+decided to extend it to OV and HCC only if some setting brought GraphST within reach of \frost on transfer or
+lowered its drift appreciably. scGPT: scGPT-spatial.}
+\label{tab:graphst_nn}
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+ & \multicolumn{4}{c}{Transfer} & \multicolumn{4}{c}{Mixing} \\
+\cmidrule(lr){2-5}\cmidrule(l){6-9}
+Pair & 3 & 6 & 12 & \frost & 3 & 6 & 12 & \frost \\
+\midrule
+CosMx 6K (PCA)       & 0.395 & 0.413 & 0.487 & 0.852 & 0.296 & 0.243 & 0.169 & 0.709 \\
+Visium HD FF (scGPT) & 0.526 & 0.524 & 0.560 & 0.910 & 0.495 & 0.431 & 0.303 & 0.335 \\
+Visium HD FFPE (PCA) & 0.467 & 0.514 & 0.571 & 0.835 & 0.531 & 0.445 & 0.312 & 0.719 \\
+Stereo-seq (scGPT)   & 0.325 & 0.337 & 0.369 & 0.608 & 0.386 & 0.321 & 0.222 & 0.463 \\
 \bottomrule
 \end{tabular}
 \end{table}
