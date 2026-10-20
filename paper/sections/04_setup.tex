@@ -29,7 +29,10 @@ local, cell-specific translations. Reference-modifying:
 Harmony~\citep{korsunsky2019harmony} and Scanorama~\citep{hie2019scanorama}, both fitted transductively as noted above (with its default matching threshold Scanorama returned the input unchanged on all
 three Stereo-seq pairs and on HCC Visium HD FFPE; we report the default), and Symphony~\citep{kang2021symphony}, which builds its own space from Xenium counts (2{,}000 highly variable
 genes, PCA, Harmony over two pseudo-batches of the reference) and maps the source into it, without the
-foundation-model embedding.
+foundation-model embedding. Symphony maps queries through the gene loadings and cluster structure of a reference it
+builds itself from expression, so it cannot take a fixed embedding and was run in its standard form; its scores
+therefore reflect a different input representation from every other method, and whether a Symphony-style mapping
+into the foundation-model reference would change the comparison was not measured.
 Spatially aware: GraphST~\citep{long2023graphst}, the one spatially aware method tested, at published
 defaults on a common subsample (Section~\ref{sec:res_spatial}).
 
