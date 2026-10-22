@@ -171,7 +171,8 @@ pairs, seed 0, $T=25$ (Table~\ref{M-tab:arms}, Table~\ref{tab:cost}); runtime is
 Change & Ablation & Quality & Runtime \\
 \midrule
 Exact $\Cs$, built once and cached & arms (a)$\to$(b) & total\_v2 0.703$\to$0.698; convergence 0.046$\to$0.008 (Table~\ref{M-tab:arms}) & 457.7$\to$386.1\,s; $\Cs$ builds 100$\to$4 \\
-Microenvironment block & arms (b)$\to$(c); \frost vs USHER-CC on 12 pairs (bundled) & total\_v2 0.698$\to$0.706; no significant difference on 12 pairs (Section~\ref{M-sec:res_once}) & 386.1$\to$387.3\,s \\
+Microenvironment block & arms (b)$\to$(c) & total\_v2 0.698$\to$0.706 & 386.1$\to$387.3\,s \\
+All structure changes together & \frost vs USHER-CC, 12 pairs (bundled) & no significant difference (Section~\ref{M-sec:res_once}) & not timed on 12 pairs \\
 Post-hoc CORAL & USHER-ST vs USHER-CC, 12 pairs, three seeds & batch\_v2 $+0.127$, total\_v2 $+0.053$ (Section~\ref{M-sec:res_coral}) & closed form; not timed \\
 Per-class floor & floor 0/200/500/1000, four COAD pairs & Table~\ref{tab:sens}(a) & not timed \\
 $\lambda_{\mathrm{id}}$ & 0.3/1.0/3.0, two COAD pairs & Table~\ref{tab:sens}(b) & not timed \\

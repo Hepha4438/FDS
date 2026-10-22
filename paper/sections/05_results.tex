@@ -106,7 +106,7 @@ xfer\_all, rare\_purity and knn\_xen ($+0.034$ to $+0.038$), with 8 instead of 2
 about 7.5-fold less EM time (387.3 against 2{,}911\,s).
 
 \section{Ablation studies}\label{sec:res_ablation}
-\paragraph{Post-hoc moment matching.}\label{sec:res_coral}
+\subsection{Post-hoc moment matching}\label{sec:res_coral}
 Comparing USHER-CC with USHER-ST isolates CORAL. It raises batch\_v2 ($+0.127$, $p=0.0010$), total\_v2 ($+0.053$,
 $p=0.0010$), rare\_purity ($+0.029$, $p=0.0015$) and xfer\_all ($+0.025$, $p=0.012$), with no significant change
 in bio\_v2 ($p=0.23$), xfer\_main ($p=0.73$) or knn\_xen ($p=0.15$; $n=12$ throughout). CORAL is therefore justified at the cell level;
@@ -114,13 +114,13 @@ its cost appears at the gene level (Section~\ref{sec:limitations}). On the four 
 per-class floor of 200 raises rare\_purity by 0.020, about nine times the seed standard deviation, while every other
 compact metric changes by at most 0.006.
 
-\paragraph{Identity regularisation and M-step.}
+\subsection{Identity regularisation and M-step}\label{sec:res_mstep}
 Raising $\lambda_{\mathrm{id}}$ above 0.3 lowers mixing and total score; $\lambda_{\mathrm{id}}=0$ was evaluated
 only with a two-layer M-step, which mixes more while the linear map transfers labels and predicts microenvironment
 better. The two branches differ in architecture, $\lambda_{\mathrm{id}}$ and floor at once, so this is a
 pipeline-level comparison; we keep the linear map (Supplementary Table~\ref{S-tab:sens}).
 
-\paragraph{Building structure once: bundled evidence on 12 pairs.}\label{sec:res_once}
+\subsection{Building structure once: bundled evidence on 12 pairs}\label{sec:res_once}
 USHER-CC rebuilds $\Cs$ on $f_\theta(\mathbf{X}^{s})$ at every iteration; \frost builds it once on the unmapped source
 and caches it. Across the 12 pairs the two do not differ significantly on any metric ($n=12$, all $p\ge0.23$; largest absolute
 median difference 0.0008; per-metric values in Supplementary Section~S4). This is bundled evidence, not a
@@ -128,7 +128,7 @@ single-variable ablation: the two configurations also differ in the landmark app
 block and, on the PCA pairs, the 64-dimensional projection (Supplementary Section~S4), so effects of opposite sign could cancel. A
 comparison that isolates how $\Cs$ is built exists only on the four COAD pairs, below.
 
-\paragraph{Structure matrices and microenvironment.}\label{sec:res_niche}
+\subsection{Structure matrices and microenvironment}\label{sec:res_niche}
 Three arms on the four COAD pairs (seed 0, 25 iterations; not directly comparable with the main benchmark) differ
 only in how $\Cs$ is built (Table~\ref{tab:arms}): (a) landmarks recomputed every iteration, as in USHER-ST; (b) exact
 geodesics, cached; (c) \frost, which adds the microenvironment. Going from (a) to (b) changes the approximation and the
