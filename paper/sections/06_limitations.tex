@@ -22,7 +22,7 @@ reports (Figs.~S2--S4 of~\citep{pratapa2025usher}).
 For cell-level tasks, batch mixing and label transfer, \frost with moment matching is the configuration to use
 (Section~\ref{sec:res_coral}). For gene-level tasks, or analyses that depend on local
 expression geometry, we recommend leaving the source unaligned or applying a local correction: under the
-leakage-controlled protocol no alignment exceeds \frost on all three Stereo-seq pairs
+reversed protocol no alignment exceeds \frost on all three Stereo-seq pairs
 (Section~\ref{sec:limitations}). If a \frost map is needed anyway, CORAL should be omitted: \frost without CORAL
 scores above \frost on reversed imputation on the three Stereo-seq pairs (Supplementary Table~\ref{S-tab:imp_rev}) and
 on neighbour-based deconvolution (mean JSD 0.1123 against 0.1242; Supplementary Table~\ref{S-tab:deconv}).
@@ -33,7 +33,7 @@ Its effect was observed only on Stereo-seq sources, and neither measure of spati
 we have no basis for an automatic criterion. The
 term is optional; we recommend deciding it by validation on a held-out part of the training tiles. Its neighbourhood
 size $k$ (5, 15, 30) was varied on the four COAD pairs, which include the Stereo-seq pair where the effect exists,
-scoring imputation only under the leakage-controlled protocol (Supplementary Table~\ref{S-tab:kniche}): $k$ has no
+scoring imputation only under the reversed protocol (Supplementary Table~\ref{S-tab:kniche}): $k$ has no
 effect on three pairs (range at most 0.005), while on Stereo-seq imputation rises with $k$, the intervals at $k=5$ and
 $k=30$ are disjoint, and $k=30$ exceeds the reported $k=15$ by 0.0129 (the original protocol shows the same trend,
 $+0.0127$ from $k=5$ to $k=30$ against $+0.0136$ here). Even at $k=30$ \frost stays below no alignment on that pair
@@ -48,7 +48,7 @@ the radius: at $k=15$ it is 16.7\um on Visium HD FF and 28.7\um on CosMx 6K in C
 \paragraph{Global alignment blurs gene-level neighbourhoods.}
 \frost fits one global map so that source cells match the reference in distribution and label neighbourhoods; nothing
 in that objective preserves each cell's gene-expression neighbourhood. Four measurements agree. Under
-leakage-controlled imputation, archived for the three Stereo-seq pairs, no alignment exceeds \frost 1.5-, 1.6- and
+reversed imputation, archived for the three Stereo-seq pairs, no alignment exceeds \frost 1.5-, 1.6- and
 4.9-fold (COAD, OV, HCC; Supplementary Table~\ref{S-tab:imp_rev}), and gene masking agrees (below). In neighbour-based deconvolution centring is best, and the
 proportions from USHER-family maps are too diffuse (below). The CORAL trade-off is the same phenomenon at a smaller
 scale. This does not hold for alignment in general. Local corrections keep gene-level neighbourhoods about as well as
@@ -56,17 +56,20 @@ no alignment (COAD Stereo-seq: MNN-ref 0.2015, Harmony 0.1792, raw 0.1850), but 
 12 pairs is 0.0012 for raw, 0.024 for MNN-ref, 0.062 for Harmony and 0.486 for \frost. Global reference-preserving
 maps sit at the high-mixing end of this trade-off, which is why \frost is not positioned as a gene-level method.
 
-\paragraph{Why the original imputation protocol favoured \frost.}
+\paragraph{Why the original imputation protocol is not used for ranking.}
 It predicts each gene of a mapped source cell from its reference neighbours, while the source embedding was computed
-from all genes, including the predicted one; the protocol therefore rewards alignment and leakage together. That is
-why no alignment, which leaks most, still scores low there (COAD Stereo-seq: 0.0945 against 0.1041 for \frost):
-without alignment its reference neighbours are meaningless. Under this protocol \frost exceeds the label-matched
-ridge ($p=0.0010$), CORAL ($p=0.0068$) and Scanorama ($p=0.034$), but does not differ significantly from centring
-($p=0.30$), MNN-ref ($p=0.23$), Harmony ($p=0.23$) or no alignment ($p=0.052$; $n=12$ throughout): it separates
-\frost from label-matched baselines, not from published methods. The reversed protocol queries frozen reference
-cells, identical across reference-preserving methods (not for Harmony, which modifies them), so the leak cancels;
-it agrees with an earlier gene-masking protocol that covered PCA embeddings and USHER but not \frost. The cell-level
-results of Section~\ref{sec:results} involve no gene prediction and are unaffected.
+from all genes, including the predicted one, so the score mixes alignment with information about the predicted gene, a leak.
+That information is worth as much as the differences being ranked: on two COAD pairs, searching neighbours in a joint
+PCA of all genes rather than of all genes except the predicted one raises the score by 0.017 and 0.036, whereas
+\frost differs from the other methods of Table~\ref{tab:main} by 0.007--0.053. Under this protocol \frost exceeds
+ridge ($p=0.0010$), CORAL ($p=0.0068$) and Scanorama ($p=0.034$) but does not differ significantly from centring
+($p=0.30$), MNN-ref ($p=0.23$), Harmony ($p=0.23$) or no alignment ($p=0.052$; $n=12$ throughout). The reversed
+protocol queries frozen reference cells, so the query side is identical across reference-preserving methods (not
+for Harmony, which modifies them); the mapped source cells that serve as neighbours are still embedded from all
+genes, so the reversal moves this information rather than removing it, and we did not measure whether what remains
+differs between methods. Its ranking agrees with an earlier gene-masking protocol that covered PCA embeddings and
+USHER but not \frost. The cell-level results of Section~\ref{sec:results} involve no gene prediction and are
+unaffected.
 
 \paragraph{Deconvolution.}
 Reference-based deconvolution relies on counts, a signature matrix and the additivity of mRNA, none of which an

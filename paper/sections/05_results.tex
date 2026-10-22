@@ -43,8 +43,8 @@ cell-level metrics \frost ranks among the top three of 11 methods, counting its 
 (Supplementary Table~\ref{S-tab:main_variants}): first on
 xfer\_all; second on batch\_v2, total\_v2, rare\_purity and knn\_xen; third on bio\_v2 and xfer\_main. The only column led by an external baseline is bio\_v2, led by ridge, which uses the same
 reference-derived labels as \frost; the difference is not significant ($p=0.06$). The imputation column
-favours \frost only under a protocol that leaks the predicted gene, and the ranking reverses once the leak is removed
-(Section~\ref{sec:limitations}). UMAPs of the hardest pair, COAD Stereo-seq, and of every other pair are in
+uses the original protocol, in which the source embedding encodes the predicted gene; under a reversed protocol the
+ranking reverses (Section~\ref{sec:limitations}). UMAPs of the hardest pair, COAD Stereo-seq, and of every other pair are in
 Supplementary Section~S6.
 
 Ridge is the informative comparison (Supplementary Figure~\ref{S-fig:gaps}): it uses the same auxiliary labels and
@@ -64,8 +64,8 @@ against Harmony, fitted transductively on the evaluation tiles, these margins ar
 \caption{\frost against external baselines, means over 12 pairs (three seeds for stochastic methods); bold: best among
 the methods shown; columns abbreviate the metrics of Section~\ref{sec:metrics}. The internal variants, which lead every
 column except xfer\_all and bio\_v2, are in Section~\ref{sec:res_ablation} and Supplementary Table~\ref{S-tab:main_variants}. $^{*}$Modifies the reference.
-$^{\dagger}$Original imputation protocol, which leaks the predicted gene; the ranking reverses under leakage control
-(Section~\ref{sec:limitations}). Symphony is not scored on imputation.}
+$^{\dagger}$Original imputation protocol, in which the source embedding encodes the predicted gene; the ranking
+reverses under the reversed protocol (Section~\ref{sec:limitations}). Symphony is not scored on imputation.}
 \label{tab:main}
 \begin{tabular}{@{}lcccccccc@{}}
 \toprule
@@ -136,7 +136,7 @@ recomputation together and leaves quality unchanged (total\_v2 $-0.005$, imputat
 assignments still changing falls from 0.046 to 0.008. Going from (b) to (c) adds only the microenvironment on the two
 scGPT-spatial pairs; on the two PCA pairs it also changes the dimensionality projection. Stereo-seq is one of the
 clean pairs, and it is where the effect appears: under the original imputation protocol, (c) raises Stereo-seq
-imputation from 0.048 to 0.113 (bootstrap intervals 0.045--0.052 and 0.107--0.118), above no alignment (0.0945). Under the leakage-controlled
+imputation from 0.048 to 0.113 (bootstrap intervals 0.045--0.052 and 0.107--0.118), above no alignment (0.0945). Under the reversed
 protocol the gain persists in the benchmark configuration (\frost $-$ USHER-CC $=+0.044$ on COAD Stereo-seq,
 disjoint intervals), but \frost stays below no alignment (0.1251 against 0.1850; Section~\ref{sec:limitations}).
 Averaged over the 12 pairs the term is neutral, so we do not claim that it improves the method. We keep it because it
@@ -147,8 +147,8 @@ narrows the gene-level gap on Stereo-seq.
 \centering
 \caption{Three ways of building $\Cs$ (four COAD pairs, seed 0, 25 iterations; a different configuration from
 Table~\ref{tab:main}, so values are not comparable across the two tables). The imputation columns give the median
-Spearman correlation under the original protocol, which leaks the predicted gene and whose ranking reverses under
-leakage control (Section~\ref{sec:limitations}). Conv.: fraction of assignments changing over the last three
+Spearman correlation under the original protocol, in which the source embedding encodes the predicted gene; its
+ranking reverses under the reversed protocol (Section~\ref{sec:limitations}). Conv.: fraction of assignments changing over the last three
 iterations (median).}
 \label{tab:arms}
 \begin{tabular}{@{}lcccc@{}}
