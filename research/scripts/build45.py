@@ -71,6 +71,14 @@ def build(tissue="coad"):
         'os.environ.setdefault("SPC_TAG", "cmix")\n'
         'os.environ.setdefault("SPC_TS", "0,0.25,0.5,0.75,1")\n'
         'os.environ.setdefault("SPC_FULL", "0,0.5,1")\n'
+        '# Phần Y (cổng CPU cho C_sp): bản vá không gian độc lập mỗi bên, KHỚP SỐ TẾ BÀO chứ không\n'
+        '# khớp cỡ vật lý — GW chuẩn hoá C theo D.max() nên thang tuyệt đối bị chia mất, thứ phải\n'
+        '# so được là hình dạng phân phối khoảng cách, phụ thuộc số tế bào.\n'
+        'os.environ.setdefault("PATCH_N", "1500")\n'
+        'os.environ.setdefault("PATCH_MIN", "300")\n'
+        'os.environ.setdefault("N_PATCH", "8")\n'
+        'os.environ.setdefault("PK", "15")\n'
+        'os.environ.setdefault("GW_N", "800")\n'
         '# cmix = FROST (out<P>j) · usher_orig = USHER BẢN GỐC 25 vòng, 1 seed (out<P>n, vòng 38 nhánh B1)\n'
         '# cmix_lev/cmix_levns = FROST 1.0.1 (out<P>v, vòng 46) -> cần Add out<P>v làm Input.\n'
         'os.environ.setdefault("EXTRA_MAPS", "cmix,usher_orig,cmix_lev,cmix_levns")') + B41.need_check(
@@ -82,6 +90,7 @@ def build(tissue="coad"):
                            "PART_B_ARMS=$PART_B_ARMS N_T_MAX=$N_T_MAX "
                            "ROT_TAG=$ROT_TAG ROT_TS=$ROT_TS ROT_FULL=$ROT_FULL KC=$KC SK_KS=$SK_KS AGGS=$AGGS WN_TOP=$WN_TOP "
                            "SPC_TAG=$SPC_TAG SPC_TS=$SPC_TS SPC_FULL=$SPC_FULL "
+                           "PATCH_N=$PATCH_N PATCH_MIN=$PATCH_MIN N_PATCH=$N_PATCH PK=$PK GW_N=$GW_N "
                            "SKIP_INPUT_CHECK=1 ")
     md = (f"# 45 — chỉ số ST không chú giải + chẩn đoán phần dư ({tissue.upper()})\n\n"
           "Chỉ nạp map đã lưu rồi tính. **CPU là đủ, không cần GPU.**\n\n"
@@ -216,6 +225,39 @@ def build(tissue="coad"):
           "Phần K đã từng thua chính nhánh null này 4/4, nên cổng này không thừa.\n\n"
           "Chỉ khi qua cả ba mới đọc `total_v2`/`xfer_main`, và mốc so là `t0`, **không** phải bảng "
           "`u_cmix_cc` của vòng 23e (khác đường tính, lệch vài phần nghìn).\n\n"
+          "## Phần Y — cổng CPU cho C_sp: toạ độ làm ma trận cấu trúc GW\n\n"
+          "**Dữ kiện quyết định:** vòng 17 Phần A đo **đăng ký affine thất bại 0/4** "
+          "(`same_label` chỉ nhỉnh ngẫu nhiên 2–6 điểm, `top1/top2` ≈ 1, stereoseq lệch 174°/2556 µm). "
+          "Nên mọi cách dùng toạ độ ở chi phí **liên-miền** — gồm `spatial_b*` của vòng 18 — là nạp nhiễu.\n\n"
+          "PASTE cố ý **không** đặt toạ độ vào chi phí liên-lát: toạ độ chỉ vào ma trận khoảng cách "
+          "**trong một lát** `D`, dùng làm số hạng cấu trúc Gromov–Wasserstein, vì toạ độ tuyệt đối "
+          "phụ thuộc cách cắt và đặt mô nên không so được giữa các lát. Hệ quả: số hạng đó **bất biến "
+          "với xoay, tịnh tiến, lật** → miễn nhiễm với việc đăng ký thất bại. Đó là khe duy nhất còn "
+          "hợp lệ cho toạ độ ở bộ dữ liệu này, và `struct_cache.py` `MODE=\"custom\"` đã là đúng khe đó "
+          "(vòng 17 dùng nó với đặc trưng niche → `C_niche`, `C_mix`; `C_mix` thành FROST). **Toạ độ "
+          "chưa bao giờ vào đó.**\n\n"
+          "`spatial_utils.py` của USHER có cửa sổ không gian nhưng dùng **cùng biên cửa sổ** cho hai "
+          "bên (\"For affine-aligned data\"), tức đòi đúng cái đăng ký bất khả → lấy bản vá **độc lập** "
+          "mỗi bên, khớp **số tế bào**, vị trí tuỳ ý.\n\n"
+          "**Vì sao cổng CPU trước, không sửa `src_cuda` ngay:** đổi cách lấy batch + thêm `C_sp` là "
+          "vá `src_cuda` rồi chạy lại USHER trên GPU, 4 cặp × 3 seed. Tám ý tưởng trước đã chết. Mọi "
+          "thứ cần để đoán ý tưởng này sống hay chết đo được trên CPU trong vài phút.\n\n"
+          "**Ba cổng:**\n\n"
+          "1. `chênh = tk_kgian − tk_biểu_hiện`, **trên cả hai bên**. Việc duy nhất của ma trận cấu "
+          "trúc là nói \"hai tế bào này gần nhau về cấu trúc\". Chênh âm rõ ở cả hai bên → biểu hiện "
+          "đã nói chính xác hơn toạ độ, trộn toạ độ vào `C` chỉ làm bẩn. Đúng logic đã giết Phần W.\n"
+          "2. `chồng_lấp_sp` và `d1_tỉ_lệ` — chẩn đoán lệch mật độ. Cổng **yếu nhất** (sau khi khớp "
+          "số tế bào nó phần nào thành hệ quả hình học), đọc để giải thích chứ không để kết luận.\n"
+          "3. `lợi_sp` so với `lợi_kgian_ngau` và `lợi_ex` — giải GW **thật** trên một cặp bản vá rồi "
+          "đo tỉ lệ khối lượng ghép vào cặp **cùng nhãn**, trừ mức ngẫu nhiên. Đây là ước lượng trực "
+          "tiếp thứ `C_sp` sẽ mua được bên trong USHER, không cần chạy USHER. Null là **hình học ngẫu "
+          "nhiên** (toạ độ đều trong cùng hộp bao), **không** phải hoán vị: GW bất biến với hoán vị "
+          "đồng thời hàng–cột nên hoán vị là null rỗng.\n\n"
+          "Hiệu chuẩn (dữ liệu tổng hợp): `tk_kgian` trên hình học ngẫu nhiên tụt đúng về mức ngẫu "
+          "nhiên (0.4085 vs 0.409), và `đồng_ý` trên kế hoạch vận chuyển đều trả đúng mức ngẫu nhiên.\n\n"
+          "**Qua cả ba thì bước 2 mới đáng làm:** batch theo bản vá không gian độc lập hai bên + "
+          "`C = (1−λ)C_expr + λ·C_sp` trong `struct_cache`, λ quét quanh 0.1–0.3 theo gợi ý α của PASTE "
+          "(họ thấy α=1, tức toạ độ không thôi, khớp đúng **0** cặp).\n\n"
           "## Chạy lại để bổ sung phần mới\n\n"
           "`run45` nạp lại `summary.json` từ Input khi thư mục làm việc chưa có, và **bỏ qua mọi mục đã "
           f"chấm**. Nên muốn thêm phần A vào kết quả cũ: Add output 45a cũ (`out{p}s`) làm Input, đặt "

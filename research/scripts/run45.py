@@ -26,8 +26,9 @@ HAI BẪY ĐÃ XỬ LÝ:
   2. Moran's I chỉ có nghĩa với nhãn CÓ tổ chức không gian. Lọc theo I của nhãn THẬT >= MORAN_MIN
      (mặc định 0.10), đúng cách bài sketching (NAR 2026) làm. Số nhãn còn lại được ghi vào summary.
 
-ENV: TISSUE, RUN_PREFIX, COMBOS_ALL, OUT_DIR_45, ONLY_PART (D,M,A,B,T,R,K,S,V,W), R_MAX_UM, MORAN_MIN, K_SPATIAL,
+ENV: TISSUE, RUN_PREFIX, COMBOS_ALL, OUT_DIR_45, ONLY_PART (D,M,A,B,T,R,K,S,V,W,X,Y), R_MAX_UM, MORAN_MIN, K_SPATIAL,
      ALPHAS, ALPHA_TAG, PART_B_ARMS,
+     SPC_TAG, SPC_TS, SPC_FULL, PATCH_N, PATCH_MIN, N_PATCH, PK, GW_N,
      PATCH_SEEDS, EXTRA_MAPS, IMP_METHODS (dùng lại danh sách của run30).
 """
 import os, sys, json, glob, time, gc, warnings
@@ -37,6 +38,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 from sklearn.neighbors import NearestNeighbors
+from scipy.spatial.distance import cdist
 from sklearn.metrics import balanced_accuracy_score
 
 import run20 as R20
@@ -57,7 +59,7 @@ R_MAX_UM = float(os.environ.get("R_MAX_UM", 100.0))
 MORAN_MIN = float(os.environ.get("MORAN_MIN", 0.10))
 K_SPATIAL = int(os.environ.get("K_SPATIAL", 15))
 ALPHAS = [float(a) for a in os.environ.get("ALPHAS", "0.05,0.1,0.2,0.3,0.4,0.5").split(",") if a.strip()]
-VER = "45.21-spcoral"   # TEM PHIÊN BẢN: in ra dòng log ĐẦU TIÊN. Hai lần notebook cũ trên Kaggle đã
+VER = "45.22-cgw"   # TEM PHIÊN BẢN: in ra dòng log ĐẦU TIÊN. Hai lần notebook cũ trên Kaggle đã
                     # ngốn 4 giờ CPU mà không ai biết. Thấy tem khác -> notebook trên Kaggle là bản cũ.
 ALPHA_TAG = os.environ.get("ALPHA_TAG", "cmix")    # map nền của phần A: cmix = FROST CHƯA CORAL
 WN_TOP = [int(x) for x in os.environ.get("WN_TOP", "10,25,50").split(",") if x.strip()]
@@ -70,6 +72,11 @@ ROT_FULL = [float(t) for t in os.environ.get("ROT_FULL", "0,0.5,1").split(",") i
 SPC_TAG = os.environ.get("SPC_TAG", "cmix")             # map NỀN của phần X (CHƯA CORAL) -> t=0 = FROST
 SPC_TS = [float(t) for t in os.environ.get("SPC_TS", "0,0.25,0.5,0.75,1").split(",") if t.strip()]
 SPC_FULL = [float(t) for t in os.environ.get("SPC_FULL", "0,0.5,1").split(",") if t.strip()]
+PATCH_N = int(os.environ.get("PATCH_N", 1500))       # số tế bào mục tiêu mỗi bản vá (~cỡ batch USHER)
+PATCH_MIN = int(os.environ.get("PATCH_MIN", 300))    # ô dưới ngưỡng này bị bỏ
+N_PATCH = int(os.environ.get("N_PATCH", 8))          # số bản vá lấy mỗi bên
+PK = int(os.environ.get("PK", 15))                   # k cho tính khiết lân cận
+GW_N = int(os.environ.get("GW_N", 800))              # cỡ bản vá khi giải GW thật
 N_T_MAX = int(os.environ.get("N_T_MAX", 20000))   # cỡ tập giữ lại của phần T
 PART_B_ARMS = [a.strip() for a in os.environ.get(
     "PART_B_ARMS", "pre@0,pre@0.2,pre@0.3,pre@0.4,pre@0.5").split(",") if a.strip()]
@@ -749,6 +756,188 @@ def part_x(combo, cx, S, save, W):
     del B, A, G, Wn_s, Wn_q; gc.collect()
 
 
+# =============================================================================== Phần Y
+def _ban_va(xy, n_muc, n_toi_thieu, n_lay):
+    """Chia lát thành ô vuông cạnh L (µm) sao cho ô TRUNG VỊ có ~n_muc tế bào; trả các ô gần n_muc nhất.
+
+    Không dùng diện tích hộp bao: mô có hình dạng bất kỳ nên hộp bao thổi diện tích lên và L bị chọn
+    quá nhỏ. Dò L bằng 3 vòng theo trung vị số tế bào thực tế trong ô — bất biến với hình dạng lát.
+    """
+    rng = xy.max(0) - xy.min(0)
+    L = float(np.sqrt(max(rng[0] * rng[1], 1.0) / max(len(xy) / n_muc, 1.0)))
+    o = None
+    for _ in range(3):
+        g = np.floor((xy - xy.min(0)) / L).astype(np.int64)
+        key = g[:, 0] * (g[:, 1].max() + 2) + g[:, 1]
+        u, inv, cnt = np.unique(key, return_inverse=True, return_counts=True)
+        ok = cnt >= n_toi_thieu
+        if not ok.any(): break
+        med = float(np.median(cnt[ok]))
+        o = (inv, u, cnt, ok, L)
+        if abs(med - n_muc) / n_muc < 0.15: break
+        L *= float(np.sqrt(n_muc / max(med, 1.0)))
+    if o is None: return [], float("nan")
+    inv, u, cnt, ok, L = o
+    thu_tu = np.where(ok)[0][np.argsort(np.abs(cnt[ok] - n_muc))][:n_lay]
+    return [np.where(inv == j)[0] for j in thu_tu], L
+
+
+def _tinh_khiet(D, lab, k):
+    """Tỉ lệ cặp (tế bào, 1 trong k láng giềng gần nhất theo D) CÙNG nhãn. D là ma trận khoảng cách."""
+    k = min(k, len(D) - 1)
+    if k < 1: return None
+    nb = np.argsort(D, axis=1)[:, 1:k + 1]
+    codes, _ = pd.factorize(np.asarray(lab))
+    m = codes >= 0
+    if not m.any(): return None
+    return round(float((codes[nb[m]] == codes[m][:, None]).mean()), 4)
+
+
+def _hist_cx(D, nbin=20):
+    """Lược đồ khoảng cách đôi một SAU chuẩn hoá D/D.max() — đúng phép chuẩn hoá USHER dùng cho C."""
+    v = D[np.triu_indices_from(D, 1)]
+    mx = v.max()
+    if not np.isfinite(mx) or mx <= 0: return np.zeros(nbin)
+    h, _ = np.histogram(v / mx, bins=nbin, range=(0, 1))
+    return h / max(h.sum(), 1)
+
+
+def _dong_y_ghep(Pi, lab_a, lab_b):
+    """Tỉ lệ KHỐI LƯỢNG mà kế hoạch vận chuyển đặt vào cặp cùng nhãn, kèm mức ngẫu nhiên Σ p_a(c)p_b(c)."""
+    la, lb = np.asarray(lab_a).astype(str), np.asarray(lab_b).astype(str)
+    uniq = np.unique(np.concatenate([la, lb]))
+    tot = float(Pi.sum())
+    if tot <= 0: return None, None
+    s = 0.0; ch = 0.0
+    for c in uniq:
+        ia, ib = la == c, lb == c
+        if ia.any() and ib.any(): s += float(Pi[np.ix_(ia, ib)].sum())
+        ch += (ia.mean()) * (ib.mean())
+    return round(s / tot, 4), round(float(ch), 4)
+
+
+def part_y(combo, cx, S, save, W):
+    """CỔNG CPU cho C_sp (toạ độ làm ma trận cấu trúc GW kiểu PASTE) — chạy TRƯỚC khi sửa src_cuda.
+
+    Vì sao phải là cổng chứ không dựng thẳng: đổi cách lấy batch + C_sp là sửa src_cuda rồi chạy lại
+    USHER trên GPU, 4 cặp × 3 seed. Tám ý tưởng trước đã chết. Mọi thứ cần biết để đoán ý tưởng này
+    sống hay chết đều đo được trên CPU trong vài phút, nên đo trước.
+
+    Vì sao C_sp là khe DUY NHẤT còn hợp lệ cho toạ độ ở bộ dữ liệu này: vòng 17 Phần A đo đăng ký
+    affine THẤT BẠI 0/4 (same_label chỉ nhỉnh ngẫu nhiên 2-6 điểm, top1/top2 ≈ 1, stereoseq lệch
+    174°/2556µm). Nên mọi cách dùng toạ độ ở chi phí LIÊN-MIỀN (vòng 18 `spatial_b`) là nạp nhiễu.
+    Số hạng cấu trúc GW chỉ cần khoảng cách TRONG một lát nên bất biến với xoay/tịnh tiến/lật —
+    chính lý do PASTE chọn thiết kế đó, và chính lý do nó miễn nhiễm với việc đăng ký thất bại.
+
+    USHER có sẵn `spatial_utils` cửa sổ không gian nhưng nó dùng CÙNG biên cửa sổ cho hai bên
+    ("For affine-aligned data"), tức đòi đúng cái đăng ký bất khả -> không dùng được, phải tự lấy
+    bản vá ĐỘC LẬP mỗi bên, cùng cỡ vật lý, vị trí tuỳ ý.
+
+    BA CỔNG:
+      1. `tk_kgian` so với `tk_bieuhien` TRÊN CẢ HAI BÊN. Việc duy nhất của ma trận cấu trúc là nói
+         "hai tế bào này gần nhau về cấu trúc". Nếu biểu hiện nói chính xác hơn toạ độ thì trộn
+         toạ độ vào C chỉ làm bẩn. Đây đúng là logic đã giết Phần W (phương sai thắng Moran).
+      2. `chong_lap_sp`: lược đồ khoảng cách đôi một sau chuẩn hoá D/D.max(), nguồn so với đích.
+         Thấp -> hai bên ở hai thang mật độ khác nhau, GW sẽ khớp bằng cách CO GIÃN mật độ chứ không
+         phải khớp sinh học. Phần S đã đo d1 = 14.9-16.0µm khác nhau giữa các công nghệ.
+      3. `gw_sp` so với `gw_kgian_ngau` (toạ độ đều cùng hộp bao) và `gw_ex`: giải GW thật trên một cặp bản vá
+         rồi đo tỉ lệ khối lượng ghép vào cặp CÙNG nhãn. Đây là ước lượng TRỰC TIẾP thứ C_sp sẽ mua
+         được bên trong USHER, không cần chạy USHER. (Cần POT; thiếu thì bỏ, hai cổng trên vẫn đủ
+         để kết luận âm.)
+    """
+    Sc = S.setdefault("Y", {}).setdefault(combo, {})
+    if Sc: return
+    pctx = cx["pctx"]
+    Fs, Fx = np.asarray(cx["Fs"], np.float32), np.asarray(cx["Fx"], np.float32)
+    lab_s, lab_x = np.asarray(pctx["lab_src_ev"]), np.asarray(pctx["lab_tgt_ev"])
+    xy_s = lite_obs(cx["pair"])[["x", "y"]].to_numpy()
+    xy_x = lite_obs(R18.TARGET)[["x", "y"]].to_numpy()
+    for ten, a, b, c in (("nguồn", xy_s, Fs, lab_s), ("đích", xy_x, Fx, lab_x)):
+        if not (len(a) == len(b) == len(c)):
+            W.append(f"{combo}: lệch hàng bên {ten} ({len(a)}/{len(b)}/{len(c)}) -> bỏ phần Y")
+            log(f"[{combo}] Y: LỆCH HÀNG {ten}, bỏ"); return
+
+    rng = np.random.RandomState(0)
+    ket = {}
+    for ten, xy, F, lab in (("nguon", xy_s, Fs, lab_s), ("dich", xy_x, Fx, lab_x)):
+        step(f"[{combo}] Y: bản vá bên {ten}")
+        bv, L = _ban_va(xy, PATCH_N, PATCH_MIN, N_PATCH)
+        if not bv:
+            W.append(f"{combo}: bên {ten} không có ô nào đủ {PATCH_MIN} tế bào -> bỏ phần Y"); return
+        tk_sp, tk_ex, d1s, hs, hx, ns = [], [], [], [], [], []
+        for idx in bv:
+            if len(idx) > PATCH_N: idx = idx[rng.choice(len(idx), PATCH_N, replace=False)]
+            ns.append(len(idx))
+            Dsp = cdist(xy[idx], xy[idx])
+            Zn = _unit(F[idx].astype(np.float32))
+            Dex = 1.0 - Zn @ Zn.T
+            np.fill_diagonal(Dex, 0.0)
+            tk_sp.append(_tinh_khiet(Dsp, lab[idx], PK)); tk_ex.append(_tinh_khiet(Dex, lab[idx], PK))
+            d = np.partition(Dsp + np.eye(len(idx)) * 1e9, 1, axis=1)[:, 1]
+            d1s.append(float(np.median(d)))
+            hs.append(_hist_cx(Dsp)); hx.append(_hist_cx(Dex))
+        f = lambda v: (round(float(np.mean(v)), 4), round(float(np.std(v)), 4))
+        ket[ten] = {"L_um": round(L, 1), "n_ban_va": len(bv), "n_te_bao_tb": int(np.mean(ns)),
+                    "d1_um": round(float(np.mean(d1s)), 2),
+                    "tk_kgian": f(tk_sp), "tk_bieuhien": f(tk_ex),
+                    "_h_sp": np.mean(hs, 0), "_h_ex": np.mean(hx, 0), "_bv": bv}
+    for ten in ("nguon", "dich"):
+        v = ket[ten]
+        Sc[ten] = {k: v[k] for k in v if not k.startswith("_")}
+        Sc[ten]["chenh_kgian_tru_bieuhien"] = round(v["tk_kgian"][0] - v["tk_bieuhien"][0], 4)
+
+    tv = lambda p, q: round(float(1.0 - 0.5 * np.abs(p - q).sum()), 4)
+    Sc["chong_lap_sp"] = tv(ket["nguon"]["_h_sp"], ket["dich"]["_h_sp"])
+    Sc["chong_lap_ex"] = tv(ket["nguon"]["_h_ex"], ket["dich"]["_h_ex"])
+    Sc["d1_ti_le_nguon_tren_dich"] = round(ket["nguon"]["d1_um"] / max(ket["dich"]["d1_um"], 1e-9), 3)
+    save()
+    log(f"[{combo}] Y: tk_kgian nguồn={Sc['nguon']['tk_kgian']} bieuhien={Sc['nguon']['tk_bieuhien']} | "
+        f"đích {Sc['dich']['tk_kgian']} vs {Sc['dich']['tk_bieuhien']} | "
+        f"chồng lấp sp={Sc['chong_lap_sp']} ex={Sc['chong_lap_ex']} d1 tỉ lệ={Sc['d1_ti_le_nguon_tren_dich']}")
+
+    # ---- cổng 3: giải GW thật trên MỘT cặp bản vá
+    try:
+        import ot as POT
+    except Exception as e:
+        W.append(f"{combo}/Y: không có POT -> bỏ cổng GW ({e!r})"); save(); return
+    ia, ib = ket["nguon"]["_bv"][0], ket["dich"]["_bv"][0]
+    if len(ia) > GW_N: ia = ia[rng.choice(len(ia), GW_N, replace=False)]
+    if len(ib) > GW_N: ib = ib[rng.choice(len(ib), GW_N, replace=False)]
+    p, q = np.ones(len(ia)) / len(ia), np.ones(len(ib)) / len(ib)
+    nrm = lambda D: (D / max(D.max(), 1e-9)).astype(np.float64)
+    def Dex_(F, idx):
+        Z = _unit(F[idx].astype(np.float32)); D = 1.0 - Z @ Z.T; np.fill_diagonal(D, 0.0); return D
+    # NULL phải là HÌNH HỌC NGẪU NHIÊN, không phải hoán vị. GW BẤT BIẾN với phép hoán vị đồng thời
+    # hàng-cột (Ca[perm][:,perm] cho đúng cùng một nghiệm), nên "hoán vị toạ độ" là null RỖNG — nó
+    # trả đúng con số của nhánh thật. Thay bằng toạ độ đều trong CÙNG hộp bao: phá cấu trúc không
+    # gian mà giữ nguyên thang khoảng cách. Mức ngẫu nhiên của `dong_y` đã có sẵn ở `ngau_nhien`.
+    bb0, bb1 = xy_s[ia].min(0), xy_s[ia].max(0)
+    xy_rnd = bb0 + rng.rand(len(ia), 2) * (bb1 - bb0)
+    nhanh = {"sp": (nrm(cdist(xy_s[ia], xy_s[ia])), nrm(cdist(xy_x[ib], xy_x[ib]))),
+             "kgian_ngau": (nrm(cdist(xy_rnd, xy_rnd)), nrm(cdist(xy_x[ib], xy_x[ib]))),
+             "ex": (nrm(Dex_(Fs, ia)), nrm(Dex_(Fx, ib)))}
+    for k, (Ca, Cb) in nhanh.items():
+        step(f"[{combo}] Y: GW {k} ({len(ia)}x{len(ib)})")
+        try:                         # chữ ký POT đổi giữa các bản -> thử vị trí rồi thử từ khoá
+            try:
+                Pi, inf = POT.gromov.gromov_wasserstein(Ca, Cb, p, q, "square_loss", log=True, max_iter=200)
+            except TypeError:
+                Pi, inf = POT.gromov.gromov_wasserstein(C1=Ca, C2=Cb, p=p, q=q, log=True)
+        except Exception as e:
+            W.append(f"{combo}/Y/GW {k}: lỗi {e!r}"); log(f"[{combo}] Y GW {k} LỖI {e!r}"); continue
+        gwd = next((inf[kk] for kk in ("gw_dist", "gw_dist_est", "loss") if kk in inf), np.nan)
+        try: gwd = round(float(np.asarray(gwd).ravel()[-1]), 6)
+        except Exception: gwd = None
+        dy, ch = _dong_y_ghep(np.asarray(Pi), lab_s[ia], lab_x[ib])
+        Sc[f"gw_{k}"] = {"gw_dist": gwd,
+                         "dong_y": dy, "ngau_nhien": ch,
+                         "loi_tren_ngau_nhien": None if dy is None else round(dy - ch, 4)}
+        save()
+        log(f"[{combo}] Y: GW {k}: gw={gwd} đồng ý={dy} "
+            f"(ngẫu nhiên {ch}, lợi {Sc[f'gw_{k}']['loi_tren_ngau_nhien']})")
+    gc.collect()
+
+
 # =============================================================================== Phần V
 def _gop(Z, nn_idx, ok, how, chunk=4000):
     """Ước lượng VỊ TRÍ của lân cận: trung bình hoặc TRUNG VỊ theo từng chiều.
@@ -1313,6 +1502,41 @@ def report(S):
               "được là bậc tự do quay nói chung, KHÔNG phải thông tin không gian; hết tính mới.",
               "- Chỉ khi qua cả ba mới đọc tới `total_v2`/`xfer_main`. Mốc là `t0` (= FROST khi "
               "SPC_TAG=cmix), KHÔNG phải bảng u_cmix_cc của vòng 23e.", ""]
+    if S.get("Y"):
+        L += ["## Phần Y — CỔNG CPU cho C_sp (toạ độ làm ma trận cấu trúc GW kiểu PASTE)", "```"]
+        rows = []
+        for c, sc in S["Y"].items():
+            for ben in ("nguon", "dich"):
+                v = sc.get(ben, {})
+                rows.append({"tổ_hợp": c, "bên": ben, "L_µm": v.get("L_um"), "n_vá": v.get("n_ban_va"),
+                             "n_tb": v.get("n_te_bao_tb"), "d1_µm": v.get("d1_um"),
+                             "tk_kgian": v.get("tk_kgian"), "tk_biểu_hiện": v.get("tk_bieuhien"),
+                             "chênh": v.get("chenh_kgian_tru_bieuhien")})
+        L += [pd.DataFrame(rows).to_string(index=False), "```", "", "```"]
+        rows = []
+        for c, sc in S["Y"].items():
+            r = {"tổ_hợp": c, "chồng_lấp_sp": sc.get("chong_lap_sp"), "chồng_lấp_ex": sc.get("chong_lap_ex"),
+                 "d1_tỉ_lệ": sc.get("d1_ti_le_nguon_tren_dich")}
+            for k in ("sp", "kgian_ngau", "ex"):
+                g = sc.get(f"gw_{k}") or {}
+                r[f"gw_{k}"] = g.get("gw_dist"); r[f"đồng_ý_{k}"] = g.get("dong_y")
+                r[f"lợi_{k}"] = g.get("loi_tren_ngau_nhien")
+            rows.append(r)
+        L += [pd.DataFrame(rows).to_string(index=False), "```"]
+        L += ["", "CÁCH ĐỌC — ba cổng; đây là cổng CPU đặt TRƯỚC việc sửa src_cuda và chạy lại USHER trên GPU:",
+              "- CỔNG 1 `chênh = tk_kgian − tk_biểu_hiện`, TRÊN CẢ HAI BÊN. Việc duy nhất của ma trận "
+              "cấu trúc là nói 'hai tế bào này gần nhau về cấu trúc'. Chênh âm rõ ở cả hai bên -> "
+              "biểu hiện đã nói chính xác hơn toạ độ, trộn toạ độ vào C chỉ làm bẩn. Đúng logic đã "
+              "giết Phần W (phương sai thắng Moran).",
+              "- CỔNG 2 `chồng_lấp_sp` (lược đồ khoảng cách sau chuẩn hoá D/D.max(), nguồn vs đích). "
+              "Thấp, hoặc `d1_tỉ_lệ` lệch xa 1 -> hai bên ở hai thang mật độ khác nhau, GW sẽ khớp "
+              "bằng cách CO GIÃN mật độ chứ không khớp sinh học.",
+              "- CỔNG 3 `lợi_sp` so với `lợi_kgian_ngau` và `lợi_ex`: đồng ý nhãn của kế hoạch GW "
+              "trừ mức ngẫu nhiên. `lợi_sp` ≈ `lợi_kgian_ngau` -> cấu trúc không gian không mang gì. "
+              "`lợi_sp` << `lợi_ex` -> C_sp thua C biểu hiện, chỉ đáng trộn với λ nhỏ (PASTE thấy "
+              "α=0.1 tốt nhất, α=1 khớp đúng 0 cặp).",
+              "- Null là HÌNH HỌC NGẪU NHIÊN, không phải hoán vị: GW bất biến với hoán vị đồng thời "
+              "hàng-cột nên 'hoán vị toạ độ' là null rỗng.", ""]
     if S.get("M_meta"):
         L += ["## Đồ thị không gian", "```", pd.DataFrame(S["M_meta"]).T.to_string(), "```", ""]
     if S.get("A_meta"):
@@ -1367,7 +1591,7 @@ def main():
             cx = R22.ctx(combo)
             for ten, fn in (("D", part_d), ("M", part_m), ("A", part_a), ("B", part_b),
                             ("T", part_t), ("R", part_r), ("K", part_k), ("S", part_s),
-                            ("V", part_v), ("W", part_w), ("X", part_x)):
+                            ("V", part_v), ("W", part_w), ("X", part_x), ("Y", part_y)):
                 if ten not in PARTS: continue
                 try:
                     fn(combo, cx, S, save, W)
