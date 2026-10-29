@@ -59,7 +59,7 @@ R_MAX_UM = float(os.environ.get("R_MAX_UM", 100.0))
 MORAN_MIN = float(os.environ.get("MORAN_MIN", 0.10))
 K_SPATIAL = int(os.environ.get("K_SPATIAL", 15))
 ALPHAS = [float(a) for a in os.environ.get("ALPHAS", "0.05,0.1,0.2,0.3,0.4,0.5").split(",") if a.strip()]
-VER = "45.22-cgw"   # TEM PHIÊN BẢN: in ra dòng log ĐẦU TIÊN. Hai lần notebook cũ trên Kaggle đã
+VER = "45.23-B3seed"   # TEM PHIÊN BẢN: in ra dòng log ĐẦU TIÊN. Hai lần notebook cũ trên Kaggle đã
                     # ngốn 4 giờ CPU mà không ai biết. Thấy tem khác -> notebook trên Kaggle là bản cũ.
 ALPHA_TAG = os.environ.get("ALPHA_TAG", "cmix")    # map nền của phần A: cmix = FROST CHƯA CORAL
 WN_TOP = [int(x) for x in os.environ.get("WN_TOP", "10,25,50").split(",") if x.strip()]
@@ -358,15 +358,22 @@ def part_b(combo, cx, S, save, W):
         W.append("phần B: R20.KM16 chưa đặt -> etrack sẽ nổ; BỎ phần B")
         log("phần B: THIẾU R20.KM16 -> bỏ"); return
     Sc = S.setdefault("B", {}).setdefault(combo, {})
-    Fs, Fx, T = cx["Fs"], cx["Fx"], cx["ds"]["T"]
-    sd = SEEDS[0]
-    F0 = R22.get_map(combo, ALPHA_TAG, sd, None)[0]
-    if F0 is None:                                   # KHÔNG im lặng
-        W.append(f"{combo}: không có map {ALPHA_TAG} s{sd} -> bỏ phần B"); return
-    F0 = np.asarray(F0, np.float32)
+    Fs, Fx, T, q = cx["Fs"], cx["Fx"], cx["ds"]["T"], cx["Q"]
     xy = lite_obs(cx["pair"])[["x", "y"]].to_numpy()
     Wn_all, _, _, _, _ = spatial_graph(xy)
     iso = np.asarray(Wn_all.sum(1)).ravel() <= 0
+
+    # Chỉ số ST tính NGAY TẠI ĐÂY, trên CÙNG map mà R23.evaluate chấm. Trước đây chúng chỉ có ở
+    # phần A, đi một đường tính khác, nên không ghép được với total_v2 để kiểm tiêu chí
+    # "cải thiện ST mà giữ total". Đó chính là lý do 1.0.2 bị kết luận nhầm là chết.
+    Wn_q, nn_q, ok_q, _, _ = spatial_graph(xy[q])
+    lab_true = np.asarray(cx["ds"]["lab"])[q]
+    cnt = pd.Series(lab_true).value_counts()
+    cand = [c for c in cnt.index if cnt[c] >= 20]
+    I_t = moran_i(Wn_q, np.stack([(lab_true == c).astype(np.float64) for c in cand], 1)) if cand else np.array([])
+    keep = [c for c, i_ in zip(cand, I_t) if i_ >= MORAN_MIN]
+    if not keep:
+        W.append(f"{combo}: không nhãn nào đạt Moran >= {MORAN_MIN} -> phần B không có chỉ số ST")
 
     def smooth(Z, a):
         if not a: return Z
@@ -374,28 +381,50 @@ def part_b(combo, cx, S, save, W):
         Zs[iso] = Z[iso]                             # giữ nguyên tế bào cô lập
         return Zs.astype(np.float32)
 
-    for k in PART_B_ARMS:
-        if k in Sc: continue
-        if "@" not in k:
-            W.append(f"phần B: tên nhánh sai {k!r} (cần dạng pre@0.2)"); continue
-        arm, a_ = k.split("@", 1)
-        try: a = float(a_)
-        except ValueError: W.append(f"phần B: α sai ở {k!r}"); continue
-        if arm not in ("nocoral", "pre", "post"):
-            W.append(f"phần B: nhánh lạ {arm!r} ở {k!r}"); continue
-        step(f"[{combo}] B: {k}")
-        Fm = (smooth(F0, a) if arm == "nocoral" else
-              R23C.coral(smooth(F0, a), Fx, T) if arm == "pre" else
-              smooth(R23C.coral(F0, Fx, T), a))
-        try:
-            Sc[k] = R23.evaluate(cx, f"{combo}/B/{k}", Fs, np.asarray(Fm, np.float32), Fx, W)
-        except Exception as e:
-            W.append(f"{combo}/B/{k}: lỗi {e!r}"); log(f"[{combo}] B {k} LỖI {e!r}"); continue
-        v = Sc[k]
-        log(f"[{combo}] B {k}: xfer_main={v.get('xfer_main')} xfer_all={v.get('xfer_all')} "
-            f"total_v2={v.get('total_v2')} batch_v2={v.get('batch_v2')} bio_v2={v.get('bio_v2')}")
-        save(); del Fm; gc.collect()
-    del Wn_all; gc.collect()
+    # Di cư khoá PHẲNG cũ (chỉ 1 seed, trước khi phần B biết tới seed) sang khoá có seed, để
+    # không phải chạy lại ~6 phút/nhánh cho những gì đã có trong out<P>s.
+    for k0 in [k for k in Sc if "@" in k and "/" not in k]:
+        Sc[f"s{SEEDS[0]}/{k0}"] = Sc.pop(k0)
+
+    for sd in SEEDS:
+        F0 = R22.get_map(combo, ALPHA_TAG, sd, None)[0]
+        if F0 is None:                               # thiếu MỘT seed thì bỏ seed đó, không bỏ cả cặp
+            W.append(f"{combo}: không có map {ALPHA_TAG} s{sd} -> bỏ seed này ở phần B"); continue
+        F0 = np.asarray(F0, np.float32)
+        for k in PART_B_ARMS:
+            ten = f"s{sd}/{k}"
+            cu = Sc.get(ten, {})
+            if "pas_abs_dev" in cu: continue
+            if "@" not in k:
+                W.append(f"phần B: tên nhánh sai {k!r} (cần dạng pre@0.2)"); continue
+            arm, a_ = k.split("@", 1)
+            try: a = float(a_)
+            except ValueError: W.append(f"phần B: α sai ở {k!r}"); continue
+            if arm not in ("nocoral", "pre", "post"):
+                W.append(f"phần B: nhánh lạ {arm!r} ở {k!r}"); continue
+            step(f"[{combo}] B: {ten}")
+            Fm = np.asarray(smooth(F0, a) if arm == "nocoral" else
+                            R23C.coral(smooth(F0, a), Fx, T) if arm == "pre" else
+                            smooth(R23C.coral(F0, Fx, T), a), np.float32)
+            v = dict(cu)
+            if "total_v2" not in v:                  # phần đắt; bản di cư đã có thì bỏ qua
+                try:
+                    v.update(R23.evaluate(cx, f"{combo}/B/{ten}", Fs, Fm, Fx, W))
+                except Exception as e:
+                    W.append(f"{combo}/B/{ten}: lỗi {e!r}"); log(f"[{combo}] B {ten} LỖI {e!r}")
+                    del Fm; gc.collect(); continue
+            if keep:
+                try:
+                    v.update(st_metrics(Wn_q, nn_q, ok_q,
+                                        transferred_labels(cx, Fm, q), lab_true, keep))
+                except Exception as e:
+                    W.append(f"{combo}/B/{ten}: chỉ số ST lỗi {e!r}")
+            Sc[ten] = v
+            log(f"[{combo}] B {ten}: xfer_main={v.get('xfer_main')} total_v2={v.get('total_v2')} "
+                f"batch_v2={v.get('batch_v2')} pas_dev={v.get('pas_abs_dev')} "
+                f"moran_dev={v.get('moran_abs_dev')}")
+            save(); del Fm; gc.collect()
+    del Wn_all, Wn_q; gc.collect()
 
 
 def import_cache(W):
@@ -1312,23 +1341,68 @@ def report(S):
         L += ["- Đối chiếu chéo: `nocoral` cải thiện mạnh mà `pre` thì không => CORAL xoá công làm trơn "
               "-> phải chuyển sang bản phạt có trọng số A (‖(Wxᵢ−Wxⱼ)A‖²), KHÔNG phải bỏ Laplacian.", ""]
     if S.get("B"):
-        MB = ["xfer_main", "xfer_all", "total_v2", "batch_v2", "bio_v2"]
-        L += ["## Phần B — chấm ĐẦY ĐỦ ở vài điểm α (cổng cuối trước khi viết M-step)", "```"]
-        L += [pd.DataFrame([{"tổ_hợp": c, "nhánh": k, **{m: v.get(m) for m in MB}}
-                            for c, sc in S["B"].items() for k, v in sc.items()]).to_string(index=False), "```",
-              "- `pre@0` CHÍNH LÀ FROST 1.0 — mốc so duy nhất đúng ở đây, đừng lấy `u_cmix_cc` của bảng 23e.", ""]
+        MB = ["xfer_main", "xfer_all", "total_v2", "batch_v2", "bio_v2",
+              "pas_abs_dev", "moran_abs_dev"]
+        gom = {}                                   # (tổ_hợp, nhánh) -> {chỉ số: [giá trị theo seed]}
         for c, sc in S["B"].items():
-            b = sc.get("pre@0")
-            if not b: L.append(f"- B1 {c}: THIẾU mốc `pre@0` -> không kết luận được"); continue
             for k, v in sc.items():
-                if k == "pre@0": continue
-                d = {m: (v.get(m) or 0) - (b.get(m) or 0) for m in ("xfer_main", "xfer_all", "total_v2", "batch_v2")}
-                ok = all(d[m] >= -0.01 for m in ("xfer_main", "xfer_all", "total_v2"))
-                L.append(f"- B1 {c} {k}: " + "  ".join(f"{m} {d[m]:+.4f}" for m in d)
-                         + ("  -> GIỮ VỮNG" if ok else "  -> VI PHẠM tiêu chí"))
-        L += ["- Tiêu chí 1.0.2: `xfer_main`, `xfer_all`, `total_v2` không được tụt quá 0.01 so với FROST 1.0. "
-              "`batch_v2` in ra để thấy số hạng làm trơn có ăn mòn phần CORAL mua được hay không — nó là "
-              "chỗ gãy đã dự đoán, không phải chỉ số ST.", ""]
+                nh = k.split("/", 1)[1] if "/" in k else k
+                d = gom.setdefault((c, nh), {m: [] for m in MB})
+                for m in MB:
+                    if isinstance(v.get(m), (int, float)): d[m].append(v[m])
+        rows = [{"tổ_hợp": c, "nhánh": nh, "n_seed": max(len(x) for x in d.values()),
+                 **{m: (round(float(np.mean(d[m])), 4) if d[m] else None) for m in MB}}
+                for (c, nh), d in sorted(gom.items())]
+        L += ["## Phần B — chấm ĐẦY ĐỦ ở vài điểm α (TB qua seed)", "```",
+              pd.DataFrame(rows).to_string(index=False), "```",
+              "- `pre@0` CHÍNH LÀ FROST 1.0 — mốc so duy nhất đúng ở đây, đừng lấy `u_cmix_cc` của bảng 23e.", ""]
+        TB = {(r["tổ_hợp"], r["nhánh"]): r for r in rows}
+        for c in sorted({r["tổ_hợp"] for r in rows}):
+            b = TB.get((c, "pre@0"))
+            if not b: L.append(f"- B1 {c}: THIẾU mốc `pre@0` -> không kết luận được"); continue
+            for nh in sorted(r["nhánh"] for r in rows if r["tổ_hợp"] == c):
+                if nh == "pre@0": continue
+                v = TB[(c, nh)]
+                g = lambda m: (v.get(m) or 0) - (b.get(m) or 0)
+                giu = g("total_v2") >= -0.01
+                st = g("pas_abs_dev") < 0 or g("moran_abs_dev") < 0   # thấp hơn = tốt hơn
+                L.append(f"- B1 {c} {nh} (n={v['n_seed']}): total_v2 {g('total_v2'):+.4f}  "
+                         f"xfer_main {g('xfer_main'):+.4f}  batch_v2 {g('batch_v2'):+.4f}  | "
+                         f"pas_dev {g('pas_abs_dev'):+.4f}  moran_dev {g('moran_abs_dev'):+.4f}"
+                         + ("  -> ĐẠT" if (giu and st) else
+                            "  -> total tụt > 0.01" if not giu else "  -> ST không cải thiện"))
+        # Wilcoxon ghép cặp trên (tổ_hợp, seed) — 4 cặp × 3 seed = n=12, đúng chuẩn của dự án.
+        try:
+            from scipy.stats import wilcoxon
+            cap = {}
+            for c, sc in S["B"].items():
+                for k, v in sc.items():
+                    if "/" not in k: continue
+                    sd, nh = k.split("/", 1)
+                    cap.setdefault(nh, {})[(c, sd)] = v
+            goc = cap.get("pre@0", {})
+            if goc:
+                L += ["### Wilcoxon ghép cặp so với `pre@0` (n = số tổ_hợp × seed)", "```"]
+                for nh in sorted(k for k in cap if k != "pre@0"):
+                    for m in ("total_v2", "xfer_main", "pas_abs_dev", "moran_abs_dev"):
+                        a = [(goc[t].get(m), cap[nh][t].get(m)) for t in cap[nh]
+                             if t in goc and isinstance(goc[t].get(m), (int, float))
+                             and isinstance(cap[nh][t].get(m), (int, float))]
+                        if len(a) < 6: continue
+                        x = np.array([u for u, _ in a]); y = np.array([v for _, v in a])
+                        pv = float("nan") if np.allclose(x, y) else float(wilcoxon(x, y).pvalue)
+                        huong = "THẤP hơn tốt" if m.endswith("_dev") else "CAO hơn tốt"
+                        L.append(f"{nh:<10} {m:<14} n={len(a):<3} Δ={np.mean(y - x):+.4f}  "
+                                 f"p={pv:.4f}  ({huong})")
+                L += ["```", "- p >= 0.05 trên `total_v2` = GIỮ VỮNG (hoà). p < 0.05 với Δ ÂM trên "
+                      "`pas_abs_dev`/`moran_abs_dev` = chỉ số ST cải thiện có ý nghĩa.", ""]
+        except Exception as e:
+            L.append(f"- (Wilcoxon bỏ qua: {e!r})")
+        L += ["- Tiêu chí: `total_v2` không tụt quá 0.01 so với FROST 1.0, VÀ ít nhất một trong "
+              "`pas_abs_dev`/`moran_abs_dev` giảm (thấp hơn = gần sự thật hơn). `xfer_main` in ra để "
+              "theo dõi, KHÔNG phải điều kiện — đọc nó thay cho `total_v2` chính là sai lầm đã chôn "
+              "nhầm 1.0.2 một lần.",
+              "- TB qua seed chỉ để xem nhanh; kết luận phải chạy Wilcoxon n=12 trên `stat33`.", ""]
     if S.get("T"):
         L += ["## Phần T — TRẦN của `xfer_main` (chuyển nhãn 15-NN, không khoảng cách công nghệ)", "```",
               pd.DataFrame(S["T"]).T.to_string(), "```",
