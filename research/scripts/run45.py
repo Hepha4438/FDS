@@ -59,7 +59,7 @@ R_MAX_UM = float(os.environ.get("R_MAX_UM", 100.0))
 MORAN_MIN = float(os.environ.get("MORAN_MIN", 0.10))
 K_SPATIAL = int(os.environ.get("K_SPATIAL", 15))
 ALPHAS = [float(a) for a in os.environ.get("ALPHAS", "0.05,0.1,0.2,0.3,0.4,0.5").split(",") if a.strip()]
-VER = "45.23-B3seed"   # TEM PHIÊN BẢN: in ra dòng log ĐẦU TIÊN. Hai lần notebook cũ trên Kaggle đã
+VER = "45.24-tieuchi"   # TEM PHIÊN BẢN: in ra dòng log ĐẦU TIÊN. Hai lần notebook cũ trên Kaggle đã
                     # ngốn 4 giờ CPU mà không ai biết. Thấy tem khác -> notebook trên Kaggle là bản cũ.
 ALPHA_TAG = os.environ.get("ALPHA_TAG", "cmix")    # map nền của phần A: cmix = FROST CHƯA CORAL
 WN_TOP = [int(x) for x in os.environ.get("WN_TOP", "10,25,50").split(",") if x.strip()]
@@ -1364,13 +1364,20 @@ def report(S):
                 if nh == "pre@0": continue
                 v = TB[(c, nh)]
                 g = lambda m: (v.get(m) or 0) - (b.get(m) or 0)
-                giu = g("total_v2") >= -0.01
-                st = g("pas_abs_dev") < 0 or g("moran_abs_dev") < 0   # thấp hơn = tốt hơn
+                # TIÊU CHÍ: total_v2 không tụt quá 0.02, VÀ phần ST bù lại TƯƠNG XỨNG.
+                # `mat` = phần total_v2 mất (0 nếu tăng); `bu` = trung bình mức giảm của hai chỉ số
+                # ST (chúng là ĐỘ LỆCH nên giảm = tốt). Trung bình chứ không lấy max: cả hai chỉ số
+                # đều được tính, nên một chỉ số xấu đi sẽ ăn vào phần bù thay vì bị bỏ qua.
+                mat = max(0.0, -g("total_v2"))
+                bu = (-g("pas_abs_dev") - g("moran_abs_dev")) / 2
+                dat = g("total_v2") >= -0.02 and bu > 0 and bu >= mat
                 L.append(f"- B1 {c} {nh} (n={v['n_seed']}): total_v2 {g('total_v2'):+.4f}  "
                          f"xfer_main {g('xfer_main'):+.4f}  batch_v2 {g('batch_v2'):+.4f}  | "
-                         f"pas_dev {g('pas_abs_dev'):+.4f}  moran_dev {g('moran_abs_dev'):+.4f}"
-                         + ("  -> ĐẠT" if (giu and st) else
-                            "  -> total tụt > 0.01" if not giu else "  -> ST không cải thiện"))
+                         f"pas_dev {g('pas_abs_dev'):+.4f}  moran_dev {g('moran_abs_dev'):+.4f}  | "
+                         f"bù {bu:+.4f} so với mất {mat:.4f}"
+                         + ("  -> ĐẠT" if dat else
+                            "  -> total tụt > 0.02" if g("total_v2") < -0.02 else
+                            "  -> ST không cải thiện" if bu <= 0 else "  -> bù KHÔNG tương xứng"))
         # Wilcoxon ghép cặp trên (tổ_hợp, seed) — 4 cặp × 3 seed = n=12, đúng chuẩn của dự án.
         try:
             from scipy.stats import wilcoxon
@@ -1398,10 +1405,10 @@ def report(S):
                       "`pas_abs_dev`/`moran_abs_dev` = chỉ số ST cải thiện có ý nghĩa.", ""]
         except Exception as e:
             L.append(f"- (Wilcoxon bỏ qua: {e!r})")
-        L += ["- Tiêu chí: `total_v2` không tụt quá 0.01 so với FROST 1.0, VÀ ít nhất một trong "
-              "`pas_abs_dev`/`moran_abs_dev` giảm (thấp hơn = gần sự thật hơn). `xfer_main` in ra để "
-              "theo dõi, KHÔNG phải điều kiện — đọc nó thay cho `total_v2` chính là sai lầm đã chôn "
-              "nhầm 1.0.2 một lần.",
+        L += ["- Tiêu chí: `total_v2` không tụt quá **0.02** so với FROST 1.0, VÀ phần ST bù lại "
+              "TƯƠNG XỨNG: `bù = trung bình(−Δpas_dev, −Δmoran_dev)` phải dương VÀ không nhỏ hơn "
+              "`mất = max(0, −Δtotal_v2)`. `xfer_main` in ra để theo dõi, KHÔNG phải điều kiện — đọc "
+              "nó thay cho `total_v2` chính là sai lầm đã chôn nhầm 1.0.2 một lần.",
               "- TB qua seed chỉ để xem nhanh; kết luận phải chạy Wilcoxon n=12 trên `stat33`.", ""]
     if S.get("T"):
         L += ["## Phần T — TRẦN của `xfer_main` (chuyển nhãn 15-NN, không khoảng cách công nghệ)", "```",

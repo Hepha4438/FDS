@@ -51,7 +51,7 @@ def build(tissue="coad"):
         'os.environ.setdefault("ALPHAS", "0.05,0.1,0.2,0.3,0.4,0.5")\n'
         'os.environ.setdefault("ALPHA_TAG", "cmix")\n'
         '# Phần B: các điểm α đem đi chấm đầy đủ. pre@0 = FROST 1.0, PHẢI giữ để có mốc so.\n'
-        'os.environ.setdefault("PART_B_ARMS", "pre@0,pre@0.2,pre@0.3")\n'
+        'os.environ.setdefault("PART_B_ARMS", "pre@0,pre@0.2,pre@0.3,pre@0.4,pre@0.5")\n'
         '# Phần T: cỡ tập Xenium giữ lại để đo trần.\n'
         'os.environ.setdefault("N_T_MAX", "20000")\n'
         '# Phần R: map nền (cmix_levns = FROST 1.0.1 leverage thuần, CHƯA CORAL), lưới t, và các t\n'
